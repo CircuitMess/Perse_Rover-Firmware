@@ -1,0 +1,5 @@
+#ifndef BIT_LIBRARY_PINS_HPP
+#define BIT_LIBRARY_PINS_HPP
+
+
+#endif //BIT_LIBRARY_PINS_HPP
