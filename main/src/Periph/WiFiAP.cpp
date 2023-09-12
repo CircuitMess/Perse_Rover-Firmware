@@ -30,7 +30,7 @@ WiFiAP::WiFiAP(){
 	}, this, &evtHandler);
 
 	ESP_ERROR_CHECK(esp_netif_init());
-	esp_netif_create_default_wifi_ap();
+	createNetif();
 
 	wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg_wifi);
@@ -42,10 +42,7 @@ WiFiAP::WiFiAP(){
 					.channel = 0,
 					.authmode = WIFI_AUTH_WPA2_PSK,
 					.ssid_hidden = true,
-					.max_connection = 1,
-					.pmf_cfg = {
-							.required = true,
-					},
+					.max_connection = 1
 			},
 	};
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
@@ -75,3 +72,26 @@ void WiFiAP::event(int32_t id, void* data){
 	}
 }
 
+esp_netif_t* WiFiAP::createNetif(){
+	esp_netif_inherent_config_t base{};
+	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_AP, sizeof(esp_netif_inherent_config_t));
+	base.flags = (esp_netif_flags_t) (base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED));
+
+	esp_netif_ip_info_t ip = {
+			.ip =		{ .addr = esp_ip4addr_aton("10.0.0.1") },
+			.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
+			.gw =		{ .addr = esp_ip4addr_aton("10.0.0.1") },
+	};
+	base.ip_info = &ip;
+
+	esp_netif_config_t cfg = ESP_NETIF_DEFAULT_WIFI_AP();
+	cfg.base = &base;
+
+	esp_netif_t* netif = esp_netif_new(&cfg);
+	assert(netif);
+
+	esp_netif_attach_wifi_ap(netif);
+	esp_wifi_set_default_wifi_ap_handlers();
+
+	return netif;
+}

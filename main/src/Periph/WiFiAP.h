@@ -2,6 +2,7 @@
 #define PERSE_ROVER_WIFIAP_H
 
 #include <esp_event.h>
+#include <esp_netif_types.h>
 
 class WiFiAP {
 public:
@@ -23,6 +24,8 @@ public:
 private:
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
+
+	static esp_netif_t* createNetif();
 
 };
 
