@@ -24,8 +24,6 @@ private:
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
 
-	void setHidden(bool hide);
-
 };
 
 

@@ -61,8 +61,6 @@ void WiFiAP::event(int32_t id, void* data){
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s join, AID=%d", mac.c_str(), event->aid);
 
-		setHidden(true);
-
 		Event evt { .action = Event::Connect };
 		memcpy(evt.connect.mac, event->mac, 6);
 		Events::post(Facility::WiFiAP, evt);
@@ -71,18 +69,9 @@ void WiFiAP::event(int32_t id, void* data){
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s leave, AID=%d", mac.c_str(), event->aid);
 
-		setHidden(false);
-
 		Event evt { .action = Event::Disconnect };
 		memcpy(evt.disconnect.mac, event->mac, 6);
 		Events::post(Facility::WiFiAP, evt);
 	}
 }
 
-void WiFiAP::setHidden(bool hide){
-	wifi_config_t cfg{};
-	esp_wifi_get_config(WIFI_IF_AP, &cfg);
-
-	cfg.ap.ssid_hidden = hide;
-	esp_wifi_set_config(WIFI_IF_AP, &cfg);
-}
