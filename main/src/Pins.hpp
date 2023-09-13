@@ -8,10 +8,10 @@
 #define MOTOR_FL_B 47
 #define MOTOR_FR_A 26
 #define MOTOR_FR_B 21
-#define MOTOR_BL_A 18
-#define MOTOR_BL_B 17
-#define MOTOR_BR_A 16
-#define MOTOR_BR_B 15
+#define MOTOR_BR_A 18
+#define MOTOR_BR_B 17
+#define MOTOR_BL_A 16
+#define MOTOR_BL_B 15
 
 #define CAM_PIN_RESET   -1 //software reset will be performed
 #define CAM_PIN_XCLK    48
