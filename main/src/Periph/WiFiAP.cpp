@@ -78,9 +78,9 @@ esp_netif_t* WiFiAP::createNetif(){
 	base.flags = (esp_netif_flags_t) (base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED));
 
 	esp_netif_ip_info_t ip = {
-			.ip =		{ .addr = esp_ip4addr_aton("10.0.0.1") },
+			.ip =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
 			.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
-			.gw =		{ .addr = esp_ip4addr_aton("10.0.0.1") },
+			.gw =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
 	};
 	base.ip_info = &ip;
 
