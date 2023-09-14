@@ -4,8 +4,9 @@
 
 Camera* Camera::instance = nullptr;
 
-Camera::Camera(AW9523& aw9523) : aw9523(aw9523){
+Camera::Camera(I2C& i2c, AW9523& aw9523) : i2c(i2c), aw9523(aw9523){
 	instance = this;
+	aw9523.pinMode(EXP_CAM_PWDN, AW9523::OUT);
 }
 
 Camera::~Camera(){
@@ -15,18 +16,6 @@ Camera::~Camera(){
 
 bool Camera::init(){
 	if(resWait == res && formatWait == format && inited) return true;
-
-	aw9523.write(CAM_PWDN, 0);
-
-//	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
-	i2c_config_t conf = {};
-	conf.mode = I2C_MODE_MASTER;
-	conf.sda_io_num = CAM_PIN_SIOD;
-	conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-	conf.scl_io_num = CAM_PIN_SIOC;
-	conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-	conf.master.clk_speed = CONFIG_SCCB_CLK_FREQ;
-	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
 
 	if(inited){
 		deinit();
@@ -44,8 +33,6 @@ bool Camera::init(){
 	config.pin_pwdn = -1;
 	config.pin_reset = CAM_PIN_RESET;
 	config.pin_xclk = CAM_PIN_XCLK;
-	config.pin_sccb_sda = CAM_PIN_SIOD;
-	config.pin_sccb_scl = CAM_PIN_SIOC;
 	config.pin_d7 = CAM_PIN_D7;
 	config.pin_d6 = CAM_PIN_D6;
 	config.pin_d5 = CAM_PIN_D5;
@@ -60,7 +47,9 @@ bool Camera::init(){
 
 	config.xclk_freq_hz = 14000000;
 
-	config.sccb_i2c_port = I2C_NUM_0;
+	config.sccb_i2c_port = i2c.getPort();
+	config.pin_sccb_sda = -1;
+	config.pin_sccb_scl = -1;
 
 	config.frame_size = res;
 	config.pixel_format = format;
@@ -71,6 +60,10 @@ bool Camera::init(){
 	if(format == PIXFORMAT_JPEG){
 		config.jpeg_quality = 28;
 	}
+
+	aw9523.write(EXP_CAM_PWDN, false);
+
+	auto lock = i2c.lockBus();
 
 	auto err = esp_camera_init(&config);
 	if(err != ESP_OK){
@@ -104,22 +97,6 @@ bool Camera::init(){
 	inited = true;
 	failedFrames = 0;
 
-	i2c_config_t cfg = {
-		.mode = I2C_MODE_MASTER,
-		.sda_io_num = I2C_SDA,
-		.scl_io_num = I2C_SCL,
-		.sda_pullup_en = false,
-		.scl_pullup_en = false
-	};
-	cfg.master.clk_speed = 400000;
-
-	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &cfg));
-
-//	gpio_set_direction((gpio_num_t) I2C_SDA, GPIO_MODE_INPUT);
-//	gpio_set_direction((gpio_num_t) I2C_SCL, GPIO_MODE_INPUT);
-
-
-
 	return true;
 }
 
@@ -132,9 +109,11 @@ void Camera::deinit(){
 		frame = nullptr;
 	}
 
+	auto lock = i2c.lockBus();
+
 	esp_camera_deinit();
 
-	aw9523.write(CAM_PWDN, 1);
+	aw9523.write(EXP_CAM_PWDN, true);
 }
 
 camera_fb_t* Camera::getFrame(){
