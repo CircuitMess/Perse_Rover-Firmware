@@ -30,7 +30,7 @@ WiFiAP::WiFiAP(){
 	}, this, &evtHandler);
 
 	ESP_ERROR_CHECK(esp_netif_init());
-	esp_netif_create_default_wifi_ap();
+	createNetif();
 
 	wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg_wifi);
@@ -42,10 +42,7 @@ WiFiAP::WiFiAP(){
 					.channel = 0,
 					.authmode = WIFI_AUTH_WPA2_PSK,
 					.ssid_hidden = true,
-					.max_connection = 1,
-					.pmf_cfg = {
-							.required = true,
-					},
+					.max_connection = 1
 			},
 	};
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
@@ -61,8 +58,6 @@ void WiFiAP::event(int32_t id, void* data){
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s join, AID=%d", mac.c_str(), event->aid);
 
-		setHidden(true);
-
 		Event evt { .action = Event::Connect };
 		memcpy(evt.connect.mac, event->mac, 6);
 		Events::post(Facility::WiFiAP, evt);
@@ -71,18 +66,32 @@ void WiFiAP::event(int32_t id, void* data){
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s leave, AID=%d", mac.c_str(), event->aid);
 
-		setHidden(false);
-
 		Event evt { .action = Event::Disconnect };
 		memcpy(evt.disconnect.mac, event->mac, 6);
 		Events::post(Facility::WiFiAP, evt);
 	}
 }
 
-void WiFiAP::setHidden(bool hide){
-	wifi_config_t cfg{};
-	esp_wifi_get_config(WIFI_IF_AP, &cfg);
+esp_netif_t* WiFiAP::createNetif(){
+	esp_netif_inherent_config_t base{};
+	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_AP, sizeof(esp_netif_inherent_config_t));
+	base.flags = (esp_netif_flags_t) (base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED));
 
-	cfg.ap.ssid_hidden = hide;
-	esp_wifi_set_config(WIFI_IF_AP, &cfg);
+	esp_netif_ip_info_t ip = {
+			.ip =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
+			.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
+			.gw =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
+	};
+	base.ip_info = &ip;
+
+	esp_netif_config_t cfg = ESP_NETIF_DEFAULT_WIFI_AP();
+	cfg.base = &base;
+
+	esp_netif_t* netif = esp_netif_new(&cfg);
+	assert(netif);
+
+	esp_netif_attach_wifi_ap(netif);
+	esp_wifi_set_default_wifi_ap_handlers();
+
+	return netif;
 }
