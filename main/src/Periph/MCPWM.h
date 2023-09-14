@@ -12,7 +12,7 @@ public:
 	enum DriveMode{
 		Forward, Reverse, Coast, Brake, None
 	};
-	MCPWM(gpio_num_t gpioA, gpio_num_t gpioB, int groupID); //groupID is 1 or 2
+	MCPWM(gpio_num_t gpioA, gpio_num_t gpioB, int groupID); //groupID is 0 or 1
 	virtual ~MCPWM();
 	void enable();
 	void disable();

@@ -13,6 +13,10 @@
 #define MOTOR_BL_A 16
 #define MOTOR_BL_B 15
 
+#define SERVO_1_PWM 13
+#define SERVO_2_PWM 14
+#define SERVO_3_PWM 12
+
 #define CAM_PIN_RESET   -1 //software reset will be performed
 #define CAM_PIN_XCLK    48
 #define CAM_PIN_SIOD    37
