@@ -35,6 +35,16 @@ public:
 	esp_err_t readReg(uint8_t addr, uint8_t reg, uint8_t* data, size_t size, TickType_t wait = portMAX_DELAY);
 	esp_err_t readReg(uint8_t addr, uint8_t reg, uint8_t& data, TickType_t wait = portMAX_DELAY);
 
+	class BusLock {
+	public:
+		~BusLock();
+	private:
+		friend I2C;
+		BusLock(std::mutex& mut);
+		std::mutex& mut;
+	};
+	BusLock lockBus();
+
 private:
 	const i2c_port_t port;
 	std::mutex mut;

@@ -3,6 +3,14 @@
 #include <vector>
 #include <cstring>
 
+I2C::BusLock::BusLock(std::mutex& mut) : mut(mut){
+	mut.lock();
+}
+
+I2C::BusLock::~BusLock(){
+	mut.unlock();
+}
+
 I2C::I2C(i2c_port_t port, gpio_num_t sda, gpio_num_t scl) : port(port){
 	i2c_config_t cfg = {
 		.mode = I2C_MODE_MASTER,
@@ -20,6 +28,10 @@ I2C::I2C(i2c_port_t port, gpio_num_t sda, gpio_num_t scl) : port(port){
 
 I2C::~I2C(){
 	ESP_ERROR_CHECK(i2c_driver_delete(port));
+}
+
+I2C::BusLock I2C::lockBus(){
+	return { mut };
 }
 
 void I2C::scan(TickType_t timeout){
