@@ -13,6 +13,8 @@ public:
 	I2C(i2c_port_t port, gpio_num_t sda, gpio_num_t scl);
 	virtual ~I2C();
 
+	i2c_port_t getPort() const;
+
 	void scan(TickType_t timeout = 5);
 	esp_err_t probe(uint8_t addr, TickType_t timeout = 5);
 

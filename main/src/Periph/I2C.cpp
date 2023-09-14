@@ -34,6 +34,10 @@ I2C::BusLock I2C::lockBus(){
 	return { mut };
 }
 
+i2c_port_t I2C::getPort() const{
+	return port;
+}
+
 void I2C::scan(TickType_t timeout){
 	printf("I2C scan:\n");
 	for(int i = 0; i < 127; i++){
