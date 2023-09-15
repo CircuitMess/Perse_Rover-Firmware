@@ -109,9 +109,10 @@ void Camera::deinit(){
 		frame = nullptr;
 	}
 
-	auto lock = i2c.lockBus();
-
-	esp_camera_deinit();
+	{
+		auto lock = i2c.lockBus();
+		esp_camera_deinit();
+	}
 
 	aw9523.write(EXP_CAM_PWDN, true);
 }
