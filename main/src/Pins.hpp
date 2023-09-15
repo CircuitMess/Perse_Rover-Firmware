@@ -6,7 +6,7 @@
 
 #define MOTOR_FL_A 33
 #define MOTOR_FL_B 47
-#define MOTOR_FR_A 26
+#define MOTOR_FR_A 37
 #define MOTOR_FR_B 21
 #define MOTOR_BR_A 18
 #define MOTOR_BR_B 17
