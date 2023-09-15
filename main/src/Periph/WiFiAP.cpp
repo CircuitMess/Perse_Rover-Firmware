@@ -75,9 +75,9 @@ void WiFiAP::event(int32_t id, void* data){
 esp_netif_t* WiFiAP::createNetif(){
 	esp_netif_inherent_config_t base{};
 	memcpy(&base, ESP_NETIF_BASE_DEFAULT_WIFI_AP, sizeof(esp_netif_inherent_config_t));
-	base.flags = (esp_netif_flags_t) (base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED));
+	base.flags = (esp_netif_flags_t) ((base.flags & ~(ESP_NETIF_DHCP_SERVER | ESP_NETIF_DHCP_CLIENT | ESP_NETIF_FLAG_EVENT_IP_MODIFIED)) | ESP_NETIF_FLAG_GARP);
 
-	esp_netif_ip_info_t ip = {
+	const esp_netif_ip_info_t ip = {
 			.ip =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
 			.netmask =	{ .addr = esp_ip4addr_aton("255.255.255.0") },
 			.gw =		{ .addr = esp_ip4addr_aton("11.0.0.1") },
@@ -89,6 +89,7 @@ esp_netif_t* WiFiAP::createNetif(){
 
 	esp_netif_t* netif = esp_netif_new(&cfg);
 	assert(netif);
+	esp_netif_set_default_netif(netif);
 
 	esp_netif_attach_wifi_ap(netif);
 	esp_wifi_set_default_wifi_ap_handlers();
