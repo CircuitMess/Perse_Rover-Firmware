@@ -38,7 +38,7 @@ WiFiAP::WiFiAP() : randID(rand() % 1000000){
 	wifi_config_t cfg_ap = {
 			.ap = {
 					.password = "RoverRover",
-					.channel = 0,
+					.channel = 1,
 					.authmode = WIFI_AUTH_WPA2_PSK,
 					.ssid_hidden = false,
 					.max_connection = 1
