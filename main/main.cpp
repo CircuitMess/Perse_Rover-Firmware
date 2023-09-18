@@ -25,6 +25,7 @@ void init(){
 	ESP_ERROR_CHECK(ret);
 
 	auto wifi = new WiFiAP();
+	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 }
 
