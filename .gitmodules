@@ -4,3 +4,6 @@
 [submodule "components/esp32-camera"]
 	path = components/esp32-camera
 	url = https://github.com/espressif/esp32-camera
+[submodule "components/Perse-Common"]
+	path = components/Perse-Common
+	url = https://github.com/CircuitMess/Perse-Common
