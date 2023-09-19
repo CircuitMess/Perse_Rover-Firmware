@@ -3,6 +3,7 @@
 
 Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPServer*) Services.get(Service{/*TODO - set actual service*/})), queue(10){
 	Events::listen(Facility::TCP, &queue);
+	start();
 }
 
 Comm::~Comm(){
