@@ -6,6 +6,13 @@
 
 class TCPServer {
 public:
+
+	struct Event {
+		enum class Status {
+			Connected, Disconnected
+		} status;
+	};
+
 	TCPServer();
 
 	bool isConnected();
