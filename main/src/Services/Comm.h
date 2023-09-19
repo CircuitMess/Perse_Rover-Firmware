@@ -10,11 +10,11 @@ class Comm : private Threaded {
 public:
 	Comm();
 	~Comm() override;
-	void sendPacket(const ControlPacket& packet);
 
 private:
 	TCPServer& tcp;
 	void loop() override;
+	void sendPacket(const ControlPacket& packet);
 
 	EventQueue queue;
 };
