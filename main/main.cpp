@@ -10,6 +10,7 @@
 #include "Util/Services.h"
 #include "Services/PairService.h"
 #include "Util/Events.h"
+#include "Services/Comm.h"
 
 
 void init(){
@@ -18,7 +19,7 @@ void init(){
 			.mode = GPIO_MODE_INPUT
 	};
 	gpio_config(&cfg);
-
+	esp_log_level_set("TCPServer", ESP_LOG_VERBOSE);
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
 		ESP_ERROR_CHECK(nvs_flash_erase());
@@ -30,14 +31,28 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);
+	auto comm = new Comm();
 
 	auto pair = new PairService();
 	EventQueue q(10);
 	Event event{};
 	Events::listen(Facility::Pair, &q);
-	if(q.get(event, portMAX_DELAY)){
-		printf("pair ok\n");
+	Events::listen(Facility::Comm, &q);
+
+	while(1){
+		if(q.get(event, portMAX_DELAY)){
+			if(event.facility == Facility::Pair){
+
+				printf("pair ok\n");
+			}
+			if(event.facility == Facility::Comm){
+				auto data = (ControlPacket*)event.data;
+				printf("packet type: %d, data: %d\n", (int)data->type, data->data);
+			}
+			free(event.data);
+		}
 	}
+
 
 }
 
