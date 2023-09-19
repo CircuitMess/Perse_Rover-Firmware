@@ -20,7 +20,7 @@ void PairService::loop(){
 	bool accepted = tcp.accept();
 	if(accepted){
 		Event evt{ true };
-		Events::post(Facility::WiFiAP, evt);
+		Events::post(Facility::Pair, evt);
 		stop();
 		return;
 	}
