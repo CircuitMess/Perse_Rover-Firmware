@@ -8,6 +8,8 @@
 #include "Periph/WiFiAP.h"
 #include "Services/TCPServer.h"
 #include "Util/Services.h"
+#include "Services/PairService.h"
+#include "Util/Events.h"
 
 
 void init(){
@@ -27,6 +29,16 @@ void init(){
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
+	Services.set(Service::TCP, tcp);
+
+	auto pair = new PairService();
+	EventQueue q(10);
+	Event event{};
+	Events::listen(Facility::Pair, &q);
+	if(q.get(event, portMAX_DELAY)){
+		printf("pair ok\n");
+	}
+
 }
 
 extern "C" void app_main(void){

@@ -3,14 +3,14 @@
 #include "Util/Events.h"
 
 PairService::PairService() : Threaded("PairService", 4 * 1024),
-							 wifi(*(WiFiAP*) Services.get(Service{/*TODO - set actual service*/})),
-							 tcp(*(TCPServer*) Services.get(Service{/*TODO - set actual service*/})){
-//	wifi.setHidden(false);
-
+							 wifi(*(WiFiAP*) Services.get(Service::WiFi)),
+							 tcp(*(TCPServer*) Services.get(Service::TCP)){
+	wifi.setHidden(false);
+	start();
 }
 
 PairService::~PairService(){
-//	wifi.setHidden(true);
+	wifi.setHidden(true);
 	if(running()){
 		stop();
 	}
