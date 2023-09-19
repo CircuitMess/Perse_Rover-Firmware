@@ -1,4 +1,5 @@
 #include "TCPServer.h"
+#include "Util/Events.h"
 #include <lwip/sockets.h>
 #include <esp_log.h>
 
@@ -66,6 +67,9 @@ bool TCPServer::accept(){
 
 	ESP_LOGI(TAG, "Client %s connected", addr_str);
 
+	Event event{ Event::Status::Connected };
+	Events::post(Facility::TCP, event);
+
 	return true;
 }
 
@@ -77,6 +81,9 @@ void TCPServer::disconnect(){
 
 	close(client);
 	client = -1;
+
+	Event event{ Event::Status::Disconnected };
+	Events::post(Facility::TCP, event);
 }
 
 bool TCPServer::read(uint8_t* buf, size_t count){
