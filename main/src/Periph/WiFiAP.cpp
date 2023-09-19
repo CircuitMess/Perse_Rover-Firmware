@@ -21,7 +21,7 @@ static std::string mac2str(uint8_t ar[]){
 	return str;
 }
 
-WiFiAP::WiFiAP(){
+WiFiAP::WiFiAP() : randID(rand() % 1000000){
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 	esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, [](void* arg, esp_event_base_t base, int32_t id, void* data){
 		if(base != WIFI_EVENT) return;
@@ -37,17 +37,30 @@ WiFiAP::WiFiAP(){
 
 	wifi_config_t cfg_ap = {
 			.ap = {
-					.ssid = "Perseverance Rover",
-					.password = "12345678",
-					.channel = 0,
+					.password = "RoverRover",
+					.channel = 1,
 					.authmode = WIFI_AUTH_WPA2_PSK,
-					.ssid_hidden = true,
+					.ssid_hidden = false,
 					.max_connection = 1
 			},
 	};
+
+	std::string ssid = "Perseverance Rover #" + std::to_string(randID);
+	for(int i = 0; i < ssid.length(); ++i){
+		cfg_ap.ap.ssid[i] = ssid[i];
+	}
+	cfg_ap.ap.ssid[ssid.length()] = '\0';
+
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
 	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &cfg_ap));
 	ESP_ERROR_CHECK(esp_wifi_start());
+}
+
+void WiFiAP::setHidden(bool hidden){
+	wifi_config_t config;
+	esp_wifi_get_config(WIFI_IF_AP, &config);
+	config.ap.ssid_hidden = hidden;
+	esp_wifi_set_config(WIFI_IF_AP, &config);
 }
 
 void WiFiAP::event(int32_t id, void* data){
