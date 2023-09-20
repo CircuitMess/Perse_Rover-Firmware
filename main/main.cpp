@@ -27,6 +27,8 @@ void init(){
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
+	Services.set(Service::TCP, tcp);
+
 }
 
 extern "C" void app_main(void){
