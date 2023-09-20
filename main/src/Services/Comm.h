@@ -9,6 +9,7 @@
 class Comm : private Threaded {
 public:
 	struct Event {
+		CommType type;
 		union {
 			DriveDir dir;
 		};

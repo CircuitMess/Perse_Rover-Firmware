@@ -39,6 +39,7 @@ void Comm::loop(){
 Comm::Event Comm::processPacket(const ControlPacket& packet){
 	Event e{};
 	e.raw = packet.data;
+	e.type = packet.type;
 	switch(packet.type){
 		case CommType::DriveDir:
 			e.dir = CommData::decodeDriveDir(packet.data);
