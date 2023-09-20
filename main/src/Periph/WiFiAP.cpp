@@ -21,7 +21,7 @@ static std::string mac2str(uint8_t ar[]){
 	return str;
 }
 
-WiFiAP::WiFiAP() : randID(rand() % 1000000){
+WiFiAP::WiFiAP(){
 	ESP_ERROR_CHECK(esp_event_loop_create_default());
 	esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, [](void* arg, esp_event_base_t base, int32_t id, void* data){
 		if(base != WIFI_EVENT) return;
@@ -45,11 +45,9 @@ WiFiAP::WiFiAP() : randID(rand() % 1000000){
 			},
 	};
 
+	uint32_t randID = rand() % 1000000;
 	std::string ssid = "Perseverance Rover #" + std::to_string(randID);
-	for(int i = 0; i < ssid.length(); ++i){
-		cfg_ap.ap.ssid[i] = ssid[i];
-	}
-	cfg_ap.ap.ssid[ssid.length()] = '\0';
+	strcpy((char*) cfg_ap.ap.ssid, ssid.c_str());
 
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
 	ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &cfg_ap));
@@ -57,6 +55,8 @@ WiFiAP::WiFiAP() : randID(rand() % 1000000){
 }
 
 void WiFiAP::setHidden(bool hidden){
+	return;
+
 	wifi_config_t config;
 	esp_wifi_get_config(WIFI_IF_AP, &config);
 	config.ap.ssid_hidden = hidden;

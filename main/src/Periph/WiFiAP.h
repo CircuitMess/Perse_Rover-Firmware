@@ -33,8 +33,6 @@ private:
 
 	static esp_netif_t* createNetif();
 
-	const uint32_t randID;
-
 };
 
 
