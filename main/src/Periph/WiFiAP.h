@@ -21,6 +21,12 @@ public:
 		};
 	};
 
+	/**
+	 * Set SSID broadcast on or off.
+	 * @param hidden True - hide SSID (default), False - broadcast SSID
+	 */
+	void setHidden(bool hidden);
+
 private:
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
