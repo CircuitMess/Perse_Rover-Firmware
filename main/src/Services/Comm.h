@@ -8,6 +8,13 @@
 
 class Comm : private Threaded {
 public:
+	struct Event {
+		union {
+			DriveDir dir;
+		};
+		uint8_t raw;
+	};
+
 	Comm();
 	~Comm() override;
 
@@ -15,6 +22,7 @@ private:
 	TCPServer& tcp;
 	void loop() override;
 	void sendPacket(const ControlPacket& packet);
+	Event processPacket(const ControlPacket& packet);
 
 	EventQueue queue;
 };

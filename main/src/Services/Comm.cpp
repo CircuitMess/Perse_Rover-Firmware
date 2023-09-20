@@ -1,7 +1,7 @@
 #include "Comm.h"
 #include "Util/Services.h"
 
-Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPServer*) Services.get(Service{/*TODO - set actual service*/})), queue(10){
+Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPServer*) Services.get(Service::TCP)), queue(10){
 	Events::listen(Facility::TCP, &queue);
 	start();
 }
@@ -23,15 +23,27 @@ void Comm::loop(){
 		tcp.read(reinterpret_cast<uint8_t*>(&packet), sizeof(ControlPacket));
 
 		if(tcp.isConnected()){
-			Events::post(Facility::Comm, packet);
+			Event e = processPacket(packet);
+			Events::post(Facility::Comm, e);
 		}
 	}
 
 	if(!tcp.isConnected()){
-		Event event{};
+		::Event event{};
 		while(!queue.get(event, portMAX_DELAY));
 		//Only a TCP connected event will unblock the thread
 		free(event.data);
 	}
 }
 
+Comm::Event Comm::processPacket(const ControlPacket& packet){
+	Event e{};
+	e.raw = packet.data;
+	switch(packet.type){
+		case CommType::DriveDir:
+			e.dir = CommData::decodeDriveDir(packet.data);
+			break;
+	}
+
+	return e;
+}
