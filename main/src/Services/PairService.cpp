@@ -18,10 +18,15 @@ PairService::~PairService(){
 void PairService::loop(){
 	bool accepted = tcp.accept();
 	if(accepted){
+		state = State::Success;
 		Event evt{ true };
 		Events::post(Facility::Pair, evt);
 		stop();
 		return;
 	}
 	delayMillis(100);
+}
+
+PairService::State PairService::getState() const{
+	return state;
 }

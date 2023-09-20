@@ -13,9 +13,17 @@ public:
 	struct Event {
 		bool success;
 	};
+
+	enum class State{
+		Pairing, Success
+	};
+	State getState() const;
+
 private:
 	WiFiAP& wifi;
 	TCPServer& tcp;
+
+	State state = State::Pairing;
 
 	void loop() override;
 };
