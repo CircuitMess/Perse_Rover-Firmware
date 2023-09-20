@@ -7,7 +7,7 @@ PairService::PairService() : Threaded("PairService", 4 * 1024),
 							 wifi(*(WiFiAP*) Services.get(Service::WiFi)),
 							 tcp(*(TCPServer*) Services.get(Service::TCP)){
 	wifi.setHidden(false);
-
+	start();
 }
 
 PairService::~PairService(){
