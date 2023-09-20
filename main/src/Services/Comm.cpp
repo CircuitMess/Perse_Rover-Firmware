@@ -32,7 +32,6 @@ void Comm::loop(){
 	if(!tcp.isConnected() || !readOK){
 		::Event event{};
 		while(!queue.get(event, portMAX_DELAY));
-		//Only a TCP connected event will unblock the thread
 		free(event.data);
 	}
 }
