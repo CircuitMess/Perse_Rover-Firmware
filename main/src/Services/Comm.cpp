@@ -18,17 +18,18 @@ void Comm::sendPacket(const ControlPacket& packet){
 }
 
 void Comm::loop(){
+	bool readOK = false;
 	if(tcp.isConnected()){
 		ControlPacket packet{};
-		tcp.read(reinterpret_cast<uint8_t*>(&packet), sizeof(ControlPacket));
+		readOK = tcp.read(reinterpret_cast<uint8_t*>(&packet), sizeof(ControlPacket));
 
-		if(tcp.isConnected()){
+		if(readOK){
 			Event e = processPacket(packet);
 			Events::post(Facility::Comm, e);
 		}
 	}
 
-	if(!tcp.isConnected()){
+	if(!tcp.isConnected() || !readOK){
 		::Event event{};
 		while(!queue.get(event, portMAX_DELAY));
 		//Only a TCP connected event will unblock the thread
