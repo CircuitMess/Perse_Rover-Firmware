@@ -4,7 +4,7 @@
 #include "TCPServer.h"
 #include "Util/Threaded.h"
 #include "Util/Events.h"
-#include <Comm.h>
+#include <CommData.h>
 
 class Comm : private Threaded {
 public:
