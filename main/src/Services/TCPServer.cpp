@@ -27,6 +27,8 @@ TCPServer::TCPServer(){
 		sock = -1;
 		return;
 	}
+
+	fcntl(sock, F_SETFL, O_NONBLOCK);
 }
 
 bool TCPServer::isConnected(){

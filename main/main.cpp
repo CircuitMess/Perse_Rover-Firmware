@@ -5,6 +5,9 @@
 #include <esp_log.h>
 #include "Pins.hpp"
 #include "Util/stdafx.h"
+#include "Periph/WiFiAP.h"
+#include "Services/TCPServer.h"
+#include "Util/Services.h"
 
 
 void init(){
@@ -20,6 +23,10 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	auto wifi = new WiFiAP();
+	Services.set(Service::WiFi, wifi);
+	auto tcp = new TCPServer();
 }
 
 extern "C" void app_main(void){
