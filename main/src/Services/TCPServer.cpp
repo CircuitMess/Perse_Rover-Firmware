@@ -49,7 +49,7 @@ bool TCPServer::accept(){
 	sockaddr_in addr_client{};
 	socklen_t addr_size = sizeof(addr_client);
 	if((client = ::accept(sock, (sockaddr*) &addr_client, &addr_size)) == -1){
-		ESP_LOGE(TAG, "Can't accept, errno=%d: %s", errno, strerror(errno));
+		ESP_LOGV(TAG, "Can't accept, errno=%d: %s", errno, strerror(errno));
 		return false;
 	}
 
