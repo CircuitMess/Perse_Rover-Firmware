@@ -88,7 +88,7 @@ void TCPServer::disconnect(){
 
 bool TCPServer::read(uint8_t* buf, size_t count){
 	if(client == -1){
-		ESP_LOGW(TAG, "Write, but client isn't connected");
+		ESP_LOGW(TAG, "Read, but client isn't connected");
 		return false;
 	}
 
