@@ -20,6 +20,7 @@
 #include "Services/TCPServer.h"
 #include "Services/Comm.h"
 #include "Services/PairService.h"
+#include "Services/Feed.h"
 
 AW9523* aw9523;
 MCPWM* motorLeft;
@@ -79,6 +80,27 @@ void init(){
 	Events::listen(Facility::Pair, &q);
 	Events::listen(Facility::Comm, &q);
 
+	auto cam = new Camera(*i2c, *aw9523);
+	cam->setRes(FRAMESIZE_QQVGA);
+	cam->setFormat(PIXFORMAT_JPEG);
+	cam->init();
+
+	auto feed = new Feed();
+	auto feedSender = new ThreadedClosure([feed, cam](){
+		auto frame = cam->getFrame();
+		if(frame){
+			DriveInfo info;
+			info.mode = DriveMode::Manual;
+			info.frame.size = frame->len;
+			info.frame.data = malloc(frame->len);
+			memcpy(info.frame.data, frame->buf, frame->len);
+			cam->releaseFrame();
+
+			feed->sendFrame(info);
+		}
+		delayMillis(10);
+	}, "FeedSender", 8000, 5, 1);
+	feedSender->start();
 
 	while(1){
 		if(q.get(event, portMAX_DELAY)){
