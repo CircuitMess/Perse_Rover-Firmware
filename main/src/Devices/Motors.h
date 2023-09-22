@@ -6,13 +6,7 @@
 #include "Periph/PWM.h"
 #include "Periph/PinOut.h"
 #include "Util/Threaded.h"
-
-struct MotorInfo {
-	int8_t frontLeft;
-	int8_t frontRight;
-	int8_t backLeft;
-	int8_t backRight;
-};
+#include "DriveInfo.h"
 
 class MotorControl : private Threaded {
 public:
