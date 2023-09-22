@@ -58,7 +58,7 @@ bool Camera::init(){
 	config.grab_mode = CAMERA_GRAB_LATEST;
 
 	if(format == PIXFORMAT_JPEG){
-		config.jpeg_quality = 28;
+		config.jpeg_quality = 12;
 	}
 
 	aw9523.write(EXP_CAM_PWDN, false);
@@ -74,10 +74,14 @@ bool Camera::init(){
 	sensor_t* sensor = esp_camera_sensor_get();
 	sensor->set_hmirror(sensor, 1);
 	sensor->set_vflip(sensor, 1);
-	sensor->set_special_effect(sensor, 0);
-	sensor->set_saturation(sensor, 0);
 
-	if(res > FRAMESIZE_QQVGA){
+	sensor->set_saturation(sensor, 2);
+	sensor->set_awb_gain(sensor, 1);
+	sensor->set_wb_mode(sensor, 0);
+	sensor->set_exposure_ctrl(sensor, 0);
+	sensor->set_gain_ctrl(sensor, 0);
+
+	/*if(res > FRAMESIZE_QQVGA){
 		sensor->set_brightness(sensor, -2);
 
 		sensor->set_whitebal(sensor, 0);
@@ -92,7 +96,7 @@ bool Camera::init(){
 		sensor->set_brightness(sensor, 1);
 		sensor->set_contrast(sensor, 1);
 		sensor->set_whitebal(sensor, 1);
-	}
+	}*/
 
 	inited = true;
 	failedFrames = 0;
