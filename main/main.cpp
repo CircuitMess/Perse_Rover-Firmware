@@ -98,7 +98,7 @@ void init(){
 
 			feed->sendFrame(info);
 		}
-		delayMillis(10);
+		delayMillis(20);
 	}, "FeedSender", 8000, 5, 1);
 	feedSender->start();
 
