@@ -37,6 +37,8 @@
 
 //AW9523 pins:
 #define EXP_CAM_PWDN 0
+#define EXP_HEADLIGHT_1 8
+#define EXP_HEADLIGHT_2 9
 
 
 #endif //BIT_LIBRARY_PINS_HPP
