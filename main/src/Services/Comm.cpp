@@ -1,7 +1,7 @@
 #include "Comm.h"
 #include "Util/Services.h"
 
-Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPServer*) Services.get(Service::TCP)), queue(10){
+Comm::Comm() : Threaded("Comm", 4 * 1024, 5, 0), tcp(*(TCPServer*) Services.get(Service::TCP)), queue(10){
 	Events::listen(Facility::TCP, &queue);
 	start();
 }
@@ -43,6 +43,15 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 	switch(packet.type){
 		case CommType::DriveDir:
 			e.dir = CommData::decodeDriveDir(packet.data);
+			break;
+		case CommType::Headlights:
+			e.headlights = packet.data;
+			break;
+		case CommType::Arm:
+			e.arm = packet.data;
+			break;
+		case CommType::Pinch:
+			e.pinch = packet.data;
 			break;
 	}
 

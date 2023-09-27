@@ -58,7 +58,7 @@ bool Camera::init(){
 	config.grab_mode = CAMERA_GRAB_LATEST;
 
 	if(format == PIXFORMAT_JPEG){
-		config.jpeg_quality = 12;
+		config.jpeg_quality = 20;
 	}
 
 	aw9523.write(EXP_CAM_PWDN, false);

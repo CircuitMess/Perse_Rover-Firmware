@@ -12,6 +12,9 @@ public:
 		CommType type;
 		union {
 			DriveDir dir;
+			uint8_t headlights;
+			uint8_t arm;
+			uint8_t pinch;
 		};
 		uint8_t raw;
 	};
