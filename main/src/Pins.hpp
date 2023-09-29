@@ -37,6 +37,28 @@
 
 //AW9523 pins:
 #define EXP_CAM_PWDN 0
+#define EXP_SHIFT_DATA 3
+#define EXP_SHIFT_CLOCK 4
+#define EXP_SHIFT_LATCH 5
+
+
+//ShiftReg pins:
+#define SHIFT_A_ADDR_1 7
+#define SHIFT_A_ADDR_2 6
+#define SHIFT_A_ADDR_3 5
+#define SHIFT_A_ADDR_4 4
+#define SHIFT_A_ADDR_5 3
+#define SHIFT_A_ADDR_6 2
+#define SHIFT_A_DET_1 1
+#define SHIFT_A_DET_2 0
+#define SHIFT_B_ADDR_1 15
+#define SHIFT_B_ADDR_2 14
+#define SHIFT_B_ADDR_3 13
+#define SHIFT_B_ADDR_4 12
+#define SHIFT_B_ADDR_5 11
+#define SHIFT_B_ADDR_6 10
+#define SHIFT_B_DET_1 9
+#define SHIFT_B_DET_2 8
 
 
 #endif //BIT_LIBRARY_PINS_HPP
