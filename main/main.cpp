@@ -73,6 +73,20 @@ void init(){
 		delayMillis(300);
 	}
 
+	for(auto led : leds) aw9523->dim(led, 60);
+
+	aw9523->dim(11, 100);
+	aw9523->dim(15, 100);
+	aw9523->dim(14, 100);
+
+	auto state = new bool(true);
+	auto ledder = new ThreadedClosure([state](){
+		*state = !*state;
+		aw9523->dim(7, *state * 100);
+		delayMillis(1000);
+	}, "asd", 5000);
+	ledder->start();
+
 	for(auto pin : { EXP_HEADLIGHT_1, EXP_HEADLIGHT_2 }){
 		aw9523->pinMode(pin, AW9523::LED);
 		aw9523->dim(pin, 0);
