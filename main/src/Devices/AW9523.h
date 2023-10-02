@@ -7,11 +7,6 @@ class AW9523 {
 public:
 	AW9523(I2C& i2c, uint8_t addr = 0x58);
 
-	/**
-	 * Sends a software reset. Blocks for 50us after I2C transmission ends.
-	 */
-	void reset();
-
 	enum PinMode { IN, OUT, LED };
 
 	/**
@@ -75,7 +70,7 @@ private:
 	static const uint8_t dimmap[16];
 
 	struct Regs {
-		uint8_t conf = 0b00010000;
+		uint8_t conf = 0b00000000;
 		uint8_t dir[2] = { 0, 0 };
 		uint8_t output[2] = { 0, 0 };
 		uint8_t intr[2] = { 0, 0 };
@@ -86,6 +81,7 @@ private:
 	uint8_t readReg(uint8_t reg) const;
 	void writeReg(uint8_t reg, const uint8_t* data, size_t size) const;
 	void writeReg(uint8_t reg, uint8_t data) const;
+
 };
 
 

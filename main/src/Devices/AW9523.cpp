@@ -32,19 +32,29 @@ AW9523::AW9523(I2C& i2c, uint8_t addr) : i2c(i2c), Addr(addr){
 		return;
 	}
 
-	reset();
-	delayMillis(1);
+	// Reset
+	writeReg(REG_RESET, VAL_RESET);
+	regs = Regs();
+
+	delayMicros(50);
 
 	uint8_t id = readReg(REG_ID);
 	if(id != VAL_ID){
 		ESP_LOGE(TAG, "ID missmatch: expected %d, got %d", VAL_ID, id);
 		return;
 	}
-}
 
-void AW9523::reset(){
-	writeReg(REG_RESET, VAL_RESET);
-	regs = Regs();
+	// All input
+	regs.dir[0] = regs.dir[1] = 0xff;
+	writeReg(REG_DIR, regs.dir, 2);
+
+	// Push-pull mode for port 0
+	regs.conf |= 0b00010000;
+	writeReg(REG_CONF, regs.conf);
+
+	// Disable interrupts
+	regs.intr[0] = regs.intr[1] = 0xff;
+	writeReg(REG_INTR, regs.intr, 2);
 }
 
 void AW9523::pinMode(uint8_t pin, AW9523::PinMode mode){
