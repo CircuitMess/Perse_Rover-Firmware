@@ -8,6 +8,7 @@
 #include "Pins.hpp"
 #include "Periph/WiFiAP.h"
 #include "Periph/I2C.h"
+#include "Periph/SPIFFS.h"
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
@@ -26,6 +27,8 @@ void init(){
 		ret = nvs_flash_init();
 	}
 	ESP_ERROR_CHECK(ret);
+
+	auto spiffs = new SPIFFS();
 
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);
