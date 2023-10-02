@@ -34,10 +34,14 @@
 #define CAM_PIN_HREF    35
 #define CAM_PIN_PCLK    34
 
+#define I2S_BCLK 7
+#define I2S_LRCLK 8
+#define I2S_DOUT 6
 
 //AW9523 pins:
 #define EXP_CAM_PWDN 0
 #define EXP_BTN_PAIR 1
+#define EXP_SD_ENABLE 2
 
 
 #endif //BIT_LIBRARY_PINS_HPP

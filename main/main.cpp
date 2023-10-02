@@ -12,7 +12,7 @@
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
-
+#include "Services/Audio.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -37,6 +37,9 @@ void init(){
 
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
+
+	auto audio = new Audio(*aw9523);
+	Services.set(Service::Audio, audio);
 
 	auto input = new Input(*aw9523);
 

@@ -1,6 +1,9 @@
 [submodule "main/lib/glm"]
 	path = main/lib/glm
 	url = https://github.com/g-truc/glm.git
+[submodule "main/lib/dr_libs"]
+	path = main/lib/dr_libs
+	url = https://github.com/mackron/dr_libs.git
 [submodule "components/esp32-camera"]
 	path = components/esp32-camera
 	url = https://github.com/espressif/esp32-camera
