@@ -34,6 +34,11 @@
 #define CAM_PIN_HREF    35
 #define CAM_PIN_PCLK    34
 
+#define A_CTRL_1 11
+#define A_CTRL_2 10
+#define B_CTRL_1 2
+#define B_CTRL_2 4
+
 
 //AW9523 pins:
 #define EXP_CAM_PWDN 0
