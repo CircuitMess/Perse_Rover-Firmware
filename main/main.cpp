@@ -3,12 +3,16 @@
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_log.h>
-#include "Pins.hpp"
-#include "Util/stdafx.h"
-#include "Periph/WiFiAP.h"
-#include "Services/TCPServer.h"
 #include "Util/Services.h"
-
+#include "Util/stdafx.h"
+#include "Pins.hpp"
+#include "Periph/WiFiAP.h"
+#include "Periph/I2C.h"
+#include "Periph/SPIFFS.h"
+#include "Devices/Input.h"
+#include "Devices/AW9523.h"
+#include "Services/TCPServer.h"
+#include "Services/Audio.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -24,10 +28,20 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
+	auto spiffs = new SPIFFS();
+
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);
+
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+
+	auto audio = new Audio(*aw9523);
+	Services.set(Service::Audio, audio);
+
+	auto input = new Input(*aw9523);
 
 }
 
