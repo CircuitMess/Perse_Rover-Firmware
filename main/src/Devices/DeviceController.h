@@ -2,7 +2,10 @@
 #define PERSE_ROVER_DEVICECONTROLLER_H
 
 #include <optional>
+#include <functional>
+#include <string>
 #include "Util/Events.h"
+#include "Util/Threaded.h"
 
 enum DeviceControlType{
     Remote,
@@ -12,7 +15,7 @@ enum DeviceControlType{
 template <typename T>
 class DeviceController{
 public:
-    DeviceController() : control(Remote), eventQueue(10), dcListenThread(std::function(std::bind(&DeviceController::processCommandQueue, this)), "Device Controller Event Thread"){
+    explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function(std::bind(&DeviceController::processCommandQueue, this)), name.c_str()){
         Events::listen(Facility::Comm, &eventQueue);
     }
 
