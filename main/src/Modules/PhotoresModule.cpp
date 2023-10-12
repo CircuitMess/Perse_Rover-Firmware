@@ -1,6 +1,6 @@
 #include "PhotoresModule.h"
 
-PhotoresModule::PhotoresModule(ModuleBus bus) : adc(bus == ModuleBus::Bus_A ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1, ADC_ATTEN_DB_6){
+PhotoresModule::PhotoresModule(ModuleBus bus) : adc(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1, ADC_ATTEN_DB_6){
 
 }
 

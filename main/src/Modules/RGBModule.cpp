@@ -1,6 +1,6 @@
 #include "RGBModule.h"
 
-RGBModule::RGBModule(ModuleBus bus) : rgb(3, bus == ModuleBus::Bus_A ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1){
+RGBModule::RGBModule(ModuleBus bus) : rgb(3, bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1){
 
 }
 

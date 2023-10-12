@@ -2,7 +2,21 @@
 #include "Util/Events.h"
 #include <driver/gpio.h>
 
-Modules::Modules(ShiftReg& shiftReg) : SleepyThreaded(CheckInterval, "Modules", 2 * 1024, 5, 1), shiftReg(shiftReg){
+const std::map<uint8_t, ModuleType> Modules::AddressMap = {
+		{ 10, ModuleType::LED },
+		{ 11, ModuleType::RGB },
+		{ 12, ModuleType::PhotoRes },
+		{ 13, ModuleType::Motion },
+		{ 14, ModuleType::CO2 }
+};
+
+const std::map<uint8_t, ModuleType> Modules::I2CAddressMap = {
+		{ 0x38, ModuleType::TempHum },
+		{ 0x18, ModuleType::Gyro },
+		{ 0x76, ModuleType::AltPress }
+};
+
+Modules::Modules(ShiftReg& shiftReg, I2C& i2c) : SleepyThreaded(CheckInterval, "Modules", 2 * 1024, 5, 1), shiftReg(shiftReg), i2c(i2c){
 	Modules::sleepyLoop();
 	start();
 }
@@ -11,15 +25,15 @@ Modules::~Modules(){
 	stop();
 }
 
-Module Modules::getInserted(ModuleBus bus){
+ModuleType Modules::getInserted(ModuleBus bus){
 	auto& context = getContext(bus);
-	if(!context.inserted) return Module::COUNT;
-	return (Module) context.current;
+	if(!context.inserted) return ModuleType::Unknown;
+	return (ModuleType) context.current;
 }
 
 void Modules::sleepyLoop(){
-	loopCheck(ModuleBus::Bus_A);
-	loopCheck(ModuleBus::Bus_B);
+	loopCheck(ModuleBus::Left);
+	loopCheck(ModuleBus::Right);
 }
 
 bool Modules::checkInserted(ModuleBus bus){
@@ -31,23 +45,42 @@ bool Modules::checkInserted(ModuleBus bus){
 	return det1 == 0 && det2 == 1;
 }
 
-uint8_t Modules::checkAddr(ModuleBus bus){
+ModuleType Modules::checkAddr(ModuleBus bus){
 	auto& context = getContext(bus);
 	uint8_t addr = 0;
 	for(int i = 0; i < 6; i++){
-		auto state = gpio_get_level((gpio_num_t) context.AddrPins[i]);
+		auto state = shiftReg.get(context.AddrPins[i]);
 		if(state){
 			addr |= 1 << i;
 		}
 	}
-	return addr;
+
+	printf("addr: %d\n", addr);
+
+	auto& oppositeContext = getContext(bus == ModuleBus::Left ? ModuleBus::Right : ModuleBus::Left);
+
+	if(addr != I2CModuleAddress){
+		if(!AddressMap.contains(addr)){
+			return ModuleType::Unknown;
+		}
+		return AddressMap.at(addr);
+	}
+
+	for(auto& pair : I2CAddressMap){
+		if(oppositeContext.current == pair.second) continue;
+
+		if(i2c.probe(pair.first) == ESP_OK){
+			return pair.second;
+		}
+	}
+	return ModuleType::Unknown;
 }
 
 Modules::BusContext& Modules::getContext(ModuleBus bus){
-	if(bus == ModuleBus::Bus_A){
-		return A_context;
+	if(bus == ModuleBus::Left){
+		return LeftContext;
 	}else{
-		return B_context;
+		return RightContext;
 	}
 }
 
@@ -58,19 +91,16 @@ void Modules::loopCheck(ModuleBus bus){
 
 	if(context.inserted && !nowInserted){
 		context.inserted = false;
-		context.current = -1;
+		auto removed = context.current;
+		context.current = ModuleType::Unknown;
 
-		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus });
+		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
 	}else if(!context.inserted && nowInserted){
-		uint8_t addr = checkAddr(bus);
-		if(addr >= (uint8_t) Module::COUNT){
-			// Unknown module
-			addr = (uint8_t) Module::COUNT;
-		}
+		ModuleType addr = checkAddr(bus);
 
 		context.current = addr;
 		context.inserted = true;
 
-		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = Module(context.current) });
+		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
 	}
 }

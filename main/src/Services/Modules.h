@@ -1,20 +1,16 @@
 #ifndef BIT_FIRMWARE_ROBOTS_H
 #define BIT_FIRMWARE_ROBOTS_H
 
+#include <map>
 #include "Util/Threaded.h"
 #include "Pins.hpp"
 #include "Devices/ShiftReg.h"
+#include "CommData.h"
 
-enum class Module : uint8_t {
-	Gyro, RGB, AltPress, TempHum, PhotoRes, LED, CO2, Motion, COUNT
-};
-enum class ModuleBus : uint8_t {
-	Bus_A = 0, Bus_B = 1
-};
 
 class Modules : private SleepyThreaded {
 public:
-	Modules(ShiftReg& shiftReg);
+	Modules(ShiftReg& shiftReg, I2C& i2c);
 	~Modules() override;
 
 	struct Event {
@@ -22,13 +18,14 @@ public:
 			Insert, Remove
 		} action;
 		ModuleBus bus;
-		Module module;
+		ModuleType module;
 	};
 
-	Module getInserted(ModuleBus bus);
+	ModuleType getInserted(ModuleBus bus);
 
 private:
 	ShiftReg& shiftReg;
+	I2C& i2c;
 
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 
@@ -37,24 +34,28 @@ private:
 		const uint8_t DetPins[2];
 
 		bool inserted;
-		uint8_t current;
+		ModuleType current;
 	};
 
-	BusContext A_context = { { SHIFT_A_ADDR_1, SHIFT_A_ADDR_2, SHIFT_A_ADDR_3, SHIFT_A_ADDR_4, SHIFT_A_ADDR_5, SHIFT_A_ADDR_6 },
-							 { SHIFT_A_DET_1, SHIFT_A_DET_2 },
-							 false, 255 };
-	BusContext B_context = { { SHIFT_B_ADDR_1, SHIFT_B_ADDR_2, SHIFT_B_ADDR_3, SHIFT_B_ADDR_4, SHIFT_B_ADDR_5, SHIFT_B_ADDR_6 },
-							 { SHIFT_B_DET_1, SHIFT_B_DET_2 },
-							 false, 255 };
+	BusContext LeftContext = { { SHIFT_A_ADDR_1, SHIFT_A_ADDR_2, SHIFT_A_ADDR_3, SHIFT_A_ADDR_4, SHIFT_A_ADDR_5, SHIFT_A_ADDR_6 },
+							   { SHIFT_A_DET_1, SHIFT_A_DET_2 },
+							   false, ModuleType::Unknown };
+	BusContext RightContext = { { SHIFT_B_ADDR_1, SHIFT_B_ADDR_2, SHIFT_B_ADDR_3, SHIFT_B_ADDR_4, SHIFT_B_ADDR_5, SHIFT_B_ADDR_6 },
+								{ SHIFT_B_DET_1, SHIFT_B_DET_2 },
+								false, ModuleType::Unknown };
 
 	void sleepyLoop() override;
 
 	bool checkInserted(ModuleBus bus);
-	uint8_t checkAddr(ModuleBus bus);
+	ModuleType checkAddr(ModuleBus bus);
 
 	BusContext& getContext(ModuleBus bus);
 
 	void loopCheck(ModuleBus bus);
+
+	static const std::map<uint8_t, ModuleType> AddressMap;
+	static const std::map<uint8_t, ModuleType> I2CAddressMap;
+	static constexpr uint8_t I2CModuleAddress = 63;
 
 //	static constexpr uint8_t TesterBobAddr = Module::Bob | 0b00100000;
 

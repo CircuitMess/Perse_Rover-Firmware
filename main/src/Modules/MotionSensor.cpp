@@ -2,7 +2,7 @@
 #include <driver/gpio.h>
 #include "esp_log.h"
 
-MotionSensor::MotionSensor(ModuleBus bus) : pin(bus == ModuleBus::Bus_A ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1){
+MotionSensor::MotionSensor(ModuleBus bus) : pin(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1){
 	gpio_config_t io_conf = {
 			.pin_bit_mask = 1ULL << pin,
 			.mode = GPIO_MODE_INPUT,

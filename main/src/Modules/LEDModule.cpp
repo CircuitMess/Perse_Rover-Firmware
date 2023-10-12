@@ -1,6 +1,6 @@
 #include "LEDModule.h"
 
-LEDModule::LEDModule(ModuleBus bus) : pinout(bus == ModuleBus::Bus_A ? A_CTRL_1 : B_CTRL_1, false){
+LEDModule::LEDModule(ModuleBus bus) : pinout(bus == ModuleBus::Left ? A_CTRL_1 : B_CTRL_1, false){
 
 }
 
