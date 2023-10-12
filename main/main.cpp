@@ -13,6 +13,7 @@
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
+#include "Devices/DeviceController.h"
 
 void init(){
 	gpio_config_t cfg = {
