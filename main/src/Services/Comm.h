@@ -12,7 +12,7 @@ public:
 		CommType type;
 		union {
 			DriveDir dir;
-            HeadlightsMode headlights;
+			HeadlightsMode headlights;
 		};
 		uint8_t raw;
 	};
