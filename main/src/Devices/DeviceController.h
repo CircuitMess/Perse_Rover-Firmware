@@ -26,9 +26,9 @@ public:
 
     inline void setControl(DeviceControlType value){
         if (control == Local && value == Remote){
-            const T& state = getDefaultState();
+            T state = getDefaultState();
             if (queuedState.has_value()){
-                state = queuedState;
+                state = queuedState.value();
                 queuedState.reset();
             }
 
