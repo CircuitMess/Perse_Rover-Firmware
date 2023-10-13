@@ -12,12 +12,15 @@ public:
 		CommType type;
 		union {
 			DriveDir dir;
+            HeadlightsMode headlights;
 		};
 		uint8_t raw;
 	};
 
 	Comm();
 	~Comm() override;
+
+    void sendHeadlightsState(HeadlightsMode headlights);
 
 private:
 	TCPServer& tcp;

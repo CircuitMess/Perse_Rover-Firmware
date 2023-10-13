@@ -11,6 +11,15 @@ Comm::~Comm(){
 	stop();
 }
 
+void Comm::sendHeadlightsState(HeadlightsMode headlights) {
+    const ControlPacket packet = {
+            .type = CommType::Headlights,
+            .data = (uint8_t)headlights
+    };
+
+    sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -37,13 +46,23 @@ void Comm::loop(){
 }
 
 Comm::Event Comm::processPacket(const ControlPacket& packet){
-	Event e{};
-	e.raw = packet.data;
-	e.type = packet.type;
-	switch(packet.type){
-		case CommType::DriveDir:
-			e.dir = CommData::decodeDriveDir(packet.data);
-			break;
+	Event e{
+        .type = packet.type,
+        .raw = packet.data
+    };
+
+	switch(packet.type) {
+		case CommType::DriveDir: {
+            e.dir = CommData::decodeDriveDir(packet.data);
+            break;
+        }
+        case CommType::Headlights: {
+            e.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+            break;
+        }
+        default: {
+            break;
+        }
 	}
 
 	return e;

@@ -13,7 +13,8 @@
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
-#include "Devices/DeviceController.h"
+#include "Devices/HeadlightsController.h"
+#include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -44,6 +45,10 @@ void init(){
 
 	auto input = new Input(*aw9523);
 
+    auto comm = new Comm();
+    Services.set(Service::Comm, comm);
+
+    auto headlightsController = new HeadlightsController(aw9523);
 }
 
 extern "C" void app_main(void){

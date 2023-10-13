@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <functional>
+#include <string>
 #include "Util/Events.h"
 #include "Util/Threaded.h"
 
@@ -14,7 +15,7 @@ enum DeviceControlType{
 template <typename T>
 class DeviceController{
 public:
-    DeviceController() : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), "Device Controller Event Thread"){
+    explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
         Events::listen(Facility::Comm, &eventQueue);
     }
 
@@ -25,9 +26,9 @@ public:
 
     inline void setControl(DeviceControlType value){
         if (control == Local && value == Remote){
-            const T& state = getDefaultState();
+            T state = getDefaultState();
             if (queuedState.has_value()){
-                state = queuedState;
+                state = queuedState.value();
                 queuedState.reset();
             }
 
