@@ -8,78 +8,78 @@
 #include "Util/Threaded.h"
 
 enum DeviceControlType{
-    Remote,
-    Local,
+	Remote,
+	Local,
 };
 
 template <typename T>
 class DeviceController{
 public:
-    explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
-        Events::listen(Facility::Comm, &eventQueue);
-    }
+	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
+		Events::listen(Facility::Comm, &eventQueue);
+	}
 
-    virtual ~DeviceController(){
-        dcListenThread.stop();
-        Events::unlisten(&eventQueue);
-    }
+	virtual ~DeviceController(){
+		dcListenThread.stop();
+		Events::unlisten(&eventQueue);
+	}
 
     inline void setControl(DeviceControlType value){
-        if (control == Local && value == Remote){
-            T state = getDefaultState();
-            if (queuedState.has_value()){
-                state = queuedState.value();
-                queuedState.reset();
-            }
+		if (control == Local && value == Remote){
+			T state = getDefaultState();
+			if (queuedState.has_value()){
+				state = queuedState.value();
+				queuedState.reset();
+			}
 
-            write(state);
-            sendState(state);
-        }
+			write(state);
+			sendState(state);
+		}
 
-        control = value;
-    }
+		control = value;
+	}
 
-    inline void setLocally(const T& state){
-        if (control == Remote){
-            return;
-        }
+	inline void setLocally(const T& state){
+		if (control == Remote){
+			return;
+		}
 
-        write(state);
-    }
+		write(state);
+	}
 
 protected:
-    virtual void write(const T& state) = 0;
-    virtual T getDefaultState() const = 0;
-    virtual void sendState(const T& state) const = 0;
-    virtual T processStateFromEvent(const Event& event) const = 0;
+	virtual void write(const T& state) = 0;
+	virtual T getDefaultState() const = 0;
+	virtual void sendState(const T& state) const = 0;
+	virtual T processStateFromEvent(const Event& event) const = 0;
 
-    inline void setRemotely(const T& state){
-        if (control == Local){
-            queuedState = state;
-            return;
-        }
+	inline void setRemotely(const T& state){
+		if (control == Local){
+			queuedState = state;
+			return;
+		}
 
-        write(state);
-        sendState(state);
-    }
-
-private:
-    DeviceControlType control;
-    std::optional<T> queuedState;
-    EventQueue eventQueue;
-    ThreadedClosure dcListenThread;
+		write(state);
+		sendState(state);
+	}
 
 private:
-    void processCommandQueue(){
-        Event event = {};
-        if (!eventQueue.get(event, portMAX_DELAY))
-        {
-            vTaskDelay(1);
-            return;
-        }
+	DeviceControlType control;
+	std::optional<T> queuedState;
+	EventQueue eventQueue;
+	ThreadedClosure dcListenThread;
 
-        setRemotely(processStateFromEvent(event));
-    }
+private:
+	void processCommandQueue(){
+		Event event = {};
+		if (!eventQueue.get(event, portMAX_DELAY))
+		{
+			vTaskDelay(1);
+			return;
+		}
+
+		setRemotely(processStateFromEvent(event));
+	}
 };
 
 #endif //PERSE_ROVER_DEVICECONTROLLER_H

@@ -12,12 +12,12 @@ Comm::~Comm(){
 }
 
 void Comm::sendHeadlightsState(HeadlightsMode headlights) {
-    const ControlPacket packet = {
-            .type = CommType::Headlights,
-            .data = (uint8_t)headlights
-    };
+	const ControlPacket packet = {
+			.type = CommType::Headlights,
+			.data = (uint8_t)headlights
+	};
 
-    sendPacket(packet);
+	sendPacket(packet);
 }
 
 void Comm::sendPacket(const ControlPacket& packet){
@@ -47,22 +47,22 @@ void Comm::loop(){
 
 Comm::Event Comm::processPacket(const ControlPacket& packet){
 	Event e{
-        .type = packet.type,
-        .raw = packet.data
-    };
+		.type = packet.type,
+		.raw = packet.data
+	};
 
 	switch(packet.type) {
 		case CommType::DriveDir: {
-            e.dir = CommData::decodeDriveDir(packet.data);
-            break;
-        }
-        case CommType::Headlights: {
-            e.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
-            break;
-        }
-        default: {
-            break;
-        }
+			e.dir = CommData::decodeDriveDir(packet.data);
+			break;
+		}
+		case CommType::Headlights: {
+			e.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			break;
+		}
+		default: {
+			break;
+		}
 	}
 
 	return e;

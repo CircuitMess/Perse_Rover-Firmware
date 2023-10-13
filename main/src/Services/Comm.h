@@ -20,7 +20,7 @@ public:
 	Comm();
 	~Comm() override;
 
-    void sendHeadlightsState(HeadlightsMode headlights);
+	void sendHeadlightsState(HeadlightsMode headlights);
 
 private:
 	TCPServer& tcp;
