@@ -22,7 +22,7 @@ void Comm::sendHeadlightsState(HeadlightsMode headlights) {
 
 void Comm::sendArmPositionState(ArmPos position) {
 	const ControlPacket packet = {
-			.type = CommType::Headlights,
+			.type = CommType::ArmPosition,
 			.data = (uint8_t)position
 	};
 
@@ -31,7 +31,7 @@ void Comm::sendArmPositionState(ArmPos position) {
 
 void Comm::sendArmPinchState(ArmPinch pinch) {
 	const ControlPacket packet = {
-			.type = CommType::Headlights,
+			.type = CommType::ArmPinch,
 			.data = (uint8_t)(pinch)
 	};
 
@@ -86,6 +86,7 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 		case CommType::ArmPinch: {
 			e.armPos = -1;
 			e.armPinch = (ArmPinch)packet.data;
+			break;
 		}
 		default: {
 			break;
