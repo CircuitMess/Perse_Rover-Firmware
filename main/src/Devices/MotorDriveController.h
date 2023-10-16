@@ -9,7 +9,7 @@ struct MotorDriveState
 	DriveDir DriveDirection = {};
 };
 
-class MotorDriveController : DeviceController<MotorDriveState>
+class MotorDriveController : public DeviceController<MotorDriveState>
 {
 public:
 	explicit MotorDriveController();
