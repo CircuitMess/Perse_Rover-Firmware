@@ -10,8 +10,7 @@ static const char* const TAG = "HeadlightsController";
 CameraController::CameraController() : DeviceController("CameraController") {
 	cameraServo = new Servo((gpio_num_t)SERVO_3_PWM, 0);
 
-	if (cameraServo == nullptr)
-	{
+	if (cameraServo == nullptr) {
 		ESP_LOGW(TAG, "Camera controller created with invalid servo device.");
 		return;
 	}
@@ -24,8 +23,7 @@ CameraController::CameraController() : DeviceController("CameraController") {
 }
 
 CameraController::~CameraController() {
-	if (cameraServo == nullptr)
-	{
+	if (cameraServo == nullptr) {
 		return;
 	}
 
