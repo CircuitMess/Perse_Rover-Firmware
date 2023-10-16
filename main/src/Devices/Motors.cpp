@@ -8,7 +8,7 @@ MotorControl::MotorControl(const std::array<ledc_channel_t, 4>& pwmChannels) :
 		Threaded("Motors", 4 * 1024),
 		pwm({ MOTOR_FL_A, pwmChannels[0] }, { MOTOR_FR_A, pwmChannels[1] }, { MOTOR_BL_A, pwmChannels[2] }, { MOTOR_BR_A, pwmChannels[3] }),
 		digitalPins({ MOTOR_FL_B }, { MOTOR_FR_B }, { MOTOR_BL_A }, { MOTOR_BR_B }){
-
+	begin();
 }
 
 void MotorControl::begin(){

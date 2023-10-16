@@ -14,12 +14,14 @@
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
 #include "Devices/HeadlightsController.h"
+#include "Devices/Motors.h"
+#include "Devices/MotorDriveController.h"
 #include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
-			.pin_bit_mask = 0,
-			.mode = GPIO_MODE_INPUT
+			.pin_bit_mask = MOTOR_BL_A | MOTOR_BR_A | MOTOR_BL_B | MOTOR_BR_B | MOTOR_FL_A | MOTOR_FL_B | MOTOR_FR_A | MOTOR_FR_B,
+			.mode = GPIO_MODE_OUTPUT
 	};
 	gpio_config(&cfg);
 
@@ -49,6 +51,8 @@ void init(){
 	Services.set(Service::Comm, comm);
 
 	auto headlightsController = new HeadlightsController(aw9523);
+
+	auto motorDriveController = new MotorDriveController();
 }
 
 extern "C" void app_main(void){
