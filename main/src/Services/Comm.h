@@ -13,8 +13,10 @@ public:
 		union {
 			DriveDir dir;
 			HeadlightsMode headlights;
-			ArmPos armPos;
-			ArmPinch armPinch;
+			struct {
+				ArmPos armPos;
+				ArmPinch armPinch;
+			};
 		};
 		uint8_t raw;
 	};
