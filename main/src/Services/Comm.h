@@ -13,6 +13,8 @@ public:
 		union {
 			DriveDir dir;
 			HeadlightsMode headlights;
+			ArmPos armPos;
+			ArmPinch armPinch;
 		};
 		uint8_t raw;
 	};
@@ -21,6 +23,8 @@ public:
 	~Comm() override;
 
 	void sendHeadlightsState(HeadlightsMode headlights);
+	void sendArmPositionState(ArmPos position);
+	void sendArmPinchState(ArmPinch pinch);
 
 private:
 	TCPServer& tcp;
