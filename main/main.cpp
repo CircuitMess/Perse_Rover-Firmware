@@ -20,8 +20,8 @@
 
 void init(){
 	gpio_config_t cfg = {
-			.pin_bit_mask = MOTOR_BL_A | MOTOR_BR_A | MOTOR_BL_B | MOTOR_BR_B | MOTOR_FL_A | MOTOR_FL_B | MOTOR_FR_A | MOTOR_FR_B,
-			.mode = GPIO_MODE_OUTPUT
+			.pin_bit_mask = 0,
+			.mode = GPIO_MODE_INPUT
 	};
 	gpio_config(&cfg);
 
