@@ -17,6 +17,7 @@ public:
 				ArmPos armPos;
 				ArmPinch armPinch;
 			};
+			CameraRotation cameraRotation;
 		};
 		uint8_t raw;
 	};
@@ -27,6 +28,7 @@ public:
 	void sendHeadlightsState(HeadlightsMode headlights);
 	void sendArmPositionState(ArmPos position);
 	void sendArmPinchState(ArmPinch pinch);
+	void sendCameraState(CameraRotation rotation);
 
 private:
 	TCPServer& tcp;
