@@ -13,6 +13,7 @@
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
+#include "Devices/Battery.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -43,6 +44,7 @@ void init(){
 
 	auto input = new Input(*aw9523);
 
+	auto battery = new Battery();
 }
 
 extern "C" void app_main(void){
