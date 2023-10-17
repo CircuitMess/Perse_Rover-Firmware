@@ -17,6 +17,7 @@ class DeviceController{
 public:
 	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
 		Events::listen(Facility::Comm, &eventQueue);
+		dcListenThread.start();
 	}
 
 	virtual ~DeviceController(){
@@ -51,7 +52,7 @@ protected:
 	virtual void write(const T& state) = 0;
 	virtual T getDefaultState() const = 0;
 	virtual void sendState(const T& state) const = 0;
-	virtual T processStateFromEvent(const Event& event) const = 0;
+	virtual T processEvent(const Event& event) const = 0;
 
 	inline void setRemotely(const T& state){
 		if (control == Local){
@@ -74,11 +75,20 @@ private:
 		Event event = {};
 		if (!eventQueue.get(event, portMAX_DELAY))
 		{
-			vTaskDelay(1);
 			return;
 		}
 
-		setRemotely(processStateFromEvent(event));
+		if (event.facility != Facility::Comm) {
+			return;
+		}
+
+		processEvent(event);
+
+		if (event.data == nullptr) {
+			return;
+		}
+
+		free(event.data);
 	}
 };
 
