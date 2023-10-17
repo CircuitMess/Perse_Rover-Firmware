@@ -52,7 +52,7 @@ protected:
 	virtual void write(const T& state) = 0;
 	virtual T getDefaultState() const = 0;
 	virtual void sendState(const T& state) const = 0;
-	virtual void processEvent(const Event& event) const = 0;
+	virtual void processEvent(const Event& event) = 0;
 
 	inline void setRemotely(const T& state){
 		if (control == Local){
