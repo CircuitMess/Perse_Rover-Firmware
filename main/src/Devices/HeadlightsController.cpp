@@ -3,8 +3,6 @@
 #include "Services/Comm.h"
 #include "Util/Services.h"
 
-static const char* const TAG = "HeadlightsController";
-
 HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("Headlights Controller"), aw9523(aw9523){
 	aw9523.pinMode(EXP_HEADLIGHT_1, AW9523::LED);
 	aw9523.pinMode(EXP_HEADLIGHT_2, AW9523::LED);
