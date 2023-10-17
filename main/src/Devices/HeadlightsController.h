@@ -3,6 +3,7 @@
 
 #include "DeviceController.h"
 #include "CommData.h"
+#include "AW9523.h"
 
 struct HeadlightsState
 {
@@ -12,7 +13,7 @@ struct HeadlightsState
 class HeadlightsController : public DeviceController<HeadlightsState>
 {
 public:
-	explicit HeadlightsController(class AW9523* aw9523);
+	explicit HeadlightsController(AW9523& aw9523);
 	virtual ~HeadlightsController() override = default;
 
 protected:
@@ -22,7 +23,7 @@ protected:
 	virtual void processEvent(const Event& event) override;
 
 private:
-	AW9523* aw9523 = nullptr;
+	AW9523& aw9523;
 };
 
 #endif //PERSE_ROVER_HEADLIGHTSCONTROLLER_H
