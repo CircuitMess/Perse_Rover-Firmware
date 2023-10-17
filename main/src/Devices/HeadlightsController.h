@@ -19,7 +19,7 @@ protected:
 	virtual void write(const HeadlightsState& state) override;
 	virtual HeadlightsState getDefaultState() const override;
 	virtual void sendState(const HeadlightsState& state) const override;
-	virtual HeadlightsState processStateFromEvent(const Event& event) const override;
+	virtual void processEvent(const Event& event) override;
 
 private:
 	AW9523* aw9523 = nullptr;

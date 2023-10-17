@@ -46,15 +46,19 @@ void HeadlightsController::sendState(const HeadlightsState& state) const{
 	comm->sendHeadlightsState(state.Mode);
 }
 
-HeadlightsState HeadlightsController::processStateFromEvent(const Event& event) const{
+void HeadlightsController::processEvent(const Event& event) {
 	auto* commEvent = (Comm::Event*)event.data;
 	if (commEvent == nullptr){
-		return getDefaultState();
+		return;
+	}
+
+	if (commEvent->type != CommType::Headlights) {
+		return;
 	}
 
 	HeadlightsState state = {
 			.Mode = commEvent->headlights
 	};
 
-	return state;
+	setRemotely(state);
 }
