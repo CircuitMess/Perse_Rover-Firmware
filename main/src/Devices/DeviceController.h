@@ -6,6 +6,7 @@
 #include <string>
 #include "Util/Events.h"
 #include "Util/Threaded.h"
+#include "Services/TCPServer.h"
 
 enum DeviceControlType{
 	Remote,
@@ -17,6 +18,7 @@ class DeviceController{
 public:
 	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
 		Events::listen(Facility::Comm, &eventQueue);
+		Events::listen(Facility::TCP, &eventQueue);
 		dcListenThread.start();
 	}
 
@@ -78,11 +80,18 @@ private:
 			return;
 		}
 
-		if (event.facility != Facility::Comm) {
-			return;
+		if (event.facility == Facility::TCP) {
+			if (auto* tcpEvent = (TCPServer::Event*)event.data) {
+				if (tcpEvent->status == TCPServer::Event::Status::Disconnected) {
+					setControl(DeviceControlType::Local);
+					setLocally(getDefaultState());
+					setControl(DeviceControlType::Remote);
+				}
+			}
 		}
-
-		processEvent(event);
+		else if (event.facility != Facility::Comm) {
+			processEvent(event);
+		}
 
 		if (event.data == nullptr) {
 			return;
