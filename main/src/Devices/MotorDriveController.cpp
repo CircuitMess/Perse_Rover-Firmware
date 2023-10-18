@@ -84,7 +84,7 @@ void MotorDriveController::processEvent(const Event &event) {
 	}
 
 	MotorDriveState state = {
-			.DriveDirection = commEvent->dir;
+			.DriveDirection = commEvent->dir
 	};
 
 	setRemotely(state);
