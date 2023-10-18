@@ -6,11 +6,12 @@
 #include "Pins.hpp"
 #include "Devices/ShiftReg.h"
 #include "CommData.h"
+#include "Comm.h"
 
 
 class Modules : private SleepyThreaded {
 public:
-	Modules(ShiftReg& shiftReg, I2C& i2c);
+	Modules(ShiftReg& shiftReg, I2C& i2c, Comm& comm);
 	~Modules() override;
 
 	struct Event {
@@ -23,9 +24,12 @@ public:
 
 	ModuleType getInserted(ModuleBus bus);
 
+	static constexpr TickType_t ModuleSendInterval = 200;
+
 private:
 	ShiftReg& shiftReg;
 	I2C& i2c;
+	Comm& comm;
 
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 
@@ -35,14 +39,15 @@ private:
 
 		bool inserted;
 		ModuleType current;
+		void* moduleInstance;
 	};
 
-	BusContext LeftContext = { { SHIFT_A_ADDR_1, SHIFT_A_ADDR_2, SHIFT_A_ADDR_3, SHIFT_A_ADDR_4, SHIFT_A_ADDR_5, SHIFT_A_ADDR_6 },
+	BusContext leftContext = { { SHIFT_A_ADDR_1, SHIFT_A_ADDR_2, SHIFT_A_ADDR_3, SHIFT_A_ADDR_4, SHIFT_A_ADDR_5, SHIFT_A_ADDR_6 },
 							   { SHIFT_A_DET_1, SHIFT_A_DET_2 },
-							   false, ModuleType::Unknown };
-	BusContext RightContext = { { SHIFT_B_ADDR_1, SHIFT_B_ADDR_2, SHIFT_B_ADDR_3, SHIFT_B_ADDR_4, SHIFT_B_ADDR_5, SHIFT_B_ADDR_6 },
+							   false, ModuleType::Unknown, nullptr };
+	BusContext rightContext = { { SHIFT_B_ADDR_1, SHIFT_B_ADDR_2, SHIFT_B_ADDR_3, SHIFT_B_ADDR_4, SHIFT_B_ADDR_5, SHIFT_B_ADDR_6 },
 								{ SHIFT_B_DET_1, SHIFT_B_DET_2 },
-								false, ModuleType::Unknown };
+								false, ModuleType::Unknown, nullptr };
 
 	void sleepyLoop() override;
 

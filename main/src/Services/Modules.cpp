@@ -1,6 +1,25 @@
 #include "Modules.h"
 #include "Util/Events.h"
 #include <driver/gpio.h>
+#include "Modules/AltPressModule.h"
+#include "Modules/GyroModule.h"
+#include "Modules/TempHumModule.h"
+#include "Modules/LEDModule.h"
+#include "Modules/RGBModule.h"
+#include "Modules/PhotoResModule.h"
+#include "Modules/MotionSensor.h"
+#include "Modules/CO2Sensor.h"
+
+const std::map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus)>, std::function<void(void*)>>> ModuleConstrDestr = {
+		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus){ return new TempHumModule(i2c); },  [](void* instance){ delete (TempHumModule*) instance; } } },
+		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus){ return new GyroModule(i2c); },     [](void* instance){ delete (GyroModule*) instance; } } },
+		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus){ return new AltPressModule(i2c); }, [](void* instance){ delete (AltPressModule*) instance; } } },
+		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus){ return new LEDModule(bus); },      [](void* instance){ delete (LEDModule*) instance; } } },
+		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus){ return new RGBModule(bus); },      [](void* instance){ delete (RGBModule*) instance; } } },
+		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus){ return new PhotoresModule(bus); }, [](void* instance){ delete (PhotoresModule*) instance; } } },
+		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus){ return new MotionSensor(bus); },   [](void* instance){ delete (MotionSensor*) instance; } } },
+		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus){ return new CO2Sensor(bus); },      [](void* instance){ delete (CO2Sensor*) instance; } } }
+};
 
 const std::map<uint8_t, ModuleType> Modules::AddressMap = {
 		{ 10, ModuleType::LED },
@@ -16,13 +35,21 @@ const std::map<uint8_t, ModuleType> Modules::I2CAddressMap = {
 		{ 0x76, ModuleType::AltPress }
 };
 
-Modules::Modules(ShiftReg& shiftReg, I2C& i2c) : SleepyThreaded(CheckInterval, "Modules", 2 * 1024, 5, 1), shiftReg(shiftReg), i2c(i2c){
+Modules::Modules(ShiftReg& shiftReg, I2C& i2c, Comm& comm) : SleepyThreaded(CheckInterval, "Modules", 2 * 1024, 5, 1), shiftReg(shiftReg), i2c(i2c), comm(comm){
 	Modules::sleepyLoop();
 	start();
 }
 
 Modules::~Modules(){
 	stop();
+	if(ModuleConstrDestr.contains(leftContext.current)){
+		ModuleConstrDestr.at(leftContext.current).second(leftContext.moduleInstance);
+		leftContext.moduleInstance = nullptr;
+	}
+	if(ModuleConstrDestr.contains(rightContext.current)){
+		ModuleConstrDestr.at(rightContext.current).second(rightContext.moduleInstance);
+		rightContext.moduleInstance = nullptr;
+	}
 }
 
 ModuleType Modules::getInserted(ModuleBus bus){
@@ -78,9 +105,9 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 
 Modules::BusContext& Modules::getContext(ModuleBus bus){
 	if(bus == ModuleBus::Left){
-		return LeftContext;
+		return leftContext;
 	}else{
-		return RightContext;
+		return rightContext;
 	}
 }
 
@@ -95,6 +122,13 @@ void Modules::loopCheck(ModuleBus bus){
 		context.current = ModuleType::Unknown;
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
+		comm.sendModulePlug(removed, bus, context.inserted);
+
+		if(ModuleConstrDestr.contains(removed)){
+			ModuleConstrDestr.at(removed).second(context.moduleInstance);
+		}
+		context.moduleInstance = nullptr;
+
 	}else if(!context.inserted && nowInserted){
 		ModuleType addr = checkAddr(bus);
 
@@ -102,5 +136,10 @@ void Modules::loopCheck(ModuleBus bus){
 		context.inserted = true;
 
 		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
+		comm.sendModulePlug(context.current, bus, context.inserted);
+
+		if(ModuleConstrDestr.contains(context.current)){
+			ModuleConstrDestr.at(context.current).first(i2c, bus);
+		}
 	}
 }

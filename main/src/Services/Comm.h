@@ -19,6 +19,10 @@ public:
 	Comm();
 	~Comm() override;
 
+	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
+
+	void sendModuleData(ModuleData data);
+
 private:
 	TCPServer& tcp;
 	void loop() override;
@@ -26,6 +30,8 @@ private:
 	Event processPacket(const ControlPacket& packet);
 
 	EventQueue queue;
+
+	bool modulesEnabled = false;
 };
 
 

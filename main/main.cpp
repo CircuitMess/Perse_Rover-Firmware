@@ -13,6 +13,8 @@
 #include "Devices/AW9523.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
+#include "Services/Modules.h"
+#include "Services/Comm.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -42,6 +44,13 @@ void init(){
 	Services.set(Service::Audio, audio);
 
 	auto input = new Input(*aw9523);
+
+	auto shiftReg = new ShiftReg(*aw9523);
+
+	auto comm = new Comm();
+
+	auto modules = new Modules(*shiftReg, *i2c, *comm);
+	Services.set(Service::Modules, modules);
 
 }
 
