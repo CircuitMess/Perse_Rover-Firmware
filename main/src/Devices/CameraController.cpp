@@ -55,11 +55,19 @@ void CameraController::sendState(const CameraState &state) const {
 	comm->sendCameraState(state.Rotation);
 }
 
-CameraState CameraController::processStateFromEvent(const Event &event) const {
+void CameraController::processEvent(const Event &event) {
 	auto* commEvent = (Comm::Event*)event.data;
 	if (commEvent == nullptr) {
-		return getDefaultState();
+		return;
 	}
 
-	return CameraState{.Rotation = commEvent->cameraRotation};
+	if (commEvent->type != CommType::CameraRotation) {
+		return;
+	}
+
+	CameraState state = {
+			.Rotation = commEvent->cameraRotation
+	};
+
+	setRemotely(state);
 }

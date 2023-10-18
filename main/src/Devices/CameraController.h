@@ -19,7 +19,7 @@ protected:
 	virtual void write(const CameraState& state) override;
 	virtual CameraState getDefaultState() const override;
 	virtual void sendState(const CameraState& state) const override;
-	virtual CameraState processStateFromEvent(const Event& event) const override;
+	virtual void processEvent(const Event& event) override;
 
 private:
 	class Servo* cameraServo = nullptr;
