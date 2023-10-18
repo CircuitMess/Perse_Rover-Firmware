@@ -51,7 +51,7 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
 
-	auto headlightsController = new HeadlightsController(aw9523);
+	auto headlightsController = new HeadlightsController(*aw9523);
 
 	auto motorDriveController = new MotorDriveController();
 

@@ -9,7 +9,7 @@ struct MotorDriveState
 	DriveDir DriveDirection = {};
 };
 
-class MotorDriveController : DeviceController<MotorDriveState>
+class MotorDriveController : public DeviceController<MotorDriveState>
 {
 public:
 	explicit MotorDriveController();
@@ -19,7 +19,7 @@ protected:
 	virtual void write(const MotorDriveState& state) override;
 	virtual MotorDriveState getDefaultState() const override;
 	virtual void sendState(const MotorDriveState& state) const override;
-	virtual MotorDriveState processStateFromEvent(const Event& event) const override;
+	virtual void processEvent(const Event& event) override;
 
 private:
 	class MotorControl* motorControl = nullptr;
