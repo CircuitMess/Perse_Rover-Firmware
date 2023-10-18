@@ -11,14 +11,12 @@ MotorDriveController::MotorDriveController() : DeviceController("MotorDriveContr
 	setControl(DeviceControlType::Remote);
 }
 
-MotorDriveController::~MotorDriveController()
-{
+MotorDriveController::~MotorDriveController() {
 	delete motorControl;
 }
 
 void MotorDriveController::write(const MotorDriveState &state) {
-	if (motorControl == nullptr)
-	{
+	if (motorControl == nullptr) {
 		ESP_LOGW(TAG, "Motor drive controller has motor control = nullptr.");
 		return;
 	}
@@ -75,11 +73,19 @@ void MotorDriveController::sendState(const MotorDriveState &state) const {
 	// No need for Motor Drive to send state back at this time
 }
 
-MotorDriveState MotorDriveController::processStateFromEvent(const Event &event) const {
+void MotorDriveController::processEvent(const Event &event) {
 	auto* commEvent = (Comm::Event*)event.data;
 	if (commEvent == nullptr){
-		return getDefaultState();
+		return;
 	}
 
-	return {commEvent->dir};
+	if (commEvent->type != CommType::DriveDir) {
+		return;
+	}
+
+	MotorDriveState state = {
+			.DriveDirection = commEvent->dir
+	};
+
+	setRemotely(state);
 }

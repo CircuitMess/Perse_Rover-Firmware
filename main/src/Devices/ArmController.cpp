@@ -65,11 +65,20 @@ void ArmController::sendState(const ArmState& state) const {
 	comm->sendArmPinchState(state.Pinch);
 }
 
-ArmState ArmController::processStateFromEvent(const Event& event) const {
+void ArmController::processEvent(const Event& event) {
 	auto* commEvent = (Comm::Event*)event.data;
 	if (commEvent == nullptr) {
-		return getDefaultState();
+		return;
 	}
 
-	return ArmState{.Position = commEvent->armPos, .Pinch = commEvent->armPinch};
+	if (commEvent->type != CommType::ArmPinch && commEvent->type != CommType::ArmPosition) {
+		return;
+	}
+
+	ArmState state = {
+			.Position = commEvent->armPos,
+			.Pinch = commEvent->armPinch
+	};
+
+	setRemotely(state);
 }

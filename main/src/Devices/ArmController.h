@@ -20,7 +20,7 @@ protected:
 	virtual void write(const ArmState& state) override;
 	virtual ArmState getDefaultState() const override;
 	virtual void sendState(const ArmState& state) const override;
-	virtual ArmState processStateFromEvent(const Event& event) const override;
+	virtual void processEvent(const Event& event) override;
 
 private:
 	class Servo* positionServo = nullptr;
