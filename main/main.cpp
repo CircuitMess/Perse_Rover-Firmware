@@ -23,6 +23,8 @@ void init(){
 	};
 	gpio_config(&cfg);
 
+	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
+
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
 		ESP_ERROR_CHECK(nvs_flash_erase());

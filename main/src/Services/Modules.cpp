@@ -10,15 +10,15 @@
 #include "Modules/MotionSensor.h"
 #include "Modules/CO2Sensor.h"
 
-const std::map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus)>, std::function<void(void*)>>> ModuleConstrDestr = {
-		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus){ return new TempHumModule(i2c); },  [](void* instance){ delete (TempHumModule*) instance; } } },
-		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus){ return new GyroModule(i2c); },     [](void* instance){ delete (GyroModule*) instance; } } },
-		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus){ return new AltPressModule(i2c); }, [](void* instance){ delete (AltPressModule*) instance; } } },
-		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus){ return new LEDModule(bus); },      [](void* instance){ delete (LEDModule*) instance; } } },
-		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus){ return new RGBModule(bus); },      [](void* instance){ delete (RGBModule*) instance; } } },
-		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus){ return new PhotoresModule(bus); }, [](void* instance){ delete (PhotoresModule*) instance; } } },
-		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus){ return new MotionSensor(bus); },   [](void* instance){ delete (MotionSensor*) instance; } } },
-		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus){ return new CO2Sensor(bus); },      [](void* instance){ delete (CO2Sensor*) instance; } } }
+const std::map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus, Comm& comm)>, std::function<void(void*)>>> ModuleConstrDestr = {
+		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new TempHumModule(i2c, bus, comm); },  [](void* instance){ delete (TempHumModule*) instance; } } },
+		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new GyroModule(i2c, bus, comm); },     [](void* instance){ delete (GyroModule*) instance; } } },
+		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new AltPressModule(i2c, bus, comm); }, [](void* instance){ delete (AltPressModule*) instance; } } },
+		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new LEDModule(bus); },      [](void* instance){ delete (LEDModule*) instance; } } },
+		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new RGBModule(bus); },      [](void* instance){ delete (RGBModule*) instance; } } },
+		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new PhotoresModule(bus, comm); }, [](void* instance){ delete (PhotoresModule*) instance; } } },
+		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new MotionSensor(bus, comm); },   [](void* instance){ delete (MotionSensor*) instance; } } },
+		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus, Comm& comm){ return new CO2Sensor(bus, comm); },      [](void* instance){ delete (CO2Sensor*) instance; } } }
 };
 
 const std::map<uint8_t, ModuleType> Modules::AddressMap = {
@@ -35,7 +35,7 @@ const std::map<uint8_t, ModuleType> Modules::I2CAddressMap = {
 		{ 0x76, ModuleType::AltPress }
 };
 
-Modules::Modules(ShiftReg& shiftReg, I2C& i2c, Comm& comm) : SleepyThreaded(CheckInterval, "Modules", 2 * 1024, 5, 1), shiftReg(shiftReg), i2c(i2c), comm(comm){
+Modules::Modules(ShiftReg& shiftReg, I2C& i2c, Comm& comm) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1), shiftReg(shiftReg), i2c(i2c), comm(comm){
 	Modules::sleepyLoop();
 	start();
 }
@@ -81,8 +81,6 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 			addr |= 1 << i;
 		}
 	}
-
-	printf("addr: %d\n", addr);
 
 	auto& oppositeContext = getContext(bus == ModuleBus::Left ? ModuleBus::Right : ModuleBus::Left);
 
@@ -139,7 +137,7 @@ void Modules::loopCheck(ModuleBus bus){
 		comm.sendModulePlug(context.current, bus, context.inserted);
 
 		if(ModuleConstrDestr.contains(context.current)){
-			ModuleConstrDestr.at(context.current).first(i2c, bus);
+			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2c, bus, comm);
 		}
 	}
 }

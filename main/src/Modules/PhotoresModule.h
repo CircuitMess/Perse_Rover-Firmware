@@ -4,15 +4,19 @@
 #include "Services/Modules.h"
 #include "Periph/ADC.h"
 
-class PhotoresModule {
+class PhotoresModule : private SleepyThreaded {
 public:
-	PhotoresModule(ModuleBus bus);
-
-	uint8_t getLevel();
+	PhotoresModule(ModuleBus bus, Comm& comm);
+	~PhotoresModule() override;
 
 private:
+	Comm& comm;
+	ModuleBus bus;
+
+	void sleepyLoop() override;
 	ADC adc;
 
+	uint8_t getLevel();
 };
 
 

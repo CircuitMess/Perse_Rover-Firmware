@@ -3,16 +3,23 @@
 
 #include <glm.hpp>
 #include "Periph/I2C.h"
+#include "Services/Comm.h"
 
-class GyroModule {
+class GyroModule : private SleepyThreaded {
 public:
-	GyroModule(I2C& i2c);
-
-	glm::vec3 getAccelerometer() const;
-	int8_t getTemperature() const;
+	GyroModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	~GyroModule() override;
 
 private:
 	I2C& i2c;
+	ModuleBus bus;
+	Comm& comm;
+
+	glm::vec3 getAccelerometer() const;
+	[[maybe_unused]] int8_t getTemperature() const;
+
+	void sleepyLoop() override;
+
 	static constexpr uint8_t Addr = 0x18;
 };
 

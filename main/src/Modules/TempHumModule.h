@@ -2,21 +2,29 @@
 #define PERSE_ROVER_TEMPHUMMODULE_H
 
 #include "Periph/I2C.h"
+#include "CommData.h"
+#include "Services/Comm.h"
 #include <array>
 
-class TempHumModule {
+class TempHumModule : private SleepyThreaded {
 public:
-	TempHumModule(I2C& i2c);
-
-	float getHumidity();
-
-	float getTemp();
+	TempHumModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	~TempHumModule() override;
 
 private:
 	I2C& i2c;
+	ModuleBus bus;
+	Comm& comm;
+
 	static constexpr uint8_t Addr = 0x38;
 
 	std::array<uint8_t, 6> readData();
+
+	void sleepyLoop() override;
+
+	static float getHumidity(const std::array<uint8_t, 6>& data);
+
+	static float getTemp(const std::array<uint8_t, 6>& data);
 };
 
 

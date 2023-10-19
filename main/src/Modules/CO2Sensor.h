@@ -4,16 +4,19 @@
 #include "Services/Modules.h"
 #include "Periph/ADC.h"
 
-class CO2Sensor {
+class CO2Sensor : private SleepyThreaded {
 public:
-	CO2Sensor(ModuleBus bus);
-
-	bool getStatus();
+	CO2Sensor(ModuleBus bus, Comm& comm);
+	~CO2Sensor() override;
 
 private:
 	ADC adc;
+	const ModuleBus bus;
+	Comm& comm;
 
-	static constexpr uint32_t OKThreshold = 2100;
+	void sleepyLoop() override;
+
+	static constexpr uint32_t OKThreshold = 2100; //TODO - check this value and adjust if necessary
 };
 
 

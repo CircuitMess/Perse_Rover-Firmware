@@ -2,18 +2,23 @@
 #define PERSE_ROVER_ALTPRESS_H
 
 #include "Periph/I2C.h"
+#include "Util/Threaded.h"
+#include "Services/Comm.h"
 
-class AltPressModule {
+class AltPressModule : private SleepyThreaded {
 public:
-	AltPressModule(I2C& i2c);
-
-	int getPressure();
-	int getAltitude();
+	AltPressModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	~AltPressModule() override;
 
 private:
 	I2C& i2c;
+	const ModuleBus bus;
+	Comm& comm;
 
-	enum Sensor { PRESSURE = 0x30, ALTITUDE = 0x31 };
+	void sleepyLoop() override;
+	enum Sensor {
+		PRESSURE = 0x30, ALTITUDE = 0x31
+	};
 	int readSensor(Sensor sensor);
 
 	static constexpr uint8_t Addr = 0x76;

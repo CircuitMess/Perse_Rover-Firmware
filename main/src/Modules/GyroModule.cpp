@@ -1,11 +1,18 @@
 #include "GyroModule.h"
+#include "Services/Modules.h"
 
-GyroModule::GyroModule(I2C& i2c) : i2c(i2c){
+GyroModule::GyroModule(I2C& i2c, ModuleBus bus, Comm& comm) : SleepyThreaded(Modules::ModuleSendInterval, "Gyro", 3 * 1024), i2c(i2c), bus(bus), comm(comm){
 	const uint8_t initData[2] = { 0x20, 0b01010001 };
 
 	auto err = i2c.write(Addr, initData, 2);
 
 	ESP_ERROR_CHECK(err);
+
+	start();
+}
+
+GyroModule::~GyroModule(){
+	stop();
 }
 
 glm::vec3 GyroModule::getAccelerometer() const{
@@ -29,15 +36,28 @@ glm::vec3 GyroModule::getAccelerometer() const{
 	return conv;
 }
 
-int8_t GyroModule::getTemperature() const{
+[[maybe_unused]] int8_t GyroModule::getTemperature() const{
 	int8_t temp = 0;
-	auto err = i2c.readReg(Addr, 0x26, (uint8_t&)temp, 1);
+	auto err = i2c.readReg(Addr, 0x26, (uint8_t&) temp, 1);
 
 	ESP_ERROR_CHECK(err);
 
 	temp += 25;
 
 	return temp;
+}
+
+void GyroModule::sleepyLoop(){
+	auto accel = getAccelerometer();
+	accel.x *= -1;
+	accel.y *= -1;
+	int16_t xAngle = atan2(accel.y, accel.z) * 180 / M_PI;
+	int16_t yAngle = atan2(accel.x, accel.z) * 180 / M_PI;
+
+	ModuleData data = {
+			ModuleType::Gyro, bus, { .gyro = { xAngle, yAngle } }
+	};
+	comm.sendModuleData(data);
 }
 
 
