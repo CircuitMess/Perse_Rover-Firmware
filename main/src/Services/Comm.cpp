@@ -14,7 +14,7 @@ Comm::~Comm(){
 void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
 	if(!modulesEnabled) return;
 
-	uint8_t data = (insert << 7) | ((uint8_t) bus << 6) | (uint8_t) type;
+	uint8_t data = CommData::encodeModulePlug({ type, bus, insert });
 	ControlPacket packet{ CommType::ModulePlug, data };
 	sendPacket(packet);
 }
