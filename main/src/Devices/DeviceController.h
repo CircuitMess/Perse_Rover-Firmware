@@ -83,18 +83,13 @@ private:
 		if (event.facility == Facility::TCP) {
 			if (auto* tcpEvent = (TCPServer::Event*)event.data) {
 				if (tcpEvent->status == TCPServer::Event::Status::Disconnected) {
-					setControl(DeviceControlType::Local);
-					setLocally(getDefaultState());
+					write(getDefaultState());
 					setControl(DeviceControlType::Remote);
 				}
 			}
 		}
 		else if (event.facility != Facility::Comm) {
 			processEvent(event);
-		}
-
-		if (event.data == nullptr) {
-			return;
 		}
 
 		free(event.data);
