@@ -18,6 +18,7 @@
 #include "Devices/MotorDriveController.h"
 #include "Services/Comm.h"
 #include "Devices/ArmController.h"
+#include "Devices/CameraController.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -56,6 +57,8 @@ void init(){
 	auto motorDriveController = new MotorDriveController();
 
 	auto armController = new ArmController();
+
+	auto cameraController = new CameraController();
 }
 
 extern "C" void app_main(void){

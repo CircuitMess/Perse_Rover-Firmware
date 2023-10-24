@@ -38,6 +38,15 @@ void Comm::sendArmPinchState(ArmPinch pinch) {
 	sendPacket(packet);
 }
 
+void Comm::sendCameraState(CameraRotation rotation) {
+	const ControlPacket packet = {
+			.type = CommType::CameraRotation,
+			.data = rotation
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -86,6 +95,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 		case CommType::ArmPinch: {
 			e.armPos = -1;
 			e.armPinch = (ArmPinch)packet.data;
+			break;
+		}
+		case CommType::CameraRotation: {
+			e.cameraRotation = packet.data;
 			break;
 		}
 		default: {
