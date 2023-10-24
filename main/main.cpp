@@ -11,14 +11,14 @@
 #include "Periph/SPIFFS.h"
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
-#include "Services/TCPServer.h"
-#include "Services/Audio.h"
-#include "Devices/HeadlightsController.h"
 #include "Devices/Motors.h"
 #include "Devices/MotorDriveController.h"
-#include "Services/Comm.h"
+#include "Devices/HeadlightsController.h"
 #include "Devices/ArmController.h"
 #include "Devices/CameraController.h"
+#include "Services/TCPServer.h"
+#include "Services/Comm.h"
+#include "Services/Audio.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -53,11 +53,8 @@ void init(){
 	Services.set(Service::Comm, comm);
 
 	auto headlightsController = new HeadlightsController(*aw9523);
-
 	auto motorDriveController = new MotorDriveController();
-
 	auto armController = new ArmController();
-
 	auto cameraController = new CameraController();
 }
 
