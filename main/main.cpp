@@ -14,6 +14,8 @@
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
 #include "Devices/HeadlightsController.h"
+#include "Devices/Motors.h"
+#include "Devices/MotorDriveController.h"
 #include "Services/Comm.h"
 
 void init(){
@@ -49,6 +51,8 @@ void init(){
 	Services.set(Service::Comm, comm);
 
 	auto headlightsController = new HeadlightsController(*aw9523);
+
+	auto motorDriveController = new MotorDriveController();
 }
 
 extern "C" void app_main(void){
