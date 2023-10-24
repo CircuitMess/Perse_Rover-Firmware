@@ -61,8 +61,13 @@ void ArmController::sendState(const ArmState& state) const {
 		return;
 	}
 
-	comm->sendArmPositionState(state.Position);
-	comm->sendArmPinchState(state.Pinch);
+	if(state.Position >= 0){
+		comm->sendArmPositionState(state.Position);
+	}
+
+	if(state.Pinch >= 0){
+		comm->sendArmPinchState(state.Pinch);
+	}
 }
 
 void ArmController::processEvent(const Event& event) {
