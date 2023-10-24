@@ -17,6 +17,7 @@
 #include "Devices/Motors.h"
 #include "Devices/MotorDriveController.h"
 #include "Services/Comm.h"
+#include "Devices/ArmController.h"
 
 void init(){
 	gpio_config_t cfg = {
@@ -53,6 +54,8 @@ void init(){
 	auto headlightsController = new HeadlightsController(*aw9523);
 
 	auto motorDriveController = new MotorDriveController();
+
+	auto armController = new ArmController();
 }
 
 extern "C" void app_main(void){
