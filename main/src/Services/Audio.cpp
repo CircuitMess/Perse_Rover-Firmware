@@ -78,11 +78,8 @@ void Audio::loop(){
 	size_t written;
 	i2s_write(I2S_NUM_0, dataBuf.data(), framesActuallyRead * wav.channels * sizeof(int16_t), &written, portMAX_DELAY);
 
-	printf("Played %d/%llu\n", framesPlayed, wav.totalPCMFrameCount);
-
 	if(framesPlayed >= wav.totalPCMFrameCount){
 		closeFile();
-		printf("Done\n");
 	}
 }
 
