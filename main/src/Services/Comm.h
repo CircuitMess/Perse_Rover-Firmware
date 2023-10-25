@@ -29,6 +29,7 @@ public:
 	void sendArmPositionState(ArmPos position);
 	void sendArmPinchState(ArmPinch pinch);
 	void sendCameraState(CameraRotation rotation);
+	void sendBattery(uint8_t batteryPercent);
 
 private:
 	TCPServer& tcp;
