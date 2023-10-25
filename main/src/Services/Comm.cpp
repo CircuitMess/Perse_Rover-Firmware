@@ -47,6 +47,15 @@ void Comm::sendCameraState(CameraRotation rotation) {
 	sendPacket(packet);
 }
 
+void Comm::sendBattery(uint8_t batteryPercent) {
+	const ControlPacket packet = {
+			.type = CommType::CameraRotation,
+			.data = batteryPercent
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 

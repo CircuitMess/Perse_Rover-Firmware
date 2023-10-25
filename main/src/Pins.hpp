@@ -38,6 +38,8 @@
 #define I2S_LRCLK 8
 #define I2S_DOUT 6
 
+#define BATTERY_ADC 6
+
 //AW9523 pins:
 #define EXP_CAM_PWDN 0
 #define EXP_BTN_PAIR 1
