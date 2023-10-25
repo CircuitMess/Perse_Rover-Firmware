@@ -12,12 +12,23 @@ public:
 		CommType type;
 		union {
 			DriveDir dir;
+			HeadlightsMode headlights;
+			struct {
+				ArmPos armPos;
+				ArmPinch armPinch;
+			};
+			CameraRotation cameraRotation;
 		};
 		uint8_t raw;
 	};
 
 	Comm();
 	~Comm() override;
+
+	void sendHeadlightsState(HeadlightsMode headlights);
+	void sendArmPositionState(ArmPos position);
+	void sendArmPinchState(ArmPinch pinch);
+	void sendCameraState(CameraRotation rotation);
 
 private:
 	TCPServer& tcp;
