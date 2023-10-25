@@ -1,19 +1,12 @@
 #include "ADC.h"
 #include <algorithm>
 #include <esp_adc/adc_continuous.h>
-#include "esp_log.h"
 
 static const char* TAG = "ADC";
 
-ADC::ADC(gpio_num_t pin, float ema_a/* = 1*/, int min/* = 0*/, int max/* = 0*/, float readingOffset/* = 0.0*/) : pin(pin), emaA(ema_a), min(min), max(max), readingOffset(readingOffset) {
-	if (pin != GPIO_NUM_1) {
-		ESP_LOGE(TAG, "Only GPIO 1 is supported for ADC.");
-		return;
-	}
-
-	adc_unit_t unit = ADC_UNIT_1;
-	adc_channel_t channel = ADC_CHANNEL_0;
-	adc_continuous_io_to_channel(pin, &unit, &channel);
+ADC::ADC(gpio_num_t pin, float ema_a/* = 1*/, int min/* = 0*/, int max/* = 0*/, float readingOffset/* = 0.0*/) :
+			pin(pin), emaA(ema_a), min(min), max(max), readingOffset(readingOffset), unit(ADC_UNIT_1), channel(ADC_CHANNEL_0) {
+	ESP_ERROR_CHECK(adc_continuous_io_to_channel(pin, &unit, &channel));
 
 	adc_oneshot_unit_init_cfg_t config = {
 			.unit_id = unit,
@@ -37,14 +30,6 @@ ADC::~ADC() {
 }
 
 float ADC::sample() {
-	if (pin != GPIO_NUM_1) {
-		return 0.0f;
-	}
-
-	adc_unit_t unit = ADC_UNIT_1;
-	adc_channel_t channel = ADC_CHANNEL_0;
-	adc_continuous_io_to_channel(pin, &unit, &channel);
-
 	int raw = 0;
 	ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, channel, &raw));
 
@@ -61,10 +46,6 @@ float ADC::sample() {
 }
 
 float ADC::getValue() const {
-	if (pin != GPIO_NUM_1) {
-		return 0.0f;
-	}
-
 	if (max == 0 && min == 0) {
 		return value + readingOffset;
 	}

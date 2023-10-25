@@ -3,6 +3,7 @@
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_log.h>
+#include <esp_sleep.h>
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "Pins.hpp"
@@ -59,6 +60,17 @@ void init(){
 	auto cameraController = new CameraController();
 
 	auto battery = new Battery();
+	battery->begin();
+
+	if (battery->isShutdown()) {
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
+		ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
+		esp_deep_sleep_start();
+		return;
+	}
 }
 
 extern "C" void app_main(void){

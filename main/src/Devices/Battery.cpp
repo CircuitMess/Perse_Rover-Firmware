@@ -4,14 +4,13 @@
 #include "Util/Events.h"
 #include "Util/stdafx.h"
 
-#define MAX_READ 2767	// 4.5V
-#define MIN_READ 2141	// 3.6V
+#define MAX_READ 2724	// 4.5V
+#define MIN_READ 2280	// 3.8V
 
 Battery::Battery() : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
 					 adc((gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3) {
 	sample(true);
-	start();
 }
 
 void Battery::begin() {
@@ -35,7 +34,7 @@ int16_t Battery::getVoltOffset() {
 }
 
 uint16_t Battery::mapRawReading(uint16_t reading) {
-	return std::round(map((double)reading, MIN_READ, MAX_READ, 3600, 4500));
+	return std::round(map((double)reading, MIN_READ, MAX_READ, 3800, 4500));
 }
 
 bool Battery::isShutdown() const {
@@ -51,12 +50,6 @@ void Battery::sleepyLoop() {
 }
 
 void Battery::sample(bool fresh/* = false*/) {
-	if (getLevel() == Critical) {
-		stop(0);
-		shutdown = true;
-		return;
-	}
-
 	if (shutdown) {
 		return;
 	}
@@ -74,5 +67,11 @@ void Battery::sample(bool fresh/* = false*/) {
 
 	if (oldLevel != getLevel() || fresh) {
 		Events::post(Facility::Battery, Battery::Event{.action = Event::LevelChange, .level = getLevel()});
+	}
+
+	if (getLevel() == Critical) {
+		stop(0);
+		shutdown = true;
+		return;
 	}
 }

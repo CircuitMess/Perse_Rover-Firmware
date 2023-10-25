@@ -24,6 +24,8 @@ private:
 	const float readingOffset;
 	float value = -1.0f;
 	adc_oneshot_unit_handle_t adc_handle;
+	adc_unit_t unit;
+	adc_channel_t channel;
 };
 
 #endif //PERSE_ROVER_ADC_H
