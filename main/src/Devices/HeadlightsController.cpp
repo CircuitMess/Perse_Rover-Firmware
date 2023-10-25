@@ -6,6 +6,10 @@
 HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("Headlights Controller"), aw9523(aw9523){
 	aw9523.pinMode(EXP_HEADLIGHT_1, AW9523::LED);
 	aw9523.pinMode(EXP_HEADLIGHT_2, AW9523::LED);
+
+	setControl(DeviceControlType::Local);
+	setLocally(HeadlightsState{});
+	setControl(DeviceControlType::Remote);
 }
 
 void HeadlightsController::write(const HeadlightsState& state){
