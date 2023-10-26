@@ -54,7 +54,7 @@ void LED::loop(){
 	const auto now = millis();
 
 	Action act{};
-	while(actionQueue.get(act)){
+	while(actionQueue.get(act, 1)){
 		const auto i = act.pin;
 
 		if(act.action == Off){
