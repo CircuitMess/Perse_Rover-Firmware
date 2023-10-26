@@ -30,6 +30,8 @@ int AltPressModule::readSensor(AltPressModule::Sensor sensor){
 }
 
 void AltPressModule::sleepyLoop(){
+	i2c.write(Addr, 0x40);
+	delayMillis(100);
 	const auto alt = (int16_t) readSensor(ALTITUDE);
 	const uint16_t press = readSensor(PRESSURE);
 
