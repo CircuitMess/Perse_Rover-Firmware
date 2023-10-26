@@ -27,8 +27,8 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 
 	dataBuf.resize(BufSize / sizeof(int16_t), 0);
 
-	aw9523.pinMode(EXP_SD_ENABLE, AW9523::OUT);
-	aw9523.write(EXP_SD_ENABLE, true);
+	aw9523.pinMode(EXP_SPKR_EN, AW9523::OUT);
+	aw9523.write(EXP_SPKR_EN, true);
 
 	start();
 }
@@ -36,7 +36,7 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 Audio::~Audio(){
 	closeFile();
 	i2s_driver_uninstall(Port);
-	aw9523.write(EXP_SD_ENABLE, false);
+	aw9523.write(EXP_SPKR_EN, false);
 }
 
 void Audio::play(const char* file){
