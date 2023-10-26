@@ -21,7 +21,7 @@ void PairService::loop(){
 		state = State::Success;
 		Event evt{ true };
 		Events::post(Facility::Pair, evt);
-		stop();
+		stop(0);
 		return;
 	}
 	delayMillis(100);
