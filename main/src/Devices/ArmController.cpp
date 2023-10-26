@@ -4,6 +4,7 @@
 #include "Pins.hpp"
 #include "Services/Comm.h"
 #include "Util/Services.h"
+#include "Util/stdafx.h"
 
 static const char* const TAG = "HeadlightsController";
 
@@ -43,11 +44,13 @@ void ArmController::write(const ArmState& state) {
 	}
 
 	if (state.Pinch >= 0) {
-		pinchServo->setValue(std::clamp(state.Pinch, (int8_t)0, (int8_t)100));
+		const uint8_t servoValue = map(std::clamp(state.Pinch, (int8_t)0, (int8_t)100), 0, 100, pinchLimits.x, pinchLimits.y);
+		pinchServo->setValue(servoValue);
 	}
 
 	if (state.Position >= 0) {
-		positionServo->setValue(std::clamp(state.Position, (int8_t)0, (int8_t)100));
+		const uint8_t servoValue = map(std::clamp(state.Position, (int8_t)0, (int8_t)100), 0, 100, positionLimits.x, positionLimits.y);
+		positionServo->setValue(servoValue);
 	}
 }
 

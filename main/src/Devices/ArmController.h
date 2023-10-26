@@ -1,6 +1,7 @@
 #ifndef PERSE_ROVER_ARMCONTROLLER_H
 #define PERSE_ROVER_ARMCONTROLLER_H
 
+#include <glm.hpp>
 #include "DeviceController.h"
 #include "CommData.h"
 
@@ -25,6 +26,8 @@ protected:
 private:
 	class Servo* positionServo = nullptr;
 	Servo* pinchServo = nullptr;
+	static constexpr glm::vec<2, uint8_t> positionLimits = {0, 80};
+	static constexpr glm::vec<2, uint8_t> pinchLimits = {32, 55};
 };
 
 #endif //PERSE_ROVER_ARMCONTROLLER_H
