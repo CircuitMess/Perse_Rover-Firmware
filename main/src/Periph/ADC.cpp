@@ -40,8 +40,6 @@ float ADC::sample() {
 		value = value * (1.0f - emaA) + emaA * raw;
 	}
 
-	printf("Raw: %d\n", raw);
-
 	return getValue();
 }
 
