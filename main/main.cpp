@@ -22,6 +22,7 @@
 #include "Services/Audio.h"
 #include "Services/Modules.h"
 #include "Services/Comm.h"
+#include "Devices/TCA9555.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -75,8 +76,8 @@ void init(){
 
 	battery->begin();
 
-	auto shiftReg = new ShiftReg(*aw9523);
-	auto modules = new Modules(*shiftReg, *i2c, *comm);
+	auto tca = new TCA9555(*i2c);
+	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
 	Services.set(Service::Modules, modules);
 
 }

@@ -4,14 +4,15 @@
 #include <map>
 #include "Util/Threaded.h"
 #include "Pins.hpp"
-#include "Devices/ShiftReg.h"
+#include "Devices/TCA9555.h"
 #include "CommData.h"
 #include "Comm.h"
+#include "Periph/ADC.h"
 
 
 class Modules : private SleepyThreaded {
 public:
-	Modules(ShiftReg& shiftReg, I2C& i2c, Comm& comm);
+	Modules(TCA9555& shiftReg, I2C& i2c, Comm& comm, ADC& adc);
 	~Modules() override;
 
 	struct Event {
@@ -27,9 +28,10 @@ public:
 	static constexpr TickType_t ModuleSendInterval = 200;
 
 private:
-	ShiftReg& shiftReg;
+	TCA9555& tca;
 	I2C& i2c;
 	Comm& comm;
+	ADC& adc;
 
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 
@@ -42,11 +44,11 @@ private:
 		void* moduleInstance;
 	};
 
-	BusContext leftContext = { { SHIFT_A_ADDR_1, SHIFT_A_ADDR_2, SHIFT_A_ADDR_3, SHIFT_A_ADDR_4, SHIFT_A_ADDR_5, SHIFT_A_ADDR_6 },
-							   { SHIFT_A_DET_1, SHIFT_A_DET_2 },
+	BusContext leftContext = { { TCA_A_ADDR_1, TCA_A_ADDR_2, TCA_A_ADDR_3, TCA_A_ADDR_4, TCA_A_ADDR_5, TCA_A_ADDR_6 },
+							   { TCA_A_DET_1, TCA_A_DET_2 },
 							   false, ModuleType::Unknown, nullptr };
-	BusContext rightContext = { { SHIFT_B_ADDR_1, SHIFT_B_ADDR_2, SHIFT_B_ADDR_3, SHIFT_B_ADDR_4, SHIFT_B_ADDR_5, SHIFT_B_ADDR_6 },
-								{ SHIFT_B_DET_1, SHIFT_B_DET_2 },
+	BusContext rightContext = { { TCA_B_ADDR_1, TCA_B_ADDR_2, TCA_B_ADDR_3, TCA_B_ADDR_4, TCA_B_ADDR_5, TCA_B_ADDR_6 },
+								{ TCA_B_DET_1, TCA_B_DET_2 },
 								false, ModuleType::Unknown, nullptr };
 
 	void sleepyLoop() override;
