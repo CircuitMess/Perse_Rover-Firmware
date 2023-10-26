@@ -6,7 +6,7 @@
 
 class Camera {
 public:
-	Camera(I2C& i2c, AW9523& aw9523);
+	Camera(I2C& i2c);
 	virtual ~Camera();
 
 	static Camera* getInstance();
@@ -40,7 +40,6 @@ private:
 	int failedFrames = 0;
 
 	I2C& i2c;
-	AW9523& aw9523;
 };
 
 

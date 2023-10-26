@@ -27,8 +27,8 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 
 	dataBuf.resize(BufSize / sizeof(int16_t), 0);
 
-	aw9523.pinMode(EXP_SD_ENABLE, AW9523::OUT);
-	aw9523.write(EXP_SD_ENABLE, true);
+	aw9523.pinMode(EXP_SPKR_EN, AW9523::OUT);
+	aw9523.write(EXP_SPKR_EN, true);
 
 	start();
 }
@@ -36,7 +36,7 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 Audio::~Audio(){
 	closeFile();
 	i2s_driver_uninstall(Port);
-	aw9523.write(EXP_SD_ENABLE, false);
+	aw9523.write(EXP_SPKR_EN, false);
 }
 
 void Audio::play(const char* file){
@@ -78,11 +78,8 @@ void Audio::loop(){
 	size_t written;
 	i2s_write(I2S_NUM_0, dataBuf.data(), framesActuallyRead * wav.channels * sizeof(int16_t), &written, portMAX_DELAY);
 
-	printf("Played %d/%llu\n", framesPlayed, wav.totalPCMFrameCount);
-
 	if(framesPlayed >= wav.totalPCMFrameCount){
 		closeFile();
-		printf("Done\n");
 	}
 }
 

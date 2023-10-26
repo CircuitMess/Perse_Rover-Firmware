@@ -1,114 +1,76 @@
 #include "ADC.h"
-#include <esp_log.h>
 #include <algorithm>
+#include <esp_adc/adc_continuous.h>
 
 static const char* TAG = "ADC";
-const std::map<gpio_num_t, ADC::ADCConfig> ADC::gpioChannels = {
-		{ GPIO_NUM_1,  { ADC_UNIT_1, ADC_CHANNEL_0 } },
-		{ GPIO_NUM_2,  { ADC_UNIT_1, ADC_CHANNEL_1 } },
-		{ GPIO_NUM_3,  { ADC_UNIT_1, ADC_CHANNEL_2 } },
-		{ GPIO_NUM_4,  { ADC_UNIT_1, ADC_CHANNEL_3 } },
-		{ GPIO_NUM_5,  { ADC_UNIT_1, ADC_CHANNEL_4 } },
-		{ GPIO_NUM_6,  { ADC_UNIT_1, ADC_CHANNEL_5 } },
-		{ GPIO_NUM_7,  { ADC_UNIT_1, ADC_CHANNEL_6 } },
-		{ GPIO_NUM_8,  { ADC_UNIT_1, ADC_CHANNEL_7 } },
-		{ GPIO_NUM_9,  { ADC_UNIT_1, ADC_CHANNEL_8 } },
-		{ GPIO_NUM_10, { ADC_UNIT_1, ADC_CHANNEL_9 } },
-		{ GPIO_NUM_11, { ADC_UNIT_2, ADC_CHANNEL_0 } },
-		{ GPIO_NUM_12, { ADC_UNIT_2, ADC_CHANNEL_1 } },
-		{ GPIO_NUM_13, { ADC_UNIT_2, ADC_CHANNEL_2 } },
-		{ GPIO_NUM_14, { ADC_UNIT_2, ADC_CHANNEL_3 } },
-		{ GPIO_NUM_15, { ADC_UNIT_2, ADC_CHANNEL_4 } },
-		{ GPIO_NUM_16, { ADC_UNIT_2, ADC_CHANNEL_5 } },
-		{ GPIO_NUM_17, { ADC_UNIT_2, ADC_CHANNEL_6 } },
-		{ GPIO_NUM_18, { ADC_UNIT_2, ADC_CHANNEL_7 } },
-		{ GPIO_NUM_19, { ADC_UNIT_2, ADC_CHANNEL_8 } },
-		{ GPIO_NUM_20, { ADC_UNIT_2, ADC_CHANNEL_9 } }
-};
 
-ADC::ADC(gpio_num_t pin, adc_atten_t atten, float ema_a, int min, int max, int readingOffset) : pin(pin), ema_a(ema_a), min(min), max(max),
-																								offset(readingOffset){
-	if(!gpioChannels.contains(pin)){
-		ESP_LOGE(TAG, "Only GPIOs 1-20 are supported for ADC");
-		valid = false;
-		return;
-	}
+ADC::ADC(gpio_num_t pin, float ema_a/* = 1*/, int min/* = 0*/, int max/* = 0*/, float readingOffset/* = 0.0*/) :
+			pin(pin), emaA(ema_a), min(min), max(max), readingOffset(readingOffset), unit(ADC_UNIT_1), channel(ADC_CHANNEL_0) {
+	ESP_ERROR_CHECK(adc_continuous_io_to_channel(pin, &unit, &channel));
 
-	const auto& pinConfig = gpioChannels.at(pin);
-
-
-	//-------------ADC1 Init---------------//
-	adc_oneshot_unit_init_cfg_t init_config1 = {
-			.unit_id = pinConfig.unit,
+	adc_oneshot_unit_init_cfg_t config = {
+			.unit_id = unit,
+			.ulp_mode = ADC_ULP_MODE_DISABLE
 	};
-	ESP_ERROR_CHECK(adc_oneshot_new_unit(&init_config1, &adc1_handle));
 
-	//-------------ADC1 Config---------------//
-	adc_oneshot_chan_cfg_t config = {
-			.atten = atten,
+	ESP_ERROR_CHECK(adc_oneshot_new_unit(&config, &adc_handle));
+
+	adc_oneshot_chan_cfg_t channelConfig = {
+			.atten = ADC_ATTEN_DB_11,
 			.bitwidth = ADC_BITWIDTH_12
 	};
-	ESP_ERROR_CHECK(adc_oneshot_config_channel(adc1_handle, pinConfig.channel, &config));
+
+	ESP_ERROR_CHECK(adc_oneshot_config_channel(adc_handle, channel, &channelConfig));
 
 	sample();
 }
 
-
-ADC::~ADC(){
-	adc_oneshot_del_unit(adc1_handle);
+ADC::~ADC() {
+	ESP_ERROR_CHECK(adc_oneshot_del_unit(adc_handle));
 }
 
-void ADC::setEmaA(float emaA){
-	ema_a = emaA;
+float ADC::sample() {
+	int raw = 0;
+	ESP_ERROR_CHECK(adc_oneshot_read(adc_handle, channel, &raw));
+
+	if (value == -1 || emaA == 1) {
+		value = raw;
+	}
+	else {
+		value = value * (1.0f - emaA) + emaA * raw;
+	}
+
+	return getValue();
 }
 
-void ADC::resetEma(){
-	val = -1;
-	sample();
-}
-
-float ADC::sample(){
-	if(!valid){
-		return 0;
+float ADC::getValue() const {
+	if (max == 0 && min == 0) {
+		return value + readingOffset;
 	}
 
-	int reading = 0;
-	ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, gpioChannels.at(pin).channel, &reading));
+	float minimum = min;
+	float maximum = max;
 
-	if(val == -1 || ema_a == 1){
-		val = (float) reading;
-	}else{
-		val = val * (1.0f - ema_a) + ema_a * (float) reading;
+	if (min > max) {
+		std::swap(minimum, maximum);
 	}
 
-	return getVal();
-}
-
-float ADC::getVal() const{
-	if(!valid){
-		return 0;
-	}
-
-	if(max == 0 && min == 0){
-		return val + offset;
-	}
-
-	float min = this->min;
-	float max = this->max;
-	bool inverted = min > max;
-	if(inverted){
-		std::swap(min, max);
-	}
-
-	float val = std::clamp(this->val + offset, min, max);
-	val = (val - min) / (max - min);
+	float val = std::clamp(value, minimum, maximum);
+	val = (val - minimum) / (maximum - minimum);
 	val = std::clamp(val * 100.0f, 0.0f, 100.0f);
 
-	if(inverted){
+	if (min > max) {
 		val = 100.0f - val;
 	}
 
 	return val;
 }
 
+void ADC::resetEma() {
+	value = -1;
+	sample();
+}
 
+void ADC::setEmaA(float ema_a) {
+	emaA = ema_a;
+}

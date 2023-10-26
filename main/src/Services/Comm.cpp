@@ -11,6 +11,51 @@ Comm::~Comm(){
 	stop();
 }
 
+void Comm::sendHeadlightsState(HeadlightsMode headlights){
+	const ControlPacket packet = {
+			.type = CommType::Headlights,
+			.data = (uint8_t) headlights
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendArmPositionState(ArmPos position){
+	const ControlPacket packet = {
+			.type = CommType::ArmPosition,
+			.data = (uint8_t) position
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendArmPinchState(ArmPinch pinch){
+	const ControlPacket packet = {
+			.type = CommType::ArmPinch,
+			.data = (uint8_t) (pinch)
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendCameraState(CameraRotation rotation){
+	const ControlPacket packet = {
+			.type = CommType::CameraRotation,
+			.data = rotation
+	};
+
+	sendPacket(packet);
+}
+
+void Comm::sendBattery(uint8_t batteryPercent){
+	const ControlPacket packet = {
+			.type = CommType::CameraRotation,
+			.data = batteryPercent
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
 	if(!modulesEnabled) return;
 
@@ -46,13 +91,35 @@ void Comm::loop(){
 }
 
 Comm::Event Comm::processPacket(const ControlPacket& packet){
-	Event e{};
-	e.raw = packet.data;
-	e.type = packet.type;
+	Event e{
+			.type = packet.type,
+			.raw = packet.data
+	};
+
 	switch(packet.type){
-		case CommType::DriveDir:
+		case CommType::DriveDir:{
 			e.dir = CommData::decodeDriveDir(packet.data);
 			break;
+		}
+		case CommType::Headlights:{
+			e.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
+			break;
+		}
+		case CommType::ArmPosition:{
+			e.armPos = (ArmPos) packet.data;
+			e.armPinch = -1;
+			break;
+		}
+		case CommType::ArmPinch:{
+			e.armPos = -1;
+			e.armPinch = (ArmPinch) packet.data;
+			break;
+		}
+		case CommType::CameraRotation:{
+			e.cameraRotation = packet.data;
+			break;
+		}
+
 		case CommType::ModulePlug:
 			break;
 		case CommType::ModuleData:
@@ -60,8 +127,9 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 		case CommType::ModulesEnable:
 			modulesEnabled = packet.data;
 			break;
-		case CommType::Headlights:
+		default:{
 			break;
+		}
 	}
 
 	return e;

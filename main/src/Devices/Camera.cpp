@@ -4,9 +4,15 @@
 
 Camera* Camera::instance = nullptr;
 
-Camera::Camera(I2C& i2c, AW9523& aw9523) : i2c(i2c), aw9523(aw9523){
+Camera::Camera(I2C& i2c) : i2c(i2c){
 	instance = this;
-	aw9523.pinMode(EXP_CAM_PWDN, AW9523::OUT);
+
+	const gpio_config_t cfg = {
+			.pin_bit_mask = 1ULL << CAM_PIN_PWDN,
+			.mode = GPIO_MODE_OUTPUT
+	};
+	gpio_config(&cfg);
+	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 1);
 }
 
 Camera::~Camera(){
@@ -61,7 +67,7 @@ bool Camera::init(){
 		config.jpeg_quality = 12;
 	}
 
-	aw9523.write(EXP_CAM_PWDN, false);
+	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 0);
 
 	auto lock = i2c.lockBus();
 
@@ -118,7 +124,7 @@ void Camera::deinit(){
 		esp_camera_deinit();
 	}
 
-	aw9523.write(EXP_CAM_PWDN, true);
+	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 1);
 }
 
 camera_fb_t* Camera::getFrame(){

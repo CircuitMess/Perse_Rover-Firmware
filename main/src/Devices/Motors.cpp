@@ -4,11 +4,11 @@
 #include "Pins.hpp"
 #include "Util/stdafx.h"
 
-MotorControl::MotorControl(const std::array<ledc_channel_t, 4>& pwmChannels) :
+MotorControl::MotorControl(const std::array<ledc_channel_t, 2>& pwmChannels) :
 		Threaded("Motors", 4 * 1024),
-		pwm({ MOTOR_FL_A, pwmChannels[0] }, { MOTOR_FR_A, pwmChannels[1] }, { MOTOR_BL_A, pwmChannels[2] }, { MOTOR_BR_A, pwmChannels[3] }),
-		digitalPins({ MOTOR_FL_B }, { MOTOR_FR_B }, { MOTOR_BL_A }, { MOTOR_BR_B }){
-
+		pwm({ MOTOR_LEFT_A, pwmChannels[0] }, { MOTOR_RIGHT_A, pwmChannels[1] }),
+		digitalPins({ MOTOR_LEFT_B }, { MOTOR_RIGHT_B }){
+	begin();
 }
 
 void MotorControl::begin(){
@@ -41,41 +41,21 @@ void MotorControl::end(){
 	stop();
 }
 
-void MotorControl::setFR(int8_t value){
-	setMotorTarget(FrontRight, value);
-}
-
-void MotorControl::setFL(int8_t value){
-	setMotorTarget(FrontLeft, value);
-}
-
-void MotorControl::setBR(int8_t value){
-	setMotorTarget(BackRight, value);
-}
-
-void MotorControl::setBL(int8_t value){
-	setMotorTarget(BackLeft, value);
-}
-
 void MotorControl::setRight(int8_t value){
-	setMotorTarget(FrontRight, value);
-	setMotorTarget(BackRight, value);
+	sendMotorPWM(Right, value);
 }
 
 void MotorControl::setLeft(int8_t value){
-	setMotorTarget(FrontLeft, value);
-	setMotorTarget(BackLeft, value);
+	sendMotorPWM(Left, value);
 }
 
 void MotorControl::setAll(int8_t value){
-	setAll({ value, value, value, value });
+	setAll({ value, value });
 }
 
 void MotorControl::setAll(MotorInfo state){
-	setFR(state.frontRight);
-	setFL(state.frontLeft);
-	setBR(state.backRight);
-	setBL(state.backLeft);
+	setLeft(state.left);
+	setRight(state.right);
 }
 
 MotorInfo MotorControl::getAll() const{
@@ -83,12 +63,12 @@ MotorInfo MotorControl::getAll() const{
 }
 
 void MotorControl::stopAll(){
-	setAll({ 0, 0, 0, 0 });
+	setAll({ 0, 0 });
 }
 
 void MotorControl::setMotorTarget(Motor motor, int8_t value){
 	size_t i = motor;
-	if(i >= 4) return;
+	if(i >= 2) return;
 
 	value = std::clamp(value, (int8_t) -100, (int8_t) 100);
 	stateTarget.raw[i] = value;
@@ -96,7 +76,7 @@ void MotorControl::setMotorTarget(Motor motor, int8_t value){
 
 void MotorControl::sendMotorPWM(Motor motor, int8_t value){
 	size_t i = motor;
-	if(i >= 4) return;
+	if(i >= 2) return;
 
 	const auto& pins = Pins[i];
 
@@ -136,7 +116,7 @@ void MotorControl::loop(){
 
 	const double dt = (double) EaseInterval / 1000000.0;
 
-	for(int i = 0; i < 4; i++){
+	for(int i = 0; i < 2; i++){
 		if(stateTarget.raw[i] == stateActual[i]) continue;
 		double direction = (stateTarget.raw[i] > stateActual[i]) ? 1 : -1;
 

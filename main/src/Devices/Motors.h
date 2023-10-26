@@ -10,15 +10,11 @@
 
 class MotorControl : private Threaded {
 public:
-	MotorControl(const std::array<ledc_channel_t, 4>& pwmChannels);
+	MotorControl(const std::array<ledc_channel_t, 2>& pwmChannels);
 	void begin();
 	void end();
 
 	//motor values between -100 and 100
-	void setFR(int8_t value);
-	void setFL(int8_t value);
-	void setBR(int8_t value);
-	void setBL(int8_t value);
 	void setRight(int8_t value);
 	void setLeft(int8_t value);
 	void setAll(int8_t value);
@@ -31,25 +27,23 @@ public:
 
 private:
 	enum Motor : uint8_t {
-		FrontLeft, FrontRight, BackLeft, BackRight
+		Left, Right
 	};
 
-	PWM pwm[4]; //for A pins
-	PinOut digitalPins[4]; //for B pins
+	PWM pwm[2]; //for A pins
+	PinOut digitalPins[2]; //for B pins
 
-	static constexpr std::pair<gpio_num_t, gpio_num_t> Pins[4] = {
-			{ (gpio_num_t)MOTOR_FL_A, (gpio_num_t)MOTOR_FL_B },
-			{ (gpio_num_t)MOTOR_FR_A, (gpio_num_t)MOTOR_FR_B },
-			{ (gpio_num_t)MOTOR_BL_A, (gpio_num_t)MOTOR_BL_B },
-			{ (gpio_num_t)MOTOR_BR_B, (gpio_num_t)MOTOR_BR_A }
+	static constexpr std::pair<gpio_num_t, gpio_num_t> Pins[2] = {
+			{ (gpio_num_t) MOTOR_LEFT_A,  (gpio_num_t) MOTOR_LEFT_B },
+			{ (gpio_num_t) MOTOR_RIGHT_A, (gpio_num_t) MOTOR_RIGHT_B }
 	};
 
 	union {
 		MotorInfo val;
-		int8_t raw[4];
-	} stateTarget = { .val = { 0, 0, 0, 0 } };
+		int8_t raw[2];
+	} stateTarget = { .val = { 0, 0 } };
 
-	double stateActual[4] = { 0, 0, 0, 0 };
+	double stateActual[2] = { 0, 0 };
 
 	void setMotorTarget(Motor motor, int8_t value);
 	void sendMotorPWM(Motor motor, int8_t value);

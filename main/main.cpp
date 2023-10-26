@@ -3,6 +3,7 @@
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_log.h>
+#include <esp_sleep.h>
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "Pins.hpp"
@@ -11,17 +12,32 @@
 #include "Periph/SPIFFS.h"
 #include "Devices/Input.h"
 #include "Devices/AW9523.h"
+#include "Devices/Motors.h"
+#include "Devices/MotorDriveController.h"
+#include "Devices/HeadlightsController.h"
+#include "Devices/ArmController.h"
+#include "Devices/CameraController.h"
+#include "Devices/Battery.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
 #include "Services/Modules.h"
 #include "Services/Comm.h"
 
+[[noreturn]] void shutdown(){
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
+	esp_deep_sleep_start();
+}
+
 void init(){
-	gpio_config_t cfg = {
-			.pin_bit_mask = 0,
-			.mode = GPIO_MODE_INPUT
-	};
-	gpio_config(&cfg);
+	auto battery = new Battery();
+	if(battery->isShutdown()){
+		shutdown();
+		return;
+	}
 
 	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
@@ -47,10 +63,17 @@ void init(){
 
 	auto input = new Input(*aw9523);
 
-	auto shiftReg = new ShiftReg(*aw9523);
-
 	auto comm = new Comm();
+	Services.set(Service::Comm, comm);
 
+	auto headlightsController = new HeadlightsController(*aw9523);
+	auto motorDriveController = new MotorDriveController();
+	auto armController = new ArmController();
+	auto cameraController = new CameraController();
+
+	battery->begin();
+
+	auto shiftReg = new ShiftReg(*aw9523);
 	auto modules = new Modules(*shiftReg, *i2c, *comm);
 	Services.set(Service::Modules, modules);
 
