@@ -2,19 +2,20 @@
 #define PERSE_ROVER_PHOTORESMODULE_H
 
 #include "Services/Modules.h"
-#include "Periph/ADC.h"
+#include "Services/ADCReader.h"
 
 class PhotoresModule : private SleepyThreaded {
 public:
-	PhotoresModule(ModuleBus bus, Comm& comm);
+	PhotoresModule(ModuleBus bus, Comm& comm, ADC& adc);
 	~PhotoresModule() override;
 
 private:
+	gpio_num_t gpio;
 	Comm& comm;
 	ModuleBus bus;
 
 	void sleepyLoop() override;
-	ADC adc;
+	ADCReader adc;
 
 	uint8_t getLevel();
 };

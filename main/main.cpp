@@ -33,7 +33,9 @@
 }
 
 void init(){
-	auto battery = new Battery();
+	auto adc1 = new ADC(ADC_UNIT_1);
+
+	auto battery = new Battery(*adc1);
 	if(battery->isShutdown()){
 		shutdown();
 		return;
