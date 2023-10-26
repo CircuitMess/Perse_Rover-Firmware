@@ -5,7 +5,7 @@
 
 static const char* const TAG = "MotorDriveController";
 
-MotorDriveController::MotorDriveController() : DeviceController("MotorDriveController"), motorControl(new MotorControl(std::array<ledc_channel_t, 4>({LEDC_CHANNEL_1, LEDC_CHANNEL_2, LEDC_CHANNEL_3, LEDC_CHANNEL_4}))) {
+MotorDriveController::MotorDriveController() : DeviceController("MotorDriveController"), motorControl(new MotorControl(std::array<ledc_channel_t, 2>({LEDC_CHANNEL_1, LEDC_CHANNEL_2}))) {
 	setControl(DeviceControlType::Local);
 	setLocally(MotorDriveState{});
 	setControl(DeviceControlType::Remote);
