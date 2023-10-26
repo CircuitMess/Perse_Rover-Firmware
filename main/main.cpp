@@ -22,12 +22,21 @@
 #include "Services/Comm.h"
 #include "Services/Audio.h"
 
+[[noreturn]] void shutdown(){
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
+	ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
+	esp_deep_sleep_start();
+}
+
 void init(){
-	gpio_config_t cfg = {
-			.pin_bit_mask = 0,
-			.mode = GPIO_MODE_INPUT
-	};
-	gpio_config(&cfg);
+	auto battery = new Battery();
+	if(battery->isShutdown()){
+		shutdown();
+		return;
+	}
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
@@ -59,18 +68,7 @@ void init(){
 	auto armController = new ArmController();
 	auto cameraController = new CameraController();
 
-	auto battery = new Battery();
 	battery->begin();
-
-	if (battery->isShutdown()) {
-		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
-		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
-		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
-		ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
-		ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
-		esp_deep_sleep_start();
-		return;
-	}
 }
 
 extern "C" void app_main(void){
