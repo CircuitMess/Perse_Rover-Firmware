@@ -20,6 +20,9 @@
 #include "Devices/Battery.h"
 #include "Services/TCPServer.h"
 #include "Services/Audio.h"
+#include "States/PairState.h"
+#include "Services/StateMachine.h"
+#include "Services/LED.h"
 #include "Services/Modules.h"
 #include "Services/Comm.h"
 #include "Devices/TCA9555.h"
@@ -61,13 +64,26 @@ void init(){
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
 
+	auto tca = new TCA9555(*i2c);
+	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
+	Services.set(Service::Modules, modules);
+
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
+
+	auto led = new LED(*aw9523);
+	Services.set(Service::LED, led);
 
 	auto input = new Input(*aw9523);
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
+
+	auto stateMachine = new StateMachine();
+	Services.set(Service::StateMachine, stateMachine);
+
+	stateMachine->transition<PairState>();
+	stateMachine->begin();
 
 	auto headlightsController = new HeadlightsController(*aw9523);
 	auto motorDriveController = new MotorDriveController();
@@ -75,11 +91,6 @@ void init(){
 	auto cameraController = new CameraController();
 
 	battery->begin();
-
-	auto tca = new TCA9555(*i2c);
-	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
-	Services.set(Service::Modules, modules);
-
 }
 
 extern "C" void app_main(void){

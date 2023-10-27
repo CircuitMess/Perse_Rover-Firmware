@@ -56,6 +56,9 @@
 #define EXP_LED_STATUS_RED 15
 #define EXP_HEADLIGHT_1 8
 #define EXP_HEADLIGHT_2 9
+#define EXP_STANDBY_LED 13
+#define EXP_GOOD_TO_GO_LED 14
+#define EXP_ERROR_LED 15
 
 //TCA9555 pins:
 #define TCA_A_ADDR_1 6
