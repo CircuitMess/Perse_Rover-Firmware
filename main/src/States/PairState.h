@@ -1,6 +1,7 @@
 #ifndef PERSE_ROVER_PAIRSTATE_H
 #define PERSE_ROVER_PAIRSTATE_H
 
+#include <memory>
 #include "Services/StateMachine.h"
 #include "Devices/AW9523.h"
 #include "Util/Events.h"
@@ -17,7 +18,7 @@ protected:
 
 private:
 	EventQueue queue;
-	PairService* pairService = nullptr;
+	std::unique_ptr<PairService> pairService = nullptr;
 };
 
 #endif //PERSE_ROVER_PAIRSTATE_H
