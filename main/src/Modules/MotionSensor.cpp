@@ -21,6 +21,7 @@ MotionSensor::MotionSensor(ModuleBus bus, Comm& comm) : Threaded("MotionSens", 2
 }
 
 MotionSensor::~MotionSensor(){
+	gpio_isr_handler_remove(pin);
 	gpio_intr_disable(pin);
 	stop(0);
 	exitFlag = true;
