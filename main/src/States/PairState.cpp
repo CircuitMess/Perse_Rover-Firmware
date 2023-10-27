@@ -50,7 +50,7 @@ void PairState::loop() {
 	}
 	else if (event.facility == Facility::Pair) {
 		const PairService::Event* pairEvent = (PairService::Event*)event.data;
-		if (pairEvent != nullptr && !pairEvent->success) {
+		if (pairEvent != nullptr && pairEvent->success) {
 			if (StateMachine* stateMachine = (StateMachine*)Services.get(Service::StateMachine)) {
 				stateMachine->transition<DriveState>();
 			}
