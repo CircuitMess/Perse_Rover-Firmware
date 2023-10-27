@@ -65,8 +65,6 @@ void init(){
 	auto aw9523 = new AW9523(*i2c, 0x5b);
 
 	auto tca = new TCA9555(*i2c);
-	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
-	Services.set(Service::Modules, modules);
 
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
@@ -84,6 +82,9 @@ void init(){
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
+
+	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
+	Services.set(Service::Modules, modules);
 
 	auto headlightsController = new HeadlightsController(*aw9523);
 	auto motorDriveController = new MotorDriveController();
