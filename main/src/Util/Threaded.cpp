@@ -121,3 +121,10 @@ void SleepyThreaded::loop(){
 	resetTime();
 	sleepyLoop();
 }
+
+SleepyThreadedClosure::SleepyThreadedClosure(TickType_t loopInterval, SleepyThreadedClosure::Lambda loopFn, const char *name, size_t stackSize, uint8_t priority, int8_t core) :
+		SleepyThreaded(loopInterval, name, stackSize, priority, core), fn(std::move(loopFn)) {}
+
+void SleepyThreadedClosure::sleepyLoop() {
+	fn();
+}

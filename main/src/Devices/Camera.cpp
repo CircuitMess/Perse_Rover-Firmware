@@ -2,11 +2,7 @@
 #include <Pins.hpp>
 #include <driver/i2c.h>
 
-Camera* Camera::instance = nullptr;
-
 Camera::Camera(I2C& i2c) : i2c(i2c){
-	instance = this;
-
 	const gpio_config_t cfg = {
 			.pin_bit_mask = 1ULL << CAM_PIN_PWDN,
 			.mode = GPIO_MODE_OUTPUT
@@ -16,7 +12,6 @@ Camera::Camera(I2C& i2c) : i2c(i2c){
 }
 
 Camera::~Camera(){
-	instance = nullptr;
 	deinit();
 }
 
@@ -154,10 +149,6 @@ void Camera::releaseFrame(){
 
 bool Camera::isInited(){
 	return inited;
-}
-
-Camera* Camera::getInstance(){
-	return instance;
 }
 
 void Camera::setRes(framesize_t res){

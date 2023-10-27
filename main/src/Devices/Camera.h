@@ -9,8 +9,6 @@ public:
 	Camera(I2C& i2c);
 	virtual ~Camera();
 
-	static Camera* getInstance();
-
 	camera_fb_t* getFrame();
 	void releaseFrame();
 
@@ -33,8 +31,6 @@ private:
 
 	framesize_t res = FRAMESIZE_INVALID;
 	pixformat_t format = PIXFORMAT_RGB444;
-
-	static Camera* instance;
 
 	static constexpr int MaxFailedFrames = 2;
 	int failedFrames = 0;

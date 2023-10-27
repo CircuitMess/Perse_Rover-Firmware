@@ -80,4 +80,17 @@ private:
 
 };
 
+class SleepyThreadedClosure : public SleepyThreaded {
+public:
+	using Lambda = std::function<void()>;
+
+	SleepyThreadedClosure(TickType_t loopInterval, Lambda loopFn, const char* name, size_t stackSize = 12000, uint8_t priority = 5, int8_t core = -1);
+
+protected:
+	virtual void sleepyLoop() override final;
+
+private:
+	Lambda fn;
+};
+
 #endif //BIT_FIRMWARE_THREADED_H
