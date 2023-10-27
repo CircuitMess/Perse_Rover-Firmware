@@ -36,8 +36,8 @@
 
 #define BATTERY_ADC 6
 
-#define A_CTRL_1 8
-#define A_CTRL_2 7
+#define A_CTRL_1 9
+#define A_CTRL_2 8
 #define B_CTRL_1 5
 #define B_CTRL_2 4
 
