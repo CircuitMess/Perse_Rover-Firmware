@@ -9,7 +9,7 @@
 class WS2812B {
 public:
 	WS2812B(uint32_t numLeds, gpio_num_t gpio);
-
+	virtual ~WS2812B();
 	void setAll(glm::vec<3, uint8_t> color);
 	void setPixel(glm::vec<3, uint8_t> color, uint32_t index);
 

@@ -26,6 +26,14 @@ WS2812B::WS2812B(uint32_t numLeds, gpio_num_t gpio) : NumLeds(numLeds), ledPixel
 	push();
 }
 
+WS2812B::~WS2812B(){
+	rmt_disable(led_chan);
+	if(led_encoder){
+		rmt_del_encoder(led_encoder);
+	}
+	rmt_del_channel(led_chan);
+}
+
 void WS2812B::setAll(glm::vec<3, uint8_t> color){
 	std::fill(ledPixels.begin(), ledPixels.end(), color);
 }
