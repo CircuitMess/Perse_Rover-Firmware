@@ -7,7 +7,7 @@
 
 struct CameraState
 {
-	CameraRotation Rotation = 100;
+	CameraRotation Rotation = 35;
 };
 
 class CameraController : public DeviceController<CameraState>
