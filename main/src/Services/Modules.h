@@ -33,6 +33,11 @@ private:
 	Comm& comm;
 	ADC& adc;
 
+	ThreadedClosure connectionThread;
+	EventQueue connectionQueue;
+	bool modulesEnabled = false;
+	void connectionLoop();
+
 	static constexpr uint32_t CheckInterval = 500; // [ms]
 
 	struct BusContext {

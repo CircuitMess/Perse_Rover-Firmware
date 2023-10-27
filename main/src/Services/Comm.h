@@ -41,8 +41,6 @@ private:
 	Event processPacket(const ControlPacket& packet);
 
 	EventQueue queue;
-
-	bool modulesEnabled = false;
 };
 
 

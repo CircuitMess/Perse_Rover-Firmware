@@ -9,6 +9,7 @@
 #include "Modules/PhotoResModule.h"
 #include "Modules/MotionSensor.h"
 #include "Modules/CO2Sensor.h"
+#include "Services/TCPServer.h"
 
 const std::map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc)>, std::function<void(void*)>>> ModuleConstrDestr = {
 		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new TempHumModule(i2c, bus, comm); },
@@ -43,10 +44,15 @@ const std::map<uint8_t, ModuleType> Modules::I2CAddressMap = {
 		{ 0x76, ModuleType::AltPress }
 };
 
-Modules::Modules(TCA9555& tca, I2C& i2c, Comm& comm, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1), tca(tca), i2c(i2c), comm(comm),
-																 adc(adc){
+Modules::Modules(TCA9555& tca, I2C& i2c, Comm& comm, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1), tca(tca), i2c(i2c),
+																 comm(comm), adc(adc),
+																 connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
+																 connectionQueue(10){
 	Modules::sleepyLoop();
 	start();
+	Events::listen(Facility::Comm, &connectionQueue);
+	Events::listen(Facility::TCP, &connectionQueue);
+	connectionThread.start();
 }
 
 Modules::~Modules(){
@@ -59,6 +65,10 @@ Modules::~Modules(){
 		ModuleConstrDestr.at(rightContext.current).second(rightContext.moduleInstance);
 		rightContext.moduleInstance = nullptr;
 	}
+	connectionThread.stop(0);
+	connectionQueue.unblock();
+	connectionThread.stop();
+	Events::unlisten(&connectionQueue);
 }
 
 ModuleType Modules::getInserted(ModuleBus bus){
@@ -130,7 +140,9 @@ void Modules::loopCheck(ModuleBus bus){
 		context.current = ModuleType::Unknown;
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
-		comm.sendModulePlug(removed, bus, context.inserted);
+		if(modulesEnabled){
+			comm.sendModulePlug(removed, bus, context.inserted);
+		}
 
 		if(ModuleConstrDestr.contains(removed)){
 			ModuleConstrDestr.at(removed).second(context.moduleInstance);
@@ -144,10 +156,45 @@ void Modules::loopCheck(ModuleBus bus){
 		context.inserted = true;
 
 		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
-		comm.sendModulePlug(context.current, bus, context.inserted);
+		if(modulesEnabled){
+			comm.sendModulePlug(context.current, bus, context.inserted);
+		}
 
 		if(ModuleConstrDestr.contains(context.current)){
 			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2c, bus, comm, adc);
 		}
 	}
+}
+
+void Modules::connectionLoop(){
+	::Event e{};
+	while(!connectionQueue.get(e, portMAX_DELAY));
+
+	if(!running()) return;
+
+	if(e.facility == Facility::TCP){
+		auto& data = *((TCPServer::Event*) e.data);
+		if(data.status != TCPServer::Event::Status::Disconnected) return;
+
+		modulesEnabled = false;
+	}else if(e.facility == Facility::Comm){
+		auto& data = *((Comm::Event*) e.data);
+		if(data.type != CommType::ModulesEnable) return;
+		if(modulesEnabled == (bool) data.raw) return;
+
+		modulesEnabled = (bool) data.raw;
+
+		if(!modulesEnabled) return;
+
+		if(!leftContext.inserted && !rightContext.inserted) return;
+
+		if(leftContext.inserted){
+			comm.sendModulePlug(leftContext.current, ModuleBus::Left, leftContext.inserted);
+		}
+		if(rightContext.inserted){
+			comm.sendModulePlug(rightContext.current, ModuleBus::Right, rightContext.inserted);
+		}
+	}
+
+	free(e.data);
 }

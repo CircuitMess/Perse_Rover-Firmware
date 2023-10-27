@@ -57,8 +57,6 @@ void Comm::sendBattery(uint8_t batteryPercent){
 }
 
 void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
-	if(!modulesEnabled) return;
-
 	uint8_t data = CommData::encodeModulePlug({ type, bus, insert });
 	ControlPacket packet{ CommType::ModulePlug, data };
 	sendPacket(packet);
@@ -83,7 +81,6 @@ void Comm::loop(){
 	}
 
 	if(!tcp.isConnected() || !readOK){
-		modulesEnabled = false; //reset modulesEnable on disconnect
 		::Event event{};
 		while(!queue.get(event, portMAX_DELAY));
 		free(event.data);
@@ -125,7 +122,6 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 		case CommType::ModuleData:
 			break;
 		case CommType::ModulesEnable:
-			modulesEnabled = packet.data;
 			break;
 		default:{
 			break;
@@ -136,8 +132,6 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 }
 
 void Comm::sendModuleData(ModuleData data){
-	if(!modulesEnabled) return;
-
 	if(!tcp.isConnected()) return;
 
 	auto type = CommType::ModuleData;
