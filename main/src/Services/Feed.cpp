@@ -12,7 +12,7 @@ Feed::Feed(I2C& i2c) : Threaded("Feed"), queue(10),
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Comm, &queue);
 
-	camera = new Camera(i2c);
+	camera = std::make_unique<Camera>(i2c);
 
 	start();
 	frameSendingThread.start();
@@ -21,6 +21,7 @@ Feed::Feed(I2C& i2c) : Threaded("Feed"), queue(10),
 Feed::~Feed(){
 	frameSendingThread.stop();
 	free(txBuf);
+	Events::unlisten(&queue);
 }
 
 void Feed::loop() {
@@ -32,14 +33,14 @@ void Feed::loop() {
 	const uint8_t oldFeedQuality = feedQuality;
 
 	if (event.facility == Facility::TCP) {
-		if (TCPServer::Event* tcpEvent = (TCPServer::Event*)event.data) {
+		if (const TCPServer::Event* tcpEvent = (TCPServer::Event*)event.data) {
 			if (tcpEvent->status == TCPServer::Event::Status::Disconnected) {
 				feedQuality = 0;
 			}
 		}
 	}
 	else if (event.facility == Facility::Comm) {
-		if (Comm::Event* commEvent = (Comm::Event*)event.data) {
+		if (const Comm::Event* commEvent = (Comm::Event*)event.data) {
 			if (commEvent->type == CommType::FeedQuality) {
 				feedQuality = std::clamp(commEvent->feedQuality, (uint8_t)0, (uint8_t)10);
 			}

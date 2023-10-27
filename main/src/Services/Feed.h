@@ -3,6 +3,7 @@
 
 #include <DriveInfo.h>
 #include <atomic>
+#include <memory>
 #include "Util/Threaded.h"
 #include "UDPEmitter.h"
 #include "Devices/Camera.h"
@@ -21,7 +22,7 @@ private:
 	EventQueue queue;
 	std::atomic<uint8_t> feedQuality = 0; // [0 - 10], if 0, camera feed doesn't get sent
 	SleepyThreadedClosure frameSendingThread;
-	Camera* camera;
+	std::unique_ptr<Camera> camera;
 
 	static constexpr size_t TxBufSize = 10000;
 	uint8_t* txBuf;
