@@ -88,7 +88,7 @@ private:
 				}
 			}
 		}
-		else if (event.facility != Facility::Comm) {
+		else if (event.facility == Facility::Comm) {
 			processEvent(event);
 		}
 
