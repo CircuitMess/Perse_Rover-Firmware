@@ -130,10 +130,10 @@ camera_fb_t* Camera::getFrame(){
 
 	if(frame == nullptr){
 		failedFrames++;
-		if(failedFrames >= MaxFailedFrames){
+/*		if(failedFrames >= MaxFailedFrames){
 			printf("Camera errored out\n");
 			deinit();
-		}
+		}*/
 	}
 
 	return frame;
