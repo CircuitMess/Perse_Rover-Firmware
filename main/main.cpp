@@ -21,6 +21,9 @@
 #include "Services/TCPServer.h"
 #include "Services/Comm.h"
 #include "Services/Audio.h"
+#include "States/PairState.h"
+#include "Services/StateMachine.h"
+#include "Services/LED.h"
 #include "Services/Feed.h"
 
 [[noreturn]] void shutdown(){
@@ -62,10 +65,19 @@ void init(){
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
 
+	auto led = new LED(*aw9523);
+	Services.set(Service::LED, led);
+
 	auto input = new Input(*aw9523);
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
+
+	auto stateMachine = new StateMachine();
+	Services.set(Service::StateMachine, stateMachine);
+
+	stateMachine->transition<PairState>();
+	stateMachine->begin();
 
 	auto headlightsController = new HeadlightsController(*aw9523);
 	auto motorDriveController = new MotorDriveController();

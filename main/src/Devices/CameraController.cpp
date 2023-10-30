@@ -4,6 +4,7 @@
 #include "Pins.hpp"
 #include "Services/Comm.h"
 #include "Util/Services.h"
+#include "Util/stdafx.h"
 
 static const char* const TAG = "HeadlightsController";
 
@@ -37,9 +38,8 @@ void CameraController::write(const CameraState &state) {
 		return;
 	}
 
-	if (state.Rotation >= 0) {
-		cameraServo->setValue(std::clamp(state.Rotation, (uint8_t)0, (uint8_t)100));
-	}
+	uint8_t value = map(std::clamp(state.Rotation, (uint8_t)0, (uint8_t)100), 0, 100, rotationLimits.x, rotationLimits.y);
+	cameraServo->setValue(value);
 }
 
 CameraState CameraController::getDefaultState() const {
