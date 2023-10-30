@@ -18,6 +18,7 @@ public:
 				ArmPinch armPinch;
 			};
 			CameraRotation cameraRotation;
+			uint8_t feedQuality;
 		};
 		uint8_t raw;
 	};
