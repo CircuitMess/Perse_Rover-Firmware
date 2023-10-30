@@ -4,7 +4,7 @@
 
 const char* tag = "Feed";
 
-Feed::Feed(I2C& i2c) : Threaded("Feed"), queue(10),
+Feed::Feed(I2C& i2c) : Threaded("Feed", 4 * 1024), queue(10),
 				frameSendingThread(50, [this]() { this->sendFrame(); }, "FrameSending", 4 * 1024),
 				txBuf(static_cast<uint8_t*>(malloc(TxBufSize))) {
 	memset(txBuf, 0, TxBufSize);

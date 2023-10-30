@@ -1,6 +1,6 @@
 #include "StateMachine.h"
 
-StateMachine::StateMachine() : Threaded("StateMachine", 16 * 1024) {}
+StateMachine::StateMachine() : Threaded("StateMachine", 4 * 1024) {}
 
 void StateMachine::loop() {
 	if (currentState == nullptr) {

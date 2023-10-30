@@ -16,7 +16,7 @@ enum DeviceControlType{
 template <typename T>
 class DeviceController{
 public:
-	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str()){
+	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10), dcListenThread(std::function([this]() {this->processCommandQueue();}), name.c_str(), 4 * 1024){
 		Events::listen(Facility::Comm, &eventQueue);
 		Events::listen(Facility::TCP, &eventQueue);
 		dcListenThread.start();
