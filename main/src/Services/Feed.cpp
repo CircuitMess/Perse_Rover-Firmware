@@ -77,7 +77,12 @@ void Feed::sendFrame(){
 	}
 
 	camera_fb_t* frameData = camera->getFrame();
-	if (frameData == nullptr || frameData->buf == nullptr || frameData->len == 0) {
+	if (frameData == nullptr) {
+		return;
+	}
+
+	if(frameData->buf == nullptr || frameData->len == 0){
+		camera->releaseFrame();
 		return;
 	}
 
@@ -88,6 +93,8 @@ void Feed::sendFrame(){
 	auto sendSize = frameSize + sizeof(FrameHeader) + sizeof(FrameTrailer) + sizeof(size_t) * 2;
 	if(sendSize > TxBufSize){
 		ESP_LOGW(tag, "Data frame buffer larger than send buffer. %zu > %zu\n", sendSize, TxBufSize);
+		frame.frame = {.size = 0, .data = nullptr};
+		camera->releaseFrame();
 		return;
 	}
 
