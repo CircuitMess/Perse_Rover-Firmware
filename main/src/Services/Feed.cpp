@@ -120,17 +120,17 @@ void Feed::sendFrame(){
 }
 
 void Feed::onSendingStarted() {
-	if (!frameSendingThread.running()) {
-		frameSendingThread.start();
+	if (camera != nullptr) {
+		if (!camera->isInited()) {
+			camera->init();
+		}
 	}
 
-	if (camera == nullptr) {
+	if (frameSendingThread.running()) {
 		return;
 	}
 
-	if (!camera->isInited()) {
-		camera->init();
-	}
+	frameSendingThread.start();
 }
 
 void Feed::onSendingEnded() {
