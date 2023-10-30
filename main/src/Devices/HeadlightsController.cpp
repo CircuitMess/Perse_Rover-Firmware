@@ -4,8 +4,8 @@
 #include "Util/Services.h"
 
 HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("Headlights Controller"), aw9523(aw9523){
-	aw9523.pinMode(EXP_HEADLIGHT_1, AW9523::LED);
-	aw9523.pinMode(EXP_HEADLIGHT_2, AW9523::LED);
+	aw9523.pinMode(EXP_LED_FRONT_L, AW9523::LED);
+	aw9523.pinMode(EXP_LED_FRONT_R, AW9523::LED);
 
 	setControl(DeviceControlType::Local);
 	setLocally(HeadlightsState{});
@@ -14,12 +14,12 @@ HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("H
 
 void HeadlightsController::write(const HeadlightsState& state){
 	if (state.Mode == HeadlightsMode::Off){
-		aw9523.dim(EXP_HEADLIGHT_1, 0);
-		aw9523.dim(EXP_HEADLIGHT_2, 0);
+		aw9523.dim(EXP_LED_FRONT_L, 0);
+		aw9523.dim(EXP_LED_FRONT_R, 0);
 	}
 	else{
-		aw9523.dim(EXP_HEADLIGHT_1, 255);
-		aw9523.dim(EXP_HEADLIGHT_2, 255);
+		aw9523.dim(EXP_LED_FRONT_L, 255);
+		aw9523.dim(EXP_LED_FRONT_R, 255);
 	}
 }
 

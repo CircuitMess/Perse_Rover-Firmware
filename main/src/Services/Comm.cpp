@@ -116,7 +116,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.cameraRotation = packet.data;
 			break;
 		}
-
+		case CommType::FeedQuality:{
+			e.feedQuality = packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 			break;
 		case CommType::ModuleData:

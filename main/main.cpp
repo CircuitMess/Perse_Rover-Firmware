@@ -18,14 +18,15 @@
 #include "Devices/ArmController.h"
 #include "Devices/CameraController.h"
 #include "Devices/Battery.h"
+#include "Devices/TCA9555.h"
 #include "Services/TCPServer.h"
+#include "Services/Comm.h"
 #include "Services/Audio.h"
 #include "States/PairState.h"
 #include "Services/StateMachine.h"
 #include "Services/LED.h"
+#include "Services/Feed.h"
 #include "Services/Modules.h"
-#include "Services/Comm.h"
-#include "Devices/TCA9555.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -66,6 +67,9 @@ void init(){
 
 	auto tca = new TCA9555(*i2c);
 
+	auto feed = new Feed(*i2c);
+	Services.set(Service::Feed, feed);
+
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
 
@@ -77,14 +81,14 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
 
+	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
+	Services.set(Service::Modules, modules);
+
 	auto stateMachine = new StateMachine();
 	Services.set(Service::StateMachine, stateMachine);
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
-
-	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
-	Services.set(Service::Modules, modules);
 
 	auto headlightsController = new HeadlightsController(*aw9523);
 	auto motorDriveController = new MotorDriveController();
