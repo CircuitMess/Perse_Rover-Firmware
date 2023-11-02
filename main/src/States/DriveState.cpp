@@ -9,14 +9,14 @@ DriveState::DriveState() : State(), queue(10) {
 	Events::listen(Facility::TCP, &queue);
 
 	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->on(EXP_GOOD_TO_GO_LED);
+		led->on(EXP_LED_STATUS_GREEN);
 	}
 }
 
 DriveState::~DriveState() {
 	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->off(EXP_GOOD_TO_GO_LED);
-		led->on(EXP_ERROR_LED);
+		led->off(EXP_LED_STATUS_GREEN);
+		led->on(EXP_LED_STATUS_RED);
 	}
 
 	Events::unlisten(&queue);

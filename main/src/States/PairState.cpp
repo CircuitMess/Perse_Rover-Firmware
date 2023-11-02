@@ -10,13 +10,13 @@ PairState::PairState() : State(), queue(10) {
 	Events::listen(Facility::Pair, &queue);
 
 	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->on(EXP_STANDBY_LED);
+		led->on(EXP_LED_STATUS_YELLOW);
 	}
 }
 
 PairState::~PairState() {
 	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->off(EXP_STANDBY_LED);
+		led->off(EXP_LED_STATUS_YELLOW);
 	}
 
 	Events::unlisten(&queue);
@@ -40,11 +40,11 @@ void PairState::loop() {
 				pairService = std::make_unique<PairService>();
 			}
 
-			led->blinkCont(EXP_STANDBY_LED);
-			led->off(EXP_ERROR_LED);
+			led->blinkCont(EXP_LED_STATUS_YELLOW);
+			led->off(EXP_LED_STATUS_RED);
 		}
 		else {
-			led->on(EXP_STANDBY_LED);
+			led->on(EXP_LED_STATUS_YELLOW);
 			pairService.reset(nullptr);
 		}
 	}
