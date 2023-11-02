@@ -31,6 +31,11 @@ Input::~Input(){
 	stop();
 }
 
+bool Input::getState(Input::Button btn){
+	if(!btnState.contains(btn)) return false;
+	return btnState.at(btn);
+}
+
 void Input::loop(){
 	scan();
 	vTaskDelay(SleepTime);
