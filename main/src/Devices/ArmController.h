@@ -11,7 +11,7 @@ struct ArmState
 	ArmPinch Pinch = -1;
 };
 
-class ArmController : DeviceController<ArmState>
+class ArmController : public DeviceController<ArmState>
 {
 public:
 	ArmController();
