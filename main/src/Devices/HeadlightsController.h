@@ -13,7 +13,7 @@ struct HeadlightsState
 class HeadlightsController : public DeviceController<HeadlightsState>
 {
 public:
-	explicit HeadlightsController(AW9523& aw9523);
+	explicit HeadlightsController();
 	virtual ~HeadlightsController() override = default;
 
 protected:
@@ -21,9 +21,6 @@ protected:
 	virtual HeadlightsState getDefaultState() const override;
 	virtual void sendState(const HeadlightsState& state) const override;
 	virtual void processEvent(const Event& event) override;
-
-private:
-	AW9523& aw9523;
 };
 
 #endif //PERSE_ROVER_HEADLIGHTSCONTROLLER_H

@@ -1,25 +1,27 @@
 #include "HeadlightsController.h"
-#include "Pins.hpp"
 #include "Services/Comm.h"
 #include "Util/Services.h"
+#include "Services/LEDService.h"
 
-HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("Headlights Controller"), aw9523(aw9523){
-	aw9523.pinMode(EXP_LED_FRONT_L, AW9523::LED);
-	aw9523.pinMode(EXP_LED_FRONT_R, AW9523::LED);
-
+HeadlightsController::HeadlightsController() : DeviceController("Headlights Controller"){
 	setControl(DeviceControlType::Local);
 	setLocally(HeadlightsState{});
 	setControl(DeviceControlType::Remote);
 }
 
 void HeadlightsController::write(const HeadlightsState& state){
+	LEDService* ledService = (LEDService*)Services.get(Service::LED);
+	if (ledService == nullptr) {
+		return;
+	}
+
 	if (state.Mode == HeadlightsMode::Off){
-		aw9523.dim(EXP_LED_FRONT_L, 0);
-		aw9523.dim(EXP_LED_FRONT_R, 0);
+		ledService->off(LED::LeftHeadlight);
+		ledService->off(LED::RightHeadlight);
 	}
 	else{
-		aw9523.dim(EXP_LED_FRONT_L, 255);
-		aw9523.dim(EXP_LED_FRONT_R, 255);
+		ledService->on(LED::LeftHeadlight);
+		ledService->on(LED::RightHeadlight);
 	}
 }
 
