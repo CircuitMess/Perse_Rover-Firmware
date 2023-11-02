@@ -69,6 +69,7 @@ void init(){
 	Services.set(Service::LED, led);
 
 	auto input = new Input(*aw9523);
+	Services.set(Service::Input, input);
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
