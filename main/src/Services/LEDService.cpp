@@ -4,8 +4,24 @@
 #include "Devices/SinglePwmLED.h"
 #include "Util/LEDBlinkFunction.h"
 #include "Util/LEDBreatheFunction.h"
+#include "Pins.hpp"
 
 static const char* TAG = "LEDService";
+
+const std::map<LED, std::tuple<gpio_num_t, ledc_channel_t, uint8_t>> LEDService::pwmMappings = {};
+
+const std::map<LED, std::tuple<uint8_t, uint8_t>> LEDService::expanderMappings = {
+		{LED::Camera, {EXP_LED_CAM, 0xFF}},
+		{LED::Rear, {EXP_LED_REAR, 0xFF}},
+		{LED::LeftMotor, {EXP_LED_MOTOR_L, 0xFF}},
+		{LED::RightMotor, {EXP_LED_MOTOR_R, 0xFF}},
+		{LED::Arm, {EXP_LED_ARM, 0xFF}},
+		{LED::LeftHeadlight, {EXP_LED_FRONT_L, 0xFF}},
+		{LED::RightHeadlight, {EXP_LED_FRONT_R, 0xFF}},
+		{LED::StatusGreen, {EXP_LED_STATUS_GREEN, 0xFF}},
+		{LED::StatusYellow, {EXP_LED_STATUS_YELLOW, 0xFF}},
+		{LED::StatusRed, {EXP_LED_STATUS_RED, 0xFF}},
+};
 
 LEDService::LEDService(AW9523& aw9523) : SleepyThreaded(10, "LEDService") {
 	std::lock_guard lock(mutex);
