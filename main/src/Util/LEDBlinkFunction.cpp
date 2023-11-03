@@ -1,7 +1,8 @@
 #include "LEDBlinkFunction.h"
 #include "Util/stdafx.h"
 
-LEDBlinkFunction::LEDBlinkFunction(SingleLED& led, uint32_t count, uint32_t period) : LEDFunction(led), count(count), period(period) {
+LEDBlinkFunction::LEDBlinkFunction(SingleLED &led, uint32_t count, uint32_t period) : LEDFunction(led), count(count),
+																					  period(period) {
 	startTime = millis();
 }
 
@@ -32,8 +33,7 @@ void LEDBlinkFunction::loop() {
 	if (ledState) {
 		++elapsedCount;
 		led.setValue(0xFF);
-	}
-	else {
+	} else {
 		led.setValue(0);
 	}
 }

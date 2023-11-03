@@ -3,10 +3,10 @@
 
 #include "LEDFunction.h"
 
-class LEDBlinkFunction : public LEDFunction
-{
+class LEDBlinkFunction : public LEDFunction {
 public:
-	LEDBlinkFunction(SingleLED& led, uint32_t count, uint32_t period);
+	LEDBlinkFunction(SingleLED &led, uint32_t count, uint32_t period);
+
 	virtual ~LEDBlinkFunction() override;
 
 protected:

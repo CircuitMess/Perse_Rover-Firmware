@@ -4,8 +4,7 @@
 #include "SingleLED.h"
 #include "Periph/PWM.h"
 
-class SinglePwmLED : public SingleLED
-{
+class SinglePwmLED : public SingleLED {
 public:
 	SinglePwmLED(uint8_t pin, ledc_channel_t channel, uint8_t limit = 100);
 

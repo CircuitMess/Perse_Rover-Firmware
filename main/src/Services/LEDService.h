@@ -10,8 +10,7 @@
 #include "Devices/AW9523.h"
 #include "Util/Threaded.h"
 
-enum class LED : uint8_t
-{
+enum class LED : uint8_t {
 	Camera,
 	Rear,
 	LeftMotor,
@@ -25,16 +24,19 @@ enum class LED : uint8_t
 	COUNT
 };
 
-class LEDService : private SleepyThreaded
-{
+class LEDService : private SleepyThreaded {
 public:
-	explicit LEDService(AW9523& aw9523);
+	explicit LEDService(AW9523 &aw9523);
+
 	virtual ~LEDService();
 
 	void on(LED led);
+
 	void off(LED led);
-	void blink(LED led, uint32_t count = 1, uint32_t period = 500);
-	void breathe(LED led, uint32_t period = 500);
+
+	void blink(LED led, uint32_t count = 1, uint32_t period = 1000);
+
+	void breathe(LED led, uint32_t period = 1000);
 
 protected:
 	virtual void sleepyLoop() override;
@@ -44,7 +46,7 @@ private:
 	static const std::map<LED, std::tuple<uint8_t, uint8_t>> expanderMappings;
 
 private:
-	std::map<LED, class SingleLED*> ledDevices;
+	std::map<LED, class SingleLED *> ledDevices;
 	std::map<LED, std::unique_ptr<class LEDFunction>> ledFunctions;
 	std::mutex mutex;
 };

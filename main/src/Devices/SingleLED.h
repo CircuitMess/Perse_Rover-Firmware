@@ -3,13 +3,14 @@
 
 #include <cstdint>
 
-class SingleLED
-{
+class SingleLED {
 public:
 	explicit SingleLED(uint8_t limit);
+
 	virtual ~SingleLED() = default;
 
 	void setValue(uint8_t val);
+
 	uint8_t getValue() const;
 
 protected:

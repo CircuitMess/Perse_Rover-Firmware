@@ -68,6 +68,10 @@ void init(){
 	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
 
+	led->on(LED::Rear);
+	led->on(LED::LeftMotor);
+	led->on(LED::RightMotor);
+
 	auto input = new Input(*aw9523);
 
 	auto comm = new Comm();
