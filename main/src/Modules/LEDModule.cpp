@@ -13,6 +13,7 @@ LEDModule::~LEDModule(){
 	while(running()){
 		delayMillis(1);
 	}
+	Events::unlisten(&queue);
 }
 
 void LEDModule::loop(){
