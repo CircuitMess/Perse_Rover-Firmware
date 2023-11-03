@@ -12,6 +12,12 @@ PairState::PairState() : State(), queue(10) {
 	if (auto led = (LED*)Services.get(Service::LED)) {
 		led->on(EXP_STANDBY_LED);
 	}
+
+	if(auto input = (Input*) Services.get(Service::Input)){
+		if(input->getState(Input::Pair)){
+			startPair();
+		}
+	}
 }
 
 PairState::~PairState() {
@@ -23,11 +29,6 @@ PairState::~PairState() {
 }
 
 void PairState::loop() {
-	auto led = (LED*)Services.get(Service::LED);
-	if (led == nullptr) {
-		return;
-	}
-
 	Event event{};
 	if (!queue.get(event, portMAX_DELAY)) {
 		return;
@@ -35,17 +36,10 @@ void PairState::loop() {
 
 	if (event.facility == Facility::Input) {
 		const Input::Data* data = (Input::Data*)event.data;
-		if (data != nullptr && data->action == Input::Data::Press) {
-			if (pairService == nullptr) {
-				pairService = std::make_unique<PairService>();
-			}
-
-			led->blinkCont(EXP_STANDBY_LED);
-			led->off(EXP_ERROR_LED);
-		}
-		else {
-			led->on(EXP_STANDBY_LED);
-			pairService.reset(nullptr);
+		if(data != nullptr && data->action == Input::Data::Press){
+			startPair();
+		}else{
+			stopPair();
 		}
 	}
 	else if (event.facility == Facility::Pair) {
@@ -58,4 +52,25 @@ void PairState::loop() {
 	}
 
 	free(event.data);
+}
+
+void PairState::startPair(){
+	if(pairService) return;
+
+	pairService = std::make_unique<PairService>();
+
+	if(auto led = (LED*) Services.get(Service::LED)){
+		led->off(EXP_ERROR_LED);
+		led->blinkCont(EXP_STANDBY_LED);
+	}
+}
+
+void PairState::stopPair(){
+	if(!pairService) return;
+
+	pairService.reset();
+
+	if(auto led = (LED*) Services.get(Service::LED)){
+		led->on(EXP_STANDBY_LED);
+	}
 }

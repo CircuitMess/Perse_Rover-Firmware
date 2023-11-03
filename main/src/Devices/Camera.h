@@ -25,7 +25,7 @@ public:
 private:
 	bool inited = false;
 	framesize_t resWait = FRAMESIZE_QQVGA;
-	pixformat_t formatWait = PIXFORMAT_RGB565;
+	pixformat_t formatWait = PIXFORMAT_JPEG;
 
 	camera_fb_t* frame = nullptr;
 

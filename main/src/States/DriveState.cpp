@@ -13,6 +13,15 @@ DriveState::DriveState() : State(), queue(10) {
 	}
 }
 
+DriveState::~DriveState() {
+	if (auto led = (LED*)Services.get(Service::LED)) {
+		led->off(EXP_GOOD_TO_GO_LED);
+		led->on(EXP_ERROR_LED);
+	}
+
+	Events::unlisten(&queue);
+}
+
 void DriveState::loop() {
 	Event event = {};
 	if (!queue.get(event, portMAX_DELAY))
@@ -36,12 +45,5 @@ void DriveState::loop() {
 		if (auto parentStateMaching = (StateMachine*)Services.get(Service::StateMachine)) {
 			parentStateMaching->transition<PairState>();
 		}
-	}
-}
-
-DriveState::~DriveState() {
-	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->off(EXP_GOOD_TO_GO_LED);
-		led->on(EXP_ERROR_LED);
 	}
 }

@@ -34,10 +34,8 @@ private:
 
 template<typename T, typename... Args>
 State* StateMachine::transition(Args&&... args) {
-	State* nextState = new T(args...);
-
 	delete currentState;
-	currentState = nextState;
+	currentState = new T(args...);
 	return currentState;
 }
 

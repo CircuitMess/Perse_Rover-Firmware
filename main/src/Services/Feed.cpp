@@ -1,10 +1,11 @@
 #include "Feed.h"
 #include <esp_log.h>
 #include "Services/Comm.h"
+#include "Util/stdafx.h"
 
 const char* tag = "Feed";
 
-Feed::Feed(I2C& i2c) : Threaded("Feed"), queue(10),
+Feed::Feed(I2C& i2c) : Threaded("Feed", 4 * 1024), queue(10),
 				frameSendingThread(50, [this]() { this->sendFrame(); }, "FrameSending", 4 * 1024),
 				txBuf(static_cast<uint8_t*>(malloc(TxBufSize))) {
 	memset(txBuf, 0, TxBufSize);
@@ -20,8 +21,16 @@ Feed::Feed(I2C& i2c) : Threaded("Feed"), queue(10),
 
 Feed::~Feed(){
 	frameSendingThread.stop();
-	free(txBuf);
+
+	stop(0);
+	queue.unblock();
+	while(running()){
+		delayMillis(1);
+	}
+
 	Events::unlisten(&queue);
+
+	free(txBuf);
 }
 
 void Feed::loop() {
@@ -77,7 +86,12 @@ void Feed::sendFrame(){
 	}
 
 	camera_fb_t* frameData = camera->getFrame();
-	if (frameData == nullptr || frameData->buf == nullptr || frameData->len == 0) {
+	if (frameData == nullptr) {
+		return;
+	}
+
+	if(frameData->buf == nullptr || frameData->len == 0){
+		camera->releaseFrame();
 		return;
 	}
 
@@ -88,6 +102,8 @@ void Feed::sendFrame(){
 	auto sendSize = frameSize + sizeof(FrameHeader) + sizeof(FrameTrailer) + sizeof(size_t) * 2;
 	if(sendSize > TxBufSize){
 		ESP_LOGW(tag, "Data frame buffer larger than send buffer. %zu > %zu\n", sendSize, TxBufSize);
+		frame.frame = {.size = 0, .data = nullptr};
+		camera->releaseFrame();
 		return;
 	}
 

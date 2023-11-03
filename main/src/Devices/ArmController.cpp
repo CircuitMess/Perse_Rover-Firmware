@@ -55,7 +55,7 @@ void ArmController::write(const ArmState& state) {
 }
 
 ArmState ArmController::getDefaultState() const {
-	return ArmState{};
+	return ArmState{50, 50};
 }
 
 void ArmController::sendState(const ArmState& state) const {

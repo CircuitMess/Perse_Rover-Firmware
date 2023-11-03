@@ -75,9 +75,15 @@ void init(){
 	Services.set(Service::LED, led);
 
 	auto input = new Input(*aw9523);
+	Services.set(Service::Input, input);
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
+
+	auto headlightsController = new HeadlightsController(*aw9523);
+	auto motorDriveController = new MotorDriveController();
+	auto armController = new ArmController();
+	auto cameraController = new CameraController();
 
 	auto modules = new Modules(*i2c, *adc1);
 	Services.set(Service::Modules, modules);
@@ -87,11 +93,6 @@ void init(){
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
-
-	auto headlightsController = new HeadlightsController(*aw9523);
-	auto motorDriveController = new MotorDriveController();
-	auto armController = new ArmController();
-	auto cameraController = new CameraController();
 
 	battery->begin();
 }

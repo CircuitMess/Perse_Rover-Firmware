@@ -1,7 +1,7 @@
 #include "LED.h"
 #include "Util/stdafx.h"
 
-LED::LED(AW9523& aw9523) : Threaded("LED", 4096), expander(aw9523), actionQueue(12){
+LED::LED(AW9523& aw9523) : Threaded("LED", 2048), expander(aw9523), actionQueue(12){
 	start();
 
 	for(int i = 0; i < 16; i++){

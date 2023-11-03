@@ -73,8 +73,8 @@ bool Camera::init(){
 	}
 
 	sensor_t* sensor = esp_camera_sensor_get();
-	sensor->set_hmirror(sensor, 1);
-	sensor->set_vflip(sensor, 1);
+	sensor->set_hmirror(sensor, 0);
+	sensor->set_vflip(sensor, 0);
 
 	sensor->set_saturation(sensor, 2);
 	sensor->set_awb_gain(sensor, 1);
@@ -130,10 +130,10 @@ camera_fb_t* Camera::getFrame(){
 
 	if(frame == nullptr){
 		failedFrames++;
-		if(failedFrames >= MaxFailedFrames){
+/*		if(failedFrames >= MaxFailedFrames){
 			printf("Camera errored out\n");
 			deinit();
-		}
+		}*/
 	}
 
 	return frame;
