@@ -36,6 +36,11 @@
 
 #define BATTERY_ADC 6
 
+#define A_CTRL_1 9
+#define A_CTRL_2 8
+#define B_CTRL_1 5
+#define B_CTRL_2 4
+
 //AW9523 pins:
 #define EXP_LED_CAM 0
 #define EXP_LED_REAR 5
@@ -52,5 +57,24 @@
 #define EXP_STANDBY_LED 13
 #define EXP_GOOD_TO_GO_LED 14
 #define EXP_ERROR_LED 15
+
+//TCA9555 pins:
+#define TCA_A_ADDR_1 6
+#define TCA_A_ADDR_2 5
+#define TCA_A_ADDR_3 4
+#define TCA_A_ADDR_4 3
+#define TCA_A_ADDR_5 2
+#define TCA_A_ADDR_6 1
+#define TCA_A_DET_1 7
+#define TCA_A_DET_2 0
+#define TCA_B_ADDR_1 14
+#define TCA_B_ADDR_2 13
+#define TCA_B_ADDR_3 12
+#define TCA_B_ADDR_4 11
+#define TCA_B_ADDR_5 10
+#define TCA_B_ADDR_6 9
+#define TCA_B_DET_1 15
+#define TCA_B_DET_2 8
+
 
 #endif //BIT_LIBRARY_PINS_HPP
