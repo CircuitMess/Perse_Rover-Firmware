@@ -1,6 +1,7 @@
 #include "Feed.h"
 #include <esp_log.h>
 #include "Services/Comm.h"
+#include "Util/stdafx.h"
 
 const char* tag = "Feed";
 
@@ -20,8 +21,16 @@ Feed::Feed(I2C& i2c) : Threaded("Feed", 4 * 1024), queue(10),
 
 Feed::~Feed(){
 	frameSendingThread.stop();
-	free(txBuf);
+
+	stop(0);
+	queue.unblock();
+	while(running()){
+		delayMillis(1);
+	}
+
 	Events::unlisten(&queue);
+
+	free(txBuf);
 }
 
 void Feed::loop() {

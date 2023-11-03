@@ -19,6 +19,10 @@ protected:
 private:
 	EventQueue queue;
 	std::unique_ptr<PairService> pairService = nullptr;
+
+	void startPair();
+	void stopPair();
+
 };
 
 #endif //PERSE_ROVER_PAIRSTATE_H

@@ -68,25 +68,22 @@ void init(){
 	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
 
-	led->on(LED::Rear);
-	led->on(LED::LeftMotor);
-	led->on(LED::RightMotor);
-
 	auto input = new Input(*aw9523);
+	Services.set(Service::Input, input);
 
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
+
+	auto headlightsController = new HeadlightsController(*aw9523);
+	auto motorDriveController = new MotorDriveController();
+	auto armController = new ArmController();
+	auto cameraController = new CameraController();
 
 	auto stateMachine = new StateMachine();
 	Services.set(Service::StateMachine, stateMachine);
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
-
-	auto headlightsController = new HeadlightsController();
-	auto motorDriveController = new MotorDriveController();
-	auto armController = new ArmController();
-	auto cameraController = new CameraController();
 
 	battery->begin();
 }
