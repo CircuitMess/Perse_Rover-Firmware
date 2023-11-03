@@ -4,7 +4,7 @@
 #include "Util/Services.h"
 #include "PairState.h"
 #include "Util/stdafx.h"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 #include "Pins.hpp"
 
 const DemoState::Action DemoState::Actions[] = {
@@ -36,18 +36,18 @@ DemoState::DemoState(MotorDriveController& motors, ArmController& arm, CameraCon
 
 	Events::listen(Facility::Input, &evts);
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->blinkCont(EXP_GOOD_TO_GO_LED);
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->blink(LED::StatusGreen, 0);
 
-		led->on(EXP_LED_REAR);
+		led->on(LED::Rear);
 
-		led->blinkCont(EXP_LED_MOTOR_R);
-		led->blinkCont(EXP_LED_MOTOR_L);
+		led->blink(LED::RightMotor, 0);
+		led->blink(LED::LeftMotor, 0);
 
-		led->on(EXP_LED_FRONT_L);
-		led->on(EXP_LED_FRONT_R);
+		led->on(LED::LeftHeadlight);
+		led->on(LED::RightHeadlight);
 
-		led->on(EXP_STANDBY_LED);
+		led->on(LED::StatusRed);
 	}
 
 	cam.setControl(Local);
@@ -67,9 +67,9 @@ DemoState::~DemoState(){
 	arm.setControl(Remote);
 	motors.setControl(Remote);
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		for(const auto& pin : { EXP_STANDBY_LED, EXP_GOOD_TO_GO_LED, EXP_LED_REAR, EXP_LED_MOTOR_R, EXP_LED_MOTOR_L, EXP_LED_FRONT_L, EXP_LED_FRONT_R }){
-			led->off(pin);
+	if(LEDService* ledService = (LEDService*) Services.get(Service::LED)){
+		for(const LED led : { LED::StatusRed, LED::StatusGreen, LED::Rear, LED::LeftMotor, LED::RightMotor, LED::LeftHeadlight, LED::RightHeadlight }){
+			ledService->off(led);
 		}
 	}
 }

@@ -63,9 +63,9 @@ void PairState::startPair(){
 
 	pairService = std::make_unique<PairService>();
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->off(EXP_ERROR_LED);
-		led->blinkCont(EXP_STANDBY_LED);
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->off(LED::StatusRed);
+		led->blink(LED::StatusYellow, 0);
 	}
 }
 
@@ -74,7 +74,7 @@ void PairState::stopPair(){
 
 	pairService.reset();
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->on(EXP_STANDBY_LED);
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->on(LED::StatusYellow);
 	}
 }

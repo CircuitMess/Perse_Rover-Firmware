@@ -74,7 +74,7 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
 
-	auto headlightsController = new HeadlightsController(*aw9523);
+	auto headlightsController = new HeadlightsController();
 	auto motorDriveController = new MotorDriveController();
 	auto armController = new ArmController();
 	auto cameraController = new CameraController();
