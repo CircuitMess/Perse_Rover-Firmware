@@ -6,7 +6,7 @@
 
 class MotionSensor : private Threaded {
 public:
-	MotionSensor(ModuleBus bus, Comm& comm);
+	MotionSensor(ModuleBus bus);
 	virtual ~MotionSensor() override;
 
 private:

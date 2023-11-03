@@ -6,7 +6,7 @@
 
 class PhotoresModule : private SleepyThreaded {
 public:
-	PhotoresModule(ModuleBus bus, Comm& comm, ADC& adc);
+	PhotoresModule(ModuleBus bus, ADC& adc);
 	~PhotoresModule() override;
 
 private:

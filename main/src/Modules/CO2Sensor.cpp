@@ -1,8 +1,9 @@
 #include "CO2Sensor.h"
+#include "Util/Services.h"
 
-CO2Sensor::CO2Sensor(ModuleBus bus, Comm& comm, ADC& adc) : SleepyThreaded(Modules::ModuleSendInterval, "CO2", 2 * 1024),
-															gpio(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1),
-															adc(adc, gpio), bus(bus), comm(comm){
+CO2Sensor::CO2Sensor(ModuleBus bus, ADC& adc) : SleepyThreaded(Modules::ModuleSendInterval, "CO2", 2 * 1024),
+												gpio(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1),
+												adc(adc, gpio), bus(bus), comm(*((Comm*) Services.get(Service::Comm))){
 	adc_unit_t unit;
 	adc_channel_t chan;
 	adc_oneshot_io_to_channel(gpio, &unit, &chan);

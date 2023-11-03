@@ -6,7 +6,7 @@
 
 class CO2Sensor : private SleepyThreaded {
 public:
-	CO2Sensor(ModuleBus bus, Comm& comm, ADC& adc);
+	CO2Sensor(ModuleBus bus, ADC& adc);
 	~CO2Sensor() override;
 
 private:

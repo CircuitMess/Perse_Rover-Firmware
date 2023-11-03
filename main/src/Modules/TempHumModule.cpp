@@ -1,9 +1,10 @@
 #include "TempHumModule.h"
 #include "Util/stdafx.h"
 #include "Services/Modules.h"
+#include "Util/Services.h"
 
-TempHumModule::TempHumModule(I2C& i2c, ModuleBus bus, Comm& comm) : SleepyThreaded(Modules::ModuleSendInterval, "TempHum", 2 * 1024),
-																	i2c(i2c), bus(bus), comm(comm){
+TempHumModule::TempHumModule(I2C& i2c, ModuleBus bus) : SleepyThreaded(Modules::ModuleSendInterval, "TempHum", 2 * 1024),
+														i2c(i2c), bus(bus), comm(*((Comm*) Services.get(Service::Comm))){
 	auto err = i2c.write(Addr, 0x00);
 	ESP_ERROR_CHECK(err);
 

@@ -1,9 +1,11 @@
 #include "MotionSensor.h"
 #include <driver/gpio.h>
 #include "esp_log.h"
+#include "Util/Services.h"
 
-MotionSensor::MotionSensor(ModuleBus bus, Comm& comm) : Threaded("MotionSens", 2 * 1024),
-														pin(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1), bus(bus), comm(comm){
+MotionSensor::MotionSensor(ModuleBus bus) : Threaded("MotionSens", 2 * 1024),
+											pin(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1), bus(bus),
+											comm(*((Comm*) Services.get(Service::Comm))){
 	sem = xSemaphoreCreateBinary();
 
 	gpio_config_t io_conf = {
@@ -14,8 +16,8 @@ MotionSensor::MotionSensor(ModuleBus bus, Comm& comm) : Threaded("MotionSens", 2
 			.intr_type = GPIO_INTR_ANYEDGE
 	};
 	gpio_intr_enable(pin);
-	gpio_isr_handler_add(pin, isr, this);
 	gpio_config(&io_conf);
+	gpio_isr_handler_add(pin, isr, this);
 
 	start();
 }

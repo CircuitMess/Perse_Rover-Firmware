@@ -8,7 +8,7 @@
 
 class TempHumModule : private SleepyThreaded {
 public:
-	TempHumModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	TempHumModule(I2C& i2c, ModuleBus bus);
 	~TempHumModule() override;
 
 private:

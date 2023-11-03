@@ -1,7 +1,9 @@
 #include "GyroModule.h"
 #include "Services/Modules.h"
+#include "Util/Services.h"
 
-GyroModule::GyroModule(I2C& i2c, ModuleBus bus, Comm& comm) : SleepyThreaded(Modules::ModuleSendInterval, "Gyro", 3 * 1024), i2c(i2c), bus(bus), comm(comm){
+GyroModule::GyroModule(I2C& i2c, ModuleBus bus) : SleepyThreaded(Modules::ModuleSendInterval, "Gyro", 3 * 1024), i2c(i2c), bus(bus),
+												  comm(*((Comm*) Services.get(Service::Comm))){
 	const uint8_t initData[2] = { 0x20, 0b01010001 };
 
 	auto err = i2c.write(Addr, initData, 2);

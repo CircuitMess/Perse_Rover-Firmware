@@ -65,8 +65,6 @@ void init(){
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
 
-	auto tca = new TCA9555(*i2c);
-
 	auto feed = new Feed(*i2c);
 	Services.set(Service::Feed, feed);
 
@@ -81,7 +79,7 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
 
-	auto modules = new Modules(*tca, *i2c, *comm, *adc1);
+	auto modules = new Modules(*i2c, *adc1);
 	Services.set(Service::Modules, modules);
 
 	auto stateMachine = new StateMachine();

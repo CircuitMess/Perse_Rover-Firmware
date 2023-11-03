@@ -12,7 +12,7 @@
 
 class Modules : private SleepyThreaded {
 public:
-	Modules(TCA9555& shiftReg, I2C& i2c, Comm& comm, ADC& adc);
+	Modules(I2C& i2c, ADC& adc);
 	~Modules() override;
 
 	struct Event {
@@ -28,11 +28,11 @@ public:
 	static constexpr TickType_t ModuleSendInterval = 200;
 
 private:
-	TCA9555& tca;
 	I2C& i2c;
 	Comm& comm;
 	ADC& adc;
 
+	TCA9555 tca;
 	ThreadedClosure connectionThread;
 	EventQueue connectionQueue;
 	bool modulesEnabled = false;
@@ -65,8 +65,8 @@ private:
 
 	void loopCheck(ModuleBus bus);
 
-	static const std::map<uint8_t, ModuleType> AddressMap;
-	static const std::map<uint8_t, ModuleType> I2CAddressMap;
+	static const std::unordered_map<uint8_t, ModuleType> AddressMap;
+	static const std::unordered_map<uint8_t, ModuleType> I2CAddressMap;
 	static constexpr uint8_t I2CModuleAddress = 63;
 
 //	static constexpr uint8_t TesterBobAddr = Module::Bob | 0b00100000;

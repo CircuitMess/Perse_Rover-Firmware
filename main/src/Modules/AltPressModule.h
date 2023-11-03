@@ -7,7 +7,7 @@
 
 class AltPressModule : private SleepyThreaded {
 public:
-	AltPressModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	AltPressModule(I2C& i2c, ModuleBus bus);
 	~AltPressModule() override;
 
 private:

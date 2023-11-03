@@ -4,15 +4,15 @@
 #include "Services/Modules.h"
 #include "Periph/PinOut.h"
 
-class LEDModule {
+class LEDModule : private Threaded{
 public:
 	LEDModule(ModuleBus bus);
-
-	void on();
-	void off();
-
+	~LEDModule() override;
 private:
 	PinOut pinout;
+	EventQueue queue;
+
+	void loop() override;
 };
 
 

@@ -10,27 +10,29 @@
 #include "Modules/MotionSensor.h"
 #include "Modules/CO2Sensor.h"
 #include "Services/TCPServer.h"
+#include "Util/Services.h"
+#include "Util/stdafx.h"
 
-const std::map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc)>, std::function<void(void*)>>> ModuleConstrDestr = {
-		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new TempHumModule(i2c, bus, comm); },
+const std::unordered_map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus, ADC& adc)>, std::function<void(void*)>>> ModuleConstrDestr = {
+		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new TempHumModule(i2c, bus); },
 										[](void* instance){ delete (TempHumModule*) instance; } } },
-		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new GyroModule(i2c, bus, comm); },
+		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new GyroModule(i2c, bus); },
 										[](void* instance){ delete (GyroModule*) instance; } } },
-		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new AltPressModule(i2c, bus, comm); },
+		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new AltPressModule(i2c, bus); },
 										[](void* instance){ delete (AltPressModule*) instance; } } },
-		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new LEDModule(bus); },
+		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new LEDModule(bus); },
 										[](void* instance){ delete (LEDModule*) instance; } } },
-		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new RGBModule(bus); },
+		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new RGBModule(bus); },
 										[](void* instance){ delete (RGBModule*) instance; } } },
-		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new PhotoresModule(bus, comm, adc); },
+		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new PhotoresModule(bus, adc); },
 										[](void* instance){ delete (PhotoresModule*) instance; } } },
-		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new MotionSensor(bus, comm); },
+		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new MotionSensor(bus); },
 										[](void* instance){ delete (MotionSensor*) instance; } } },
-		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus, Comm& comm, ADC& adc){ return new CO2Sensor(bus, comm, adc); },
+		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new CO2Sensor(bus, adc); },
 										[](void* instance){ delete (CO2Sensor*) instance; } } }
 };
 
-const std::map<uint8_t, ModuleType> Modules::AddressMap = {
+const std::unordered_map<uint8_t, ModuleType> Modules::AddressMap = {
 		{ 10, ModuleType::LED },
 		{ 11, ModuleType::RGB },
 		{ 12, ModuleType::PhotoRes },
@@ -38,16 +40,16 @@ const std::map<uint8_t, ModuleType> Modules::AddressMap = {
 		{ 14, ModuleType::CO2 }
 };
 
-const std::map<uint8_t, ModuleType> Modules::I2CAddressMap = {
+const std::unordered_map<uint8_t, ModuleType> Modules::I2CAddressMap = {
 		{ 0x38, ModuleType::TempHum },
 		{ 0x18, ModuleType::Gyro },
 		{ 0x76, ModuleType::AltPress }
 };
 
-Modules::Modules(TCA9555& tca, I2C& i2c, Comm& comm, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1), tca(tca), i2c(i2c),
-																 comm(comm), adc(adc),
-																 connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
-																 connectionQueue(10){
+Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1),
+									   i2c(i2c), comm(*((Comm*) Services.get(Service::Comm))), adc(adc), tca(i2c),
+									   connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
+									   connectionQueue(10){
 	Modules::sleepyLoop();
 	start();
 	Events::listen(Facility::Comm, &connectionQueue);
@@ -67,7 +69,9 @@ Modules::~Modules(){
 	}
 	connectionThread.stop(0);
 	connectionQueue.unblock();
-	connectionThread.stop();
+	while(connectionThread.running()){
+		delayMillis(1);
+	}
 	Events::unlisten(&connectionQueue);
 }
 
@@ -161,7 +165,7 @@ void Modules::loopCheck(ModuleBus bus){
 		}
 
 		if(ModuleConstrDestr.contains(context.current)){
-			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2c, bus, comm, adc);
+			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2c, bus, adc);
 		}
 	}
 }

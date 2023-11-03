@@ -7,7 +7,7 @@
 
 class GyroModule : private SleepyThreaded {
 public:
-	GyroModule(I2C& i2c, ModuleBus bus, Comm& comm);
+	GyroModule(I2C& i2c, ModuleBus bus);
 	~GyroModule() override;
 
 private:

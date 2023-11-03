@@ -1,9 +1,10 @@
 #include "AltPressModule.h"
 #include "Util/stdafx.h"
 #include "Services/Modules.h"
+#include "Util/Services.h"
 
-AltPressModule::AltPressModule(I2C& i2c, ModuleBus bus, Comm& comm) : SleepyThreaded(Modules::ModuleSendInterval, "AltPress", 2 * 1024), i2c(i2c), bus(bus),
-																	  comm(comm){
+AltPressModule::AltPressModule(I2C& i2c, ModuleBus bus) : SleepyThreaded(Modules::ModuleSendInterval, "AltPress", 2 * 1024), i2c(i2c), bus(bus),
+														  comm(*((Comm*) Services.get(Service::Comm))){
 	auto err = i2c.write(Addr, 0x06); // soft reset
 	ESP_ERROR_CHECK(err);
 
