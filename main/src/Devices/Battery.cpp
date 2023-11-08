@@ -7,7 +7,7 @@
 #define MAX_READ 2724	// 4.5V
 #define MIN_READ 2280	// 3.8V
 
-Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
+Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 2 * 1024, 5, 1),
 					 adc(adc, (gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3) {
 

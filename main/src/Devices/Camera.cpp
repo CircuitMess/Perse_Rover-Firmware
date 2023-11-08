@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include <Pins.hpp>
 #include <driver/i2c.h>
+#include <algorithm>
 
 Camera::Camera(I2C& i2c) : i2c(i2c){
 	const gpio_config_t cfg = {
@@ -16,7 +17,7 @@ Camera::~Camera(){
 }
 
 bool Camera::init(){
-	if(resWait == res && formatWait == format && inited) return true;
+	if(resWait == res && formatWait == format && jpegQualityWait == jpegQuality && inited) return true;
 
 	if(inited){
 		deinit();
@@ -24,6 +25,7 @@ bool Camera::init(){
 
 	format = formatWait;
 	res = resWait;
+	jpegQuality = jpegQualityWait;
 
 	printf("Cam init size %d, format %d\n", res, format);
 
@@ -59,7 +61,7 @@ bool Camera::init(){
 	config.grab_mode = CAMERA_GRAB_LATEST;
 
 	if(format == PIXFORMAT_JPEG){
-		config.jpeg_quality = 12;
+		config.jpeg_quality = jpegQuality;
 	}
 
 	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 0);
@@ -170,4 +172,12 @@ void Camera::setFormat(pixformat_t format){
 	}
 
 	formatWait = format;
+}
+
+uint8_t Camera::getJpegQuality() const{
+	return jpegQuality;
+}
+
+void Camera::setJpegQuality(uint8_t quality){
+	jpegQualityWait = std::clamp(quality, (uint8_t) 0, (uint8_t) 12);
 }
