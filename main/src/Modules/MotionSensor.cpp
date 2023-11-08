@@ -45,7 +45,7 @@ void MotionSensor::loop(){
 
 	if(exitFlag) return;
 
-	bool lvl = gpio_get_level(pin);
+	bool lvl = !gpio_get_level(pin);
 	ModuleData data = {
 			ModuleType::Motion, bus, { .motion = { lvl } }
 	};
