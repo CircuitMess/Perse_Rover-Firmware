@@ -124,11 +124,12 @@ void IRAM_ATTR Feed::sendFrame(){
 	}
 
 	if(feedQuality == 0 || camera == nullptr){
+		printf("Cam null / feed = 0\n");
 		camera->releaseFrame();
 		return;
 	}
 
-	if(!frame2jpg(frameData, std::clamp((uint8_t) feedQuality, (uint8_t) 0, (uint8_t) 12),
+	if(!frame2jpg(frameData, 20/*std::clamp((uint8_t) feedQuality, (uint8_t) 0, (uint8_t) 12)*/,
 				  (uint8_t**) (&driveInfo.frame.data), &driveInfo.frame.size)){
 		ESP_LOGE(tag, "frame2jpg conversion failed.");
 		camera->releaseFrame();

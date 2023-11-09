@@ -16,7 +16,6 @@ public:
 	static MarkerAction getAction(int16_t id);
 
 private:
-	static const std::map<int16_t, MarkerAction> IdToAction;
 	uint8_t cells[7][7];
 	int16_t id = -1;
 	uint8_t rotation = 0;

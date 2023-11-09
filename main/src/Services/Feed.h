@@ -4,6 +4,7 @@
 #include <DriveInfo.h>
 #include <atomic>
 #include <memory>
+#include <glm.hpp>
 #include "Util/Threaded.h"
 #include "UDPEmitter.h"
 #include "Devices/Camera.h"
@@ -53,6 +54,7 @@ private:
 	};
 	Queue<EventData> communicationQueue;
 
+	static constexpr glm::vec<2, uint8_t> qualityLimits = {1, 20};
 	static constexpr size_t TxBufSize = 10000;
 	uint8_t* txBuf;
 

@@ -4,12 +4,6 @@
 
 #include <opencv2/imgproc.hpp>
 
-const std::map<int16_t, MarkerAction> ArucoValidator::IdToAction = {
-		{0, MarkerAction::None},
-		{1, MarkerAction::Forward},
-		{2, MarkerAction::Rotate180}
-};
-
 ArucoValidator::ArucoValidator(const cv::Mat& aruco){
 	for(uint8_t i = 0; i < 7 * 7; ++i){
 		cells[i / 7][i % 7] = (aruco.data[i] == 255);
@@ -132,9 +126,5 @@ MarkerAction ArucoValidator::getAction(){
 }
 
 MarkerAction ArucoValidator::getAction(int16_t id){
-	if (!IdToAction.contains(id)) {
-		return MarkerAction::None;
-	}
 
-	return IdToAction.at(id);
 }
