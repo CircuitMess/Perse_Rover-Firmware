@@ -46,6 +46,8 @@ void init(){
 		return;
 	}
 
+	Services.set(Service::Battery, battery);
+
 	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
 	auto ret = nvs_flash_init();
@@ -81,9 +83,16 @@ void init(){
 	Services.set(Service::Comm, comm);
 
 	auto headlightsController = new HeadlightsController(*aw9523);
+	Services.set(Service::HeadLightsController, headlightsController);
+
 	auto motorDriveController = new MotorDriveController();
+	Services.set(Service::MotorDriveController, motorDriveController);
+
 	auto armController = new ArmController();
+	Services.set(Service::ArmController, armController);
+
 	auto cameraController = new CameraController();
+	Services.set(Service::CameraController, cameraController);
 
 	auto modules = new Modules(*i2c, *adc1);
 	Services.set(Service::Modules, modules);

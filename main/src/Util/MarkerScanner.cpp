@@ -1,14 +1,12 @@
 #include "MarkerScanner.h"
 #include <glm.hpp>
 #include <esp_heap_caps.h>
-#include "freertos/FreeRTOS.h"
+#include <freertos/FreeRTOS.h>
+#include "ArucoValidator.h"
 
 #undef EPS
-
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core/mat.hpp>
-
-#include "ArucoValidator.h"
 
 MarkerScanner::MarkerScanner(uint8_t frameWidth, uint8_t frameHeight) : width(frameWidth), height(frameHeight){
 	smallData = std::unique_ptr<uint8_t>((uint8_t*) heap_caps_malloc(width * height, MALLOC_CAP_SPIRAM));
@@ -93,8 +91,6 @@ bool MarkerScanner::process(const uint8_t* rawFrame, DriveInfo& driveInfo){
 
 		Marker marker{ .id = static_cast<uint16_t>(validator.getID()) };
 
-		printf("Marker: %d\n", marker.id);
-
 		for(uint8_t i = 0; i < 4; ++i){
 			marker.projected[i] = {
 					(float) approx[i].x / scale,
@@ -161,7 +157,7 @@ void MarkerScanner::extractContent(const cv::Mat& image, cv::Mat out, const std:
 }
 
 float MarkerScanner::contourEval(const std::array<std::pair<int16_t, int16_t>, 4>& contour) const{
-	const glm::vec<2, uint8_t> center = { width / 2, height / 2 };
+	const glm::vec2 center = { width / 2, height / 2 };
 
 	float area = 0.0f;
 	area += 0.5f * (contour[1].first - contour[0].first) * (contour[1].second + contour[0].second);
@@ -169,6 +165,14 @@ float MarkerScanner::contourEval(const std::array<std::pair<int16_t, int16_t>, 4
 	area += 0.5f * (contour[3].first - contour[2].first) * (contour[3].second + contour[2].second);
 	area += 0.5f * (contour[0].first - contour[3].first) * (contour[0].second + contour[3].second);
 
-	// TODO: divide area by distance from the center
-	return area;
+	glm::vec2 contourCenter{ 0.0f, 0.0f };
+	for(uint8_t i = 0; i < 4; ++i){
+		contourCenter.x += contour[i].first;
+		contourCenter.y += contour[i].second;
+	}
+
+	contourCenter.x /= 4;
+	contourCenter.y /= 4;
+
+	return area / glm::distance(center, contourCenter);
 }

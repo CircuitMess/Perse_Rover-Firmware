@@ -38,6 +38,7 @@ private:
 	SleepyThreadedClosure frameSendingThread;
 	std::unique_ptr<Camera> camera;
 	std::unique_ptr<MarkerScanner> markerScanner;
+	MarkerAction oldAction = MarkerAction::None;
 
 	struct EventData {
 		enum Type {

@@ -121,10 +121,10 @@ void ArucoValidator::calcID(){
 	}
 }
 
-MarkerAction ArucoValidator::getAction(){
+MarkerAction ArucoValidator::getAction() const{
 	return getAction(getID());
 }
 
 MarkerAction ArucoValidator::getAction(int16_t id){
-
+	return (MarkerAction)id;
 }

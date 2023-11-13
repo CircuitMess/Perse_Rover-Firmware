@@ -84,8 +84,6 @@ void IRAM_ATTR Feed::sendFrame(){
 		}else if(data.type == EventData::ScanningEnableChange){
 			isScanningEnabled = data.isScanningEnabled;
 		}
-
-		printf("Quality: %d, scanning: %d\n", uint8_t(feedQuality), bool(isScanningEnabled));
 	}
 
 	camera->setFormat(PIXFORMAT_RGB565);
@@ -103,33 +101,29 @@ void IRAM_ATTR Feed::sendFrame(){
 		return;
 	}
 
-	if(frameData->len != 2 * 120 * 160){
-		camera->releaseFrame();
-		return;
-	}
-
 	DriveInfo driveInfo;
 
 	if(isScanningEnabled){
 		if(camera == nullptr || markerScanner == nullptr){
 			return;
 		}
-		const MarkerAction oldAction = driveInfo.markerInfo.action;
+
 		markerScanner->process(frameData->buf, driveInfo);
 
 		if(driveInfo.markerInfo.action != oldAction){
+			oldAction = driveInfo.markerInfo.action;
+
 			Events::post(Facility::Feed,
 						 Event{ .type = EventType::MarkerScanned, .markerAction = driveInfo.markerInfo.action });
 		}
 	}
 
-	if(feedQuality == 0 || camera == nullptr){
-		printf("Cam null / feed = 0\n");
+	if(camera == nullptr){
 		camera->releaseFrame();
 		return;
 	}
 
-	if(!frame2jpg(frameData, 20/*std::clamp((uint8_t) feedQuality, (uint8_t) 0, (uint8_t) 12)*/,
+	if(!frame2jpg(frameData, 30/*std::clamp((uint8_t) feedQuality, (uint8_t) 0, (uint8_t) 12)*/,
 				  (uint8_t**) (&driveInfo.frame.data), &driveInfo.frame.size)){
 		ESP_LOGE(tag, "frame2jpg conversion failed.");
 		camera->releaseFrame();
@@ -138,6 +132,7 @@ void IRAM_ATTR Feed::sendFrame(){
 
 	const size_t frameSize = driveInfo.size();
 	const size_t sendSize = frameSize + sizeof(FrameHeader) + sizeof(FrameTrailer) + sizeof(size_t) * 2;
+
 	if(sendSize > TxBufSize){
 		ESP_LOGW(tag, "Data frame buffer larger than send buffer. %zu > %zu\n", sendSize, TxBufSize);
 		camera->releaseFrame();

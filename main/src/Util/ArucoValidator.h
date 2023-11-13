@@ -12,7 +12,7 @@ public:
 	bool validate();
 	int16_t getID() const;
 	uint8_t getRotation() const;
-	MarkerAction getAction();
+	MarkerAction getAction() const;
 	static MarkerAction getAction(int16_t id);
 
 private:
