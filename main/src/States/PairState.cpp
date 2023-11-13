@@ -1,16 +1,15 @@
 #include "PairState.h"
 #include "Util/Services.h"
 #include "DriveState.h"
-#include "Pins.hpp"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 #include "Devices/Input.h"
 
 PairState::PairState() : State(), queue(10) {
 	Events::listen(Facility::Input, &queue);
 	Events::listen(Facility::Pair, &queue);
 
-	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->on(EXP_STANDBY_LED);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->on(LED::StatusYellow);
 	}
 
 	if(auto input = (Input*) Services.get(Service::Input)){
@@ -21,14 +20,19 @@ PairState::PairState() : State(), queue(10) {
 }
 
 PairState::~PairState() {
-	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->off(EXP_STANDBY_LED);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->off(LED::StatusYellow);
 	}
 
 	Events::unlisten(&queue);
 }
 
 void PairState::loop() {
+	LEDService* led = (LEDService*)Services.get(Service::LED);
+	if (led == nullptr) {
+		return;
+	}
+
 	Event event{};
 	if (!queue.get(event, portMAX_DELAY)) {
 		return;
@@ -59,9 +63,9 @@ void PairState::startPair(){
 
 	pairService = std::make_unique<PairService>();
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->off(EXP_ERROR_LED);
-		led->blinkCont(EXP_STANDBY_LED);
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->off(LED::StatusRed);
+		led->blink(LED::StatusYellow, 0);
 	}
 }
 
@@ -70,7 +74,7 @@ void PairState::stopPair(){
 
 	pairService.reset();
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->on(EXP_STANDBY_LED);
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->on(LED::StatusYellow);
 	}
 }

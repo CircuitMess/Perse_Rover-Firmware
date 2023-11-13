@@ -3,7 +3,6 @@
 #include "Services/TCPServer.h"
 #include "PairState.h"
 #include "Util/Services.h"
-#include "Services/LED.h"
 #include "Actions/Action.h"
 #include "Actions/GoTowardsAction.h"
 #include "Actions/Rotate180Action.h"
@@ -18,6 +17,7 @@
 #include "Actions/TurnRightGoAheadAction.h"
 #include "Actions/TakeSoilSampleAction.h"
 #include "Services/Feed.h"
+#include "Services/LEDService.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -39,15 +39,15 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
 
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->on(EXP_GOOD_TO_GO_LED);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->on(LED::StatusGreen);
 	}
 }
 
-DriveState::~DriveState(){
-	if(auto led = (LED*) Services.get(Service::LED)){
-		led->off(EXP_GOOD_TO_GO_LED);
-		led->on(EXP_ERROR_LED);
+DriveState::~DriveState() {
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->off(LED::StatusGreen);
+		led->on(LED::StatusRed);
 	}
 
 	Events::unlisten(&queue);

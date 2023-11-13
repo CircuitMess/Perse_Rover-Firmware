@@ -24,7 +24,7 @@
 #include "Services/Audio.h"
 #include "States/PairState.h"
 #include "Services/StateMachine.h"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 #include "Services/Feed.h"
 #include "Services/Modules.h"
 
@@ -73,7 +73,7 @@ void init(){
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
 
-	auto led = new LED(*aw9523);
+	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
 
 	auto input = new Input(*aw9523);
@@ -82,7 +82,7 @@ void init(){
 	auto comm = new Comm();
 	Services.set(Service::Comm, comm);
 
-	auto headlightsController = new HeadlightsController(*aw9523);
+	auto headlightsController = new HeadlightsController();
 	Services.set(Service::HeadLightsController, headlightsController);
 
 	auto motorDriveController = new MotorDriveController();
