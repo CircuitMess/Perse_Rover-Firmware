@@ -20,7 +20,7 @@ CO2Sensor::~CO2Sensor(){
 }
 
 void CO2Sensor::sleepyLoop(){
-	bool status = adc.sample() > OKThreshold;
+	bool status = adc.sample() < OKThreshold;
 	ModuleData data = {
 			ModuleType::CO2, bus, { .gas = { status } }
 	};

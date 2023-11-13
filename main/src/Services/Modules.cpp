@@ -6,7 +6,7 @@
 #include "Modules/TempHumModule.h"
 #include "Modules/LEDModule.h"
 #include "Modules/RGBModule.h"
-#include "Modules/PhotoResModule.h"
+#include "Modules/PhotoresModule.h"
 #include "Modules/MotionSensor.h"
 #include "Modules/CO2Sensor.h"
 #include "Services/TCPServer.h"

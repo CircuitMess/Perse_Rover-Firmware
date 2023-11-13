@@ -10,7 +10,7 @@ PhotoresModule::PhotoresModule(ModuleBus bus, ADC& adc) : SleepyThreaded(Modules
 	adc_oneshot_io_to_channel(gpio, &unit, &chan);
 
 	adc.config(chan, {
-			.atten = ADC_ATTEN_DB_6,
+			.atten = ADC_ATTEN_DB_11,
 			.bitwidth = ADC_BITWIDTH_12
 	});
 
