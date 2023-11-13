@@ -11,34 +11,34 @@ Comm::~Comm(){
 	stop();
 }
 
-void Comm::sendHeadlightsState(HeadlightsMode headlights) {
+void Comm::sendHeadlightsState(HeadlightsMode headlights){
 	const ControlPacket packet = {
 			.type = CommType::Headlights,
-			.data = (uint8_t)headlights
+			.data = (uint8_t) headlights
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPositionState(ArmPos position) {
+void Comm::sendArmPositionState(ArmPos position){
 	const ControlPacket packet = {
 			.type = CommType::ArmPosition,
-			.data = (uint8_t)position
+			.data = (uint8_t) position
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPinchState(ArmPinch pinch) {
+void Comm::sendArmPinchState(ArmPinch pinch){
 	const ControlPacket packet = {
 			.type = CommType::ArmPinch,
-			.data = (uint8_t)(pinch)
+			.data = (uint8_t) (pinch)
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendCameraState(CameraRotation rotation) {
+void Comm::sendCameraState(CameraRotation rotation){
 	const ControlPacket packet = {
 			.type = CommType::CameraRotation,
 			.data = rotation
@@ -47,12 +47,18 @@ void Comm::sendCameraState(CameraRotation rotation) {
 	sendPacket(packet);
 }
 
-void Comm::sendBattery(uint8_t batteryPercent) {
+void Comm::sendBattery(uint8_t batteryPercent){
 	const ControlPacket packet = {
 			.type = CommType::CameraRotation,
 			.data = batteryPercent
 	};
 
+	sendPacket(packet);
+}
+
+void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
+	uint8_t data = CommData::encodeModulePlug({ type, bus, insert });
+	ControlPacket packet{ CommType::ModulePlug, data };
 	sendPacket(packet);
 }
 
@@ -83,41 +89,55 @@ void Comm::loop(){
 
 Comm::Event Comm::processPacket(const ControlPacket& packet){
 	Event e{
-		.type = packet.type,
-		.raw = packet.data
+			.type = packet.type,
+			.raw = packet.data
 	};
 
-	switch(packet.type) {
-		case CommType::DriveDir: {
+	switch(packet.type){
+		case CommType::DriveDir:{
 			e.dir = CommData::decodeDriveDir(packet.data);
 			break;
 		}
-		case CommType::Headlights: {
+		case CommType::Headlights:{
 			e.headlights = packet.data > 0 ? HeadlightsMode::On : HeadlightsMode::Off;
 			break;
 		}
-		case CommType::ArmPosition: {
-			e.armPos = (ArmPos)packet.data;
+		case CommType::ArmPosition:{
+			e.armPos = (ArmPos) packet.data;
 			e.armPinch = -1;
 			break;
 		}
-		case CommType::ArmPinch: {
+		case CommType::ArmPinch:{
 			e.armPos = -1;
-			e.armPinch = (ArmPinch)packet.data;
+			e.armPinch = (ArmPinch) packet.data;
 			break;
 		}
-		case CommType::CameraRotation: {
+		case CommType::CameraRotation:{
 			e.cameraRotation = packet.data;
 			break;
 		}
-		case CommType::FeedQuality: {
+		case CommType::FeedQuality:{
 			e.feedQuality = packet.data;
 			break;
 		}
-		default: {
+		case CommType::ModulePlug:
+			break;
+		case CommType::ModuleData:
+			break;
+		case CommType::ModulesEnable:
+			break;
+		default:{
 			break;
 		}
 	}
 
 	return e;
+}
+
+void Comm::sendModuleData(ModuleData data){
+	if(!tcp.isConnected()) return;
+
+	auto type = CommType::ModuleData;
+	tcp.write((uint8_t*) &type, sizeof(CommType));
+	tcp.write((uint8_t*) &data, sizeof(ModuleData));
 }

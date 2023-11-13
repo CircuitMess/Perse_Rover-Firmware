@@ -26,6 +26,9 @@ public:
 	Comm();
 	~Comm() override;
 
+	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
+	void sendModuleData(ModuleData data);
+
 	void sendHeadlightsState(HeadlightsMode headlights);
 	void sendArmPositionState(ArmPos position);
 	void sendArmPinchState(ArmPinch pinch);

@@ -18,6 +18,7 @@
 #include "Devices/ArmController.h"
 #include "Devices/CameraController.h"
 #include "Devices/Battery.h"
+#include "Devices/TCA9555.h"
 #include "Services/TCPServer.h"
 #include "Services/Comm.h"
 #include "Services/Audio.h"
@@ -25,6 +26,7 @@
 #include "Services/StateMachine.h"
 #include "Services/LEDService.h"
 #include "Services/Feed.h"
+#include "Services/Modules.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -36,11 +38,15 @@
 }
 
 void init(){
-	auto battery = new Battery();
+	auto adc1 = new ADC(ADC_UNIT_1);
+
+	auto battery = new Battery(*adc1);
 	if(battery->isShutdown()){
 		shutdown();
 		return;
 	}
+
+	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
 	auto ret = nvs_flash_init();
 	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
@@ -78,6 +84,9 @@ void init(){
 	auto motorDriveController = new MotorDriveController();
 	auto armController = new ArmController();
 	auto cameraController = new CameraController();
+
+	auto modules = new Modules(*i2c, *adc1);
+	Services.set(Service::Modules, modules);
 
 	auto stateMachine = new StateMachine();
 	Services.set(Service::StateMachine, stateMachine);
