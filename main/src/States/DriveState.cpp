@@ -1,22 +1,21 @@
 #include "DriveState.h"
-#include "Pins.hpp"
 #include "Services/TCPServer.h"
 #include "PairState.h"
 #include "Util/Services.h"
-#include "Services/LED.h"
+#include "Services/LEDService.h"
 
 DriveState::DriveState() : State(), queue(10) {
 	Events::listen(Facility::TCP, &queue);
 
-	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->on(EXP_GOOD_TO_GO_LED);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->on(LED::StatusGreen);
 	}
 }
 
 DriveState::~DriveState() {
-	if (auto led = (LED*)Services.get(Service::LED)) {
-		led->off(EXP_GOOD_TO_GO_LED);
-		led->on(EXP_ERROR_LED);
+	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
+		led->off(LED::StatusGreen);
+		led->on(LED::StatusRed);
 	}
 
 	Events::unlisten(&queue);

@@ -1,25 +1,26 @@
 #include "HeadlightsController.h"
-#include "Pins.hpp"
 #include "Services/Comm.h"
 #include "Util/Services.h"
+#include "Services/LEDService.h"
 
-HeadlightsController::HeadlightsController(AW9523& aw9523) : DeviceController("Headlights Controller"), aw9523(aw9523){
-	aw9523.pinMode(EXP_LED_FRONT_L, AW9523::LED);
-	aw9523.pinMode(EXP_LED_FRONT_R, AW9523::LED);
-
+HeadlightsController::HeadlightsController() : DeviceController("Headlights Controller"){
 	setControl(DeviceControlType::Local);
 	setLocally(HeadlightsState{});
 	setControl(DeviceControlType::Remote);
 }
 
 void HeadlightsController::write(const HeadlightsState& state){
-	if (state.Mode == HeadlightsMode::Off){
-		aw9523.dim(EXP_LED_FRONT_L, 0);
-		aw9523.dim(EXP_LED_FRONT_R, 0);
+	LEDService* ledService = (LEDService*) Services.get(Service::LED);
+	if(ledService == nullptr){
+		return;
 	}
-	else{
-		aw9523.dim(EXP_LED_FRONT_L, 255);
-		aw9523.dim(EXP_LED_FRONT_R, 255);
+
+	if(state.Mode == HeadlightsMode::Off){
+		ledService->off(LED::HeadlightLeft);
+		ledService->off(LED::HeadlightsRight);
+	}else{
+		ledService->on(LED::HeadlightLeft);
+		ledService->on(LED::HeadlightsRight);
 	}
 }
 
@@ -28,21 +29,21 @@ HeadlightsState HeadlightsController::getDefaultState() const{
 }
 
 void HeadlightsController::sendState(const HeadlightsState& state) const{
-	auto comm = (Comm*)Services.get(Service::Comm);
-	if (comm == nullptr){
+	auto comm = (Comm*) Services.get(Service::Comm);
+	if(comm == nullptr){
 		return;
 	}
 
 	comm->sendHeadlightsState(state.Mode);
 }
 
-void HeadlightsController::processEvent(const Event& event) {
-	auto* commEvent = (Comm::Event*)event.data;
-	if (commEvent == nullptr){
+void HeadlightsController::processEvent(const Event& event){
+	auto* commEvent = (Comm::Event*) event.data;
+	if(commEvent == nullptr){
 		return;
 	}
 
-	if (commEvent->type != CommType::Headlights) {
+	if(commEvent->type != CommType::Headlights){
 		return;
 	}
 
