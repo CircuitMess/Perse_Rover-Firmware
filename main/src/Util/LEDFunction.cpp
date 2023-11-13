@@ -1,3 +1,3 @@
 #include "LEDFunction.h"
 
-LEDFunction::LEDFunction(SingleLED &led) : led(led) {}
+LEDFunction::LEDFunction(SingleLED& led) : led(led){}

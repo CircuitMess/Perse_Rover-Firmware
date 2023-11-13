@@ -10,18 +10,17 @@ HeadlightsController::HeadlightsController() : DeviceController("Headlights Cont
 }
 
 void HeadlightsController::write(const HeadlightsState& state){
-	LEDService* ledService = (LEDService*)Services.get(Service::LED);
-	if (ledService == nullptr) {
+	LEDService* ledService = (LEDService*) Services.get(Service::LED);
+	if(ledService == nullptr){
 		return;
 	}
 
-	if (state.Mode == HeadlightsMode::Off){
-		ledService->off(LED::LeftHeadlight);
-		ledService->off(LED::RightHeadlight);
-	}
-	else{
-		ledService->on(LED::LeftHeadlight);
-		ledService->on(LED::RightHeadlight);
+	if(state.Mode == HeadlightsMode::Off){
+		ledService->off(LED::HeadlightLeft);
+		ledService->off(LED::HeadlightsRight);
+	}else{
+		ledService->on(LED::HeadlightLeft);
+		ledService->on(LED::HeadlightsRight);
 	}
 }
 
@@ -30,21 +29,21 @@ HeadlightsState HeadlightsController::getDefaultState() const{
 }
 
 void HeadlightsController::sendState(const HeadlightsState& state) const{
-	auto comm = (Comm*)Services.get(Service::Comm);
-	if (comm == nullptr){
+	auto comm = (Comm*) Services.get(Service::Comm);
+	if(comm == nullptr){
 		return;
 	}
 
 	comm->sendHeadlightsState(state.Mode);
 }
 
-void HeadlightsController::processEvent(const Event& event) {
-	auto* commEvent = (Comm::Event*)event.data;
-	if (commEvent == nullptr){
+void HeadlightsController::processEvent(const Event& event){
+	auto* commEvent = (Comm::Event*) event.data;
+	if(commEvent == nullptr){
 		return;
 	}
 
-	if (commEvent->type != CommType::Headlights) {
+	if(commEvent->type != CommType::Headlights){
 		return;
 	}
 

@@ -5,14 +5,14 @@
 
 class LEDFunction {
 public:
-	explicit LEDFunction(SingleLED &led);
+	explicit LEDFunction(SingleLED& led);
 
 	virtual ~LEDFunction() = default;
 
 	virtual void loop() = 0;
 
 protected:
-	SingleLED &led;
+	SingleLED& led;
 };
 
 #endif //PERSE_ROVER_LEDFUNCTION_H

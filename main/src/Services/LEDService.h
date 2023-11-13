@@ -9,24 +9,25 @@
 #include <mutex>
 #include "Devices/AW9523.h"
 #include "Util/Threaded.h"
+#include "Util/Queue.h"
 
 enum class LED : uint8_t {
 	Camera,
 	Rear,
-	LeftMotor,
-	RightMotor,
+	MotorLeft,
+	MotorRight,
 	Arm,
-	LeftHeadlight,
-	RightHeadlight,
+	HeadlightLeft,
+	HeadlightsRight,
 	StatusGreen,
 	StatusYellow,
 	StatusRed,
 	COUNT
 };
 
-class LEDService : private SleepyThreaded {
+class LEDService : private Threaded {
 public:
-	explicit LEDService(AW9523 &aw9523);
+	explicit LEDService(AW9523& aw9523);
 
 	virtual ~LEDService();
 
@@ -39,16 +40,50 @@ public:
 	void breathe(LED led, uint32_t period = 1000);
 
 protected:
-	virtual void sleepyLoop() override;
+	virtual void loop() override;
 
 private:
-	static const std::map<LED, std::tuple<gpio_num_t, ledc_channel_t, uint8_t>> pwmMappings;
-	static const std::map<LED, std::tuple<uint8_t, uint8_t>> expanderMappings;
+	struct PwnMappingInfo {
+		gpio_num_t pin = GPIO_NUM_NC;
+		ledc_channel_t channel = LEDC_CHANNEL_0;
+		uint8_t limit = 100;
+	};
+
+	struct ExpanderMappingInfo {
+		uint8_t pin = 0;
+		uint8_t limit = 0xFF;
+	};
+
+	static const std::map<LED, PwnMappingInfo> PwmMappings;
+	static const std::map<LED, ExpanderMappingInfo> ExpanderMappings;
 
 private:
-	std::map<LED, class SingleLED *> ledDevices;
+	enum LEDInstruction {
+		On,
+		Off,
+		Blink,
+		Breathe
+	};
+
+	struct LEDInstructionInfo {
+		LED led;
+		LEDInstruction instruction;
+		uint32_t count;
+		uint32_t period;
+	};
+
+	std::map<LED, class SingleLED*> ledDevices;
 	std::map<LED, std::unique_ptr<class LEDFunction>> ledFunctions;
-	std::mutex mutex;
+	Queue<LEDInstructionInfo> instructionQueue;
+
+private:
+	void onInternal(LED led);
+
+	void offInternal(LED led);
+
+	void blinkInternal(LED led, uint32_t count, uint32_t period);
+
+	void breatheInternal(LED led, uint32_t period);
 };
 
 #endif //PERSE_ROVER_LEDSERVICE_H

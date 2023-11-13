@@ -2,15 +2,15 @@
 #include "LEDBreatheFunction.h"
 #include "Util/stdafx.h"
 
-LEDBreatheFunction::LEDBreatheFunction(SingleLED &led, uint32_t period) : LEDFunction(led), period(period) {
+LEDBreatheFunction::LEDBreatheFunction(SingleLED& led, uint32_t period) : LEDFunction(led), period(period){
 	startTime = millis();
 }
 
-LEDBreatheFunction::~LEDBreatheFunction() {
+LEDBreatheFunction::~LEDBreatheFunction(){
 	led.setValue(0);
 }
 
-void LEDBreatheFunction::loop() {
+void LEDBreatheFunction::loop(){
 	const uint64_t elapsedTime = millis() - startTime;
 
 	const uint64_t elapsedInPeriod = elapsedTime % period;

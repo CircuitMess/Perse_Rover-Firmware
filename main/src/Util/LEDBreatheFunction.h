@@ -5,7 +5,7 @@
 
 class LEDBreatheFunction : public LEDFunction {
 public:
-	LEDBreatheFunction(SingleLED &led, uint32_t period);
+	LEDBreatheFunction(SingleLED& led, uint32_t period);
 
 	virtual ~LEDBreatheFunction() override;
 

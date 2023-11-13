@@ -6,13 +6,14 @@
 
 class SingleExpanderLED : public SingleLED {
 public:
-	SingleExpanderLED(AW9523 &aw9523, uint8_t pin, uint8_t limit = 0xFF);
+	SingleExpanderLED(AW9523& aw9523, uint8_t pin, uint8_t limit = 0xFF);
+	virtual ~SingleExpanderLED() override;
 
 protected:
 	virtual void write(uint8_t val) override;
 
 private:
-	AW9523 &aw9523;
+	AW9523& aw9523;
 	uint8_t pin;
 };
 

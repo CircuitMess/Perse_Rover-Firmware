@@ -41,11 +41,11 @@ DemoState::DemoState(MotorDriveController& motors, ArmController& arm, CameraCon
 
 		led->on(LED::Rear);
 
-		led->blink(LED::RightMotor, 0);
-		led->blink(LED::LeftMotor, 0);
+		led->blink(LED::MotorRight, 0);
+		led->blink(LED::MotorLeft, 0);
 
-		led->on(LED::LeftHeadlight);
-		led->on(LED::RightHeadlight);
+		led->on(LED::HeadlightLeft);
+		led->on(LED::HeadlightsRight);
 
 		led->on(LED::StatusRed);
 	}
@@ -68,7 +68,7 @@ DemoState::~DemoState(){
 	motors.setControl(Remote);
 
 	if(LEDService* ledService = (LEDService*) Services.get(Service::LED)){
-		for(const LED led : { LED::StatusRed, LED::StatusGreen, LED::Rear, LED::LeftMotor, LED::RightMotor, LED::LeftHeadlight, LED::RightHeadlight }){
+		for(const LED led: { LED::StatusRed, LED::StatusGreen, LED::Rear, LED::MotorLeft, LED::MotorRight, LED::HeadlightLeft, LED::HeadlightsRight }){
 			ledService->off(led);
 		}
 	}

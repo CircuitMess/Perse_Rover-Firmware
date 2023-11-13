@@ -2,12 +2,10 @@
 #include "SingleLED.h"
 #include "Util/stdafx.h"
 
-SingleLED::SingleLED(uint8_t limit) : limit(limit), value(0) {
-	setValue(0);
-}
+SingleLED::SingleLED(uint8_t limit) : limit(limit), value(0){}
 
-void SingleLED::setValue(uint8_t val) {
-	if (val == value) {
+void SingleLED::setValue(uint8_t val){
+	if(val == value){
 		return;
 	}
 
@@ -18,6 +16,6 @@ void SingleLED::setValue(uint8_t val) {
 	write((uint8_t) (percent * percent * limit));
 }
 
-uint8_t SingleLED::getValue() const {
+uint8_t SingleLED::getValue() const{
 	return value;
 }

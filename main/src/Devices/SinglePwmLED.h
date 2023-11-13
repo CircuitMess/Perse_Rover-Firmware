@@ -7,6 +7,7 @@
 class SinglePwmLED : public SingleLED {
 public:
 	SinglePwmLED(uint8_t pin, ledc_channel_t channel, uint8_t limit = 100);
+	virtual ~SinglePwmLED() override;
 
 protected:
 	virtual void write(uint8_t val) override;
