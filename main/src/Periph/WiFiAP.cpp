@@ -46,7 +46,7 @@ WiFiAP::WiFiAP(){
 	};
 
 	uint32_t randID = rand() % 1000000;
-	std::string ssid = "Perseverance Rovee #" + std::to_string(randID);
+	std::string ssid = "Perseverance Rover #" + std::to_string(randID);
 	strcpy((char*) cfg_ap.ap.ssid, ssid.c_str());
 
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
