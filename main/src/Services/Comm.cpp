@@ -120,6 +120,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.feedQuality = packet.data;
 			break;
 		}
+		case CommType::Emergency:{
+			e.emergency = (bool)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 			break;
 		case CommType::ModuleData:
