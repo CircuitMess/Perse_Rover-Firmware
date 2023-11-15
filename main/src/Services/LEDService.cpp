@@ -84,7 +84,7 @@ void LEDService::blink(LED led, uint32_t count /*= 1*/, uint32_t period /*= 1000
 void LEDService::breathe(LED led, uint32_t period /*= 1000*/){
 	LEDInstructionInfo instruction{
 			.led = led,
-			.instruction = Blink,
+			.instruction = Breathe,
 			.count = 0,
 			.period = period
 	};
