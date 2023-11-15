@@ -56,7 +56,7 @@ void Feed::sleepyLoop(){
 				if(commEvent->type == CommType::FeedQuality){
 					EventData data;
 					data.type = EventData::FeedQualityChange;
-					data.feedQuality = std::clamp(commEvent->feedQuality, (uint8_t) 0, (uint8_t) 30);
+					data.feedQuality = std::clamp(commEvent->feedQuality, (uint8_t) QualityLimits.x, (uint8_t) QualityLimits.y);
 
 					communicationQueue.post(data, portMAX_DELAY);
 				}else if(commEvent->type == CommType::ScanMarkers){
@@ -123,7 +123,7 @@ void IRAM_ATTR Feed::sendFrame(){
 		return;
 	}
 
-	if(!frame2jpg(frameData, 30/*std::clamp((uint8_t) feedQuality, (uint8_t) 0, (uint8_t) 12)*/,
+	if(!frame2jpg(frameData, std::clamp((uint8_t) feedQuality, (uint8_t) QualityLimits.x, (uint8_t) QualityLimits.y),
 				  (uint8_t**) (&driveInfo.frame.data), &driveInfo.frame.size)){
 		ESP_LOGE(tag, "frame2jpg conversion failed.");
 		camera->releaseFrame();

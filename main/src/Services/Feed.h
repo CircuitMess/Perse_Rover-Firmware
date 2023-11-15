@@ -55,7 +55,7 @@ private:
 	};
 	Queue<EventData> communicationQueue;
 
-	static constexpr glm::vec<2, uint8_t> qualityLimits = {1, 20};
+	static constexpr glm::vec<2, uint8_t> QualityLimits = { 0, 30};
 	static constexpr size_t TxBufSize = 10000;
 	uint8_t* txBuf;
 
