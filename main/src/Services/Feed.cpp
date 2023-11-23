@@ -86,6 +86,17 @@ void IRAM_ATTR Feed::sendFrame(){
 		}
 	}
 
+	if(oldAction != MarkerAction::None && !isScanningEnabled){
+		Events::post(Facility::Feed,
+					 Event{ .type = EventType::MarkerScanned, .markerAction = MarkerAction::None });
+	}
+
+	printf("Send frame, quality: %d, enabled: %d\n", (uint8_t)feedQuality, (uint8_t)isScanningEnabled);
+
+	if(camera == nullptr){
+		return;
+	}
+
 	camera->setFormat(PIXFORMAT_RGB565);
 
 	if(feedQuality == 0 && !isScanningEnabled){
@@ -116,11 +127,6 @@ void IRAM_ATTR Feed::sendFrame(){
 			Events::post(Facility::Feed,
 						 Event{ .type = EventType::MarkerScanned, .markerAction = driveInfo.markerInfo.action });
 		}
-	}
-
-	if(camera == nullptr){
-		camera->releaseFrame();
-		return;
 	}
 
 	if(!frame2jpg(frameData, std::clamp((uint8_t) feedQuality, (uint8_t) QualityLimits.x, (uint8_t) QualityLimits.y),

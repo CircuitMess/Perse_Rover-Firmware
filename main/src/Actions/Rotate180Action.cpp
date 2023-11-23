@@ -29,7 +29,6 @@ Rotate180Action::~Rotate180Action(){
 		return;
 	}
 
-	controller->setLocally({});
 	controller->setControl(DeviceControlType::Remote);
 }
 

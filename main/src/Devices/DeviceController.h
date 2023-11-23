@@ -17,7 +17,7 @@ enum DeviceControlType {
 template<typename T>
 class DeviceController {
 public:
-	explicit DeviceController(const std::string& name) : control(Remote), eventQueue(10),
+	explicit DeviceController(const std::string& name, bool shouldResetStateToDefault = true) : shouldResetStateToDefault(shouldResetStateToDefault), control(Remote), eventQueue(10),
 														 dcListenThread(std::function([this](){ this->processCommandQueue(); }), name.c_str(), 2 * 1024){
 		Events::listen(Facility::Comm, &eventQueue);
 		Events::listen(Facility::TCP, &eventQueue);
@@ -30,9 +30,16 @@ public:
 	}
 
 	inline void setControl(DeviceControlType value){
-		if(control == Local && value == Remote && queuedState.has_value()){
-			T state = queuedState.value();
-			queuedState.reset();
+		if(control == Local && value == Remote){
+			T state = getDefaultState();
+
+			if(queuedState.has_value()){
+				state = queuedState.value();
+				queuedState.reset();
+			}else if(!shouldResetStateToDefault){
+				control = value;
+				return;
+			}
 
 			write(state);
 			currentState = state;
@@ -56,6 +63,9 @@ public:
 	inline T getCurrentState() const{
 		return currentState;
 	}
+
+protected:
+	bool shouldResetStateToDefault;
 
 protected:
 	virtual void write(const T& state) = 0;

@@ -19,7 +19,6 @@ TurnRightGoAheadAction::~TurnRightGoAheadAction(){
 		return;
 	}
 
-	controller->setLocally({});
 	controller->setControl(DeviceControlType::Remote);
 }
 

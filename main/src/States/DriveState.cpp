@@ -54,10 +54,10 @@ DriveState::~DriveState() {
 }
 
 void DriveState::loop(){
+	bool shouldTransition = false;
+
 	Event event = {};
 	if(queue.get(event, 1)){
-		bool shouldTransition = false;
-
 		if(event.facility == Facility::TCP){
 			if(auto* tcpEvent = (TCPServer::Event*) event.data){
 				if(tcpEvent->status == TCPServer::Event::Status::Disconnected){
@@ -67,7 +67,7 @@ void DriveState::loop(){
 		}else if(event.facility == Facility::Feed){
 			if(auto* feedEvent = (Feed::Event*) event.data){
 				if(feedEvent->type == Feed::EventType::MarkerScanned){
-					if(actionMappings.contains(feedEvent->markerAction) && actionMappings.at(feedEvent->markerAction)){
+					if(actionMappings.contains(feedEvent->markerAction) && actionMappings.at(feedEvent->markerAction) != nullptr){
 						if(activeAction == nullptr || activeAction->readyToTransition()){
 							activeAction = actionMappings.at(feedEvent->markerAction)();
 						}
@@ -77,12 +77,6 @@ void DriveState::loop(){
 		}
 
 		free(event.data);
-
-		if(shouldTransition){
-			if(auto parentStateMachine = (StateMachine*) Services.get(Service::StateMachine)){
-				parentStateMachine->transition<PairState>();
-			}
-		}
 	}
 
 	if(activeAction == nullptr){
@@ -93,5 +87,12 @@ void DriveState::loop(){
 		activeAction.reset();
 	}else{
 		activeAction->loop();
+	}
+
+	if(shouldTransition){
+		if(auto parentStateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+			parentStateMachine->transition<PairState>();
+			return;
+		}
 	}
 }

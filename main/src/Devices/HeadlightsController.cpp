@@ -3,7 +3,7 @@
 #include "Util/Services.h"
 #include "Services/LEDService.h"
 
-HeadlightsController::HeadlightsController() : DeviceController("Headlights Controller"){
+HeadlightsController::HeadlightsController() : DeviceController("Headlights Controller", false){
 	setControl(DeviceControlType::Local);
 	setLocally(HeadlightsState{});
 	setControl(DeviceControlType::Remote);
