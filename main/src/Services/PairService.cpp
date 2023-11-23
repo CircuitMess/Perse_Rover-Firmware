@@ -3,7 +3,7 @@
 #include "Util/Events.h"
 #include "Util/stdafx.h"
 
-PairService::PairService() : Threaded("PairService", 4 * 1024),
+PairService::PairService() : Threaded("PairService", 2 * 1024),
 							 wifi(*(WiFiAP*) Services.get(Service::WiFi)),
 							 tcp(*(TCPServer*) Services.get(Service::TCP)){
 	wifi.setHidden(false);
