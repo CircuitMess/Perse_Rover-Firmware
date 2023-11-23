@@ -51,8 +51,12 @@ glm::vec3 GyroModule::getAccelerometer() const{
 
 void GyroModule::sleepyLoop(){
 	auto accel = getAccelerometer();
-	accel.x *= -1;
-	accel.y *= -1;
+
+	if(bus == ModuleBus::Left){
+		accel.x *= -1;
+		accel.y *= -1;
+	}
+
 	int16_t xAngle = atan2(accel.y, accel.z) * 180 / M_PI;
 	int16_t yAngle = atan2(accel.x, accel.z) * 180 / M_PI;
 
