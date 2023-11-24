@@ -46,11 +46,11 @@
 #define EXP_LED_REAR 5
 #define EXP_BTN_PAIR 6
 #define EXP_SPKR_EN 7
-#define EXP_LED_MOTOR_L 8
+#define EXP_LED_MOTOR_L 12
 #define EXP_LED_ARM 9
 #define EXP_LED_FRONT_L 10
 #define EXP_LED_FRONT_R 11
-#define EXP_LED_MOTOR_R 12
+#define EXP_LED_MOTOR_R 8
 #define EXP_LED_STATUS_YELLOW 13
 #define EXP_LED_STATUS_GREEN 14
 #define EXP_LED_STATUS_RED 15
