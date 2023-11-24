@@ -5,7 +5,7 @@
 #include "Util/stdafx.h"
 
 MotorControl::MotorControl(const std::array<ledc_channel_t, 2>& pwmChannels) :
-		Threaded("Motors", 4 * 1024),
+		Threaded("Motors", 2 * 1024),
 		pwm({ MOTOR_LEFT_A, pwmChannels[0] }, { MOTOR_RIGHT_A, pwmChannels[1] }),
 		digitalPins({ MOTOR_LEFT_B }, { MOTOR_RIGHT_B }){
 	begin();

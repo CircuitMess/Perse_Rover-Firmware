@@ -62,6 +62,14 @@ void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
 	sendPacket(packet);
 }
 
+void Comm::sendModuleData(ModuleData data){
+	if(!tcp.isConnected()) return;
+
+	auto type = CommType::ModuleData;
+	tcp.write((uint8_t*) &type, sizeof(CommType));
+	tcp.write((uint8_t*) &data, sizeof(ModuleData));
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -120,28 +128,21 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.feedQuality = packet.data;
 			break;
 		}
+		case CommType::ScanMarkers: {
+			e.scanningEnable = packet.data;
+			break;
+		}
 		case CommType::Emergency:{
 			e.emergency = (bool)packet.data;
 			break;
 		}
 		case CommType::ModulePlug:
-			break;
 		case CommType::ModuleData:
-			break;
 		case CommType::ModulesEnable:
-			break;
-		default:{
+		default: {
 			break;
 		}
 	}
 
 	return e;
-}
-
-void Comm::sendModuleData(ModuleData data){
-	if(!tcp.isConnected()) return;
-
-	auto type = CommType::ModuleData;
-	tcp.write((uint8_t*) &type, sizeof(CommType));
-	tcp.write((uint8_t*) &data, sizeof(ModuleData));
 }
