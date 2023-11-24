@@ -43,6 +43,7 @@ PanicAction::~PanicAction(){
 	}
 
 	if(headlightsController != nullptr){
+		headlightsController->setLocally({});
 		headlightsController->setControl(DeviceControlType::Remote);
 	}
 
@@ -111,6 +112,8 @@ void PanicAction::loop(){
 
 		led->blink(LED::StatusRed, 0, 2 * DelayBetweenMovements);
 		led->blink(LED::Rear, 0, DelayBetweenMovements);
+		led->blink(LED::HeadlightLeft, 0, DelayBetweenMovements);
+		led->blink(LED::HeadlightsRight, 0, DelayBetweenMovements);
 	}else if(iteration == 8){
 		LEDService* led = (LEDService*) Services.get(Service::LED);
 		if (led == nullptr){
