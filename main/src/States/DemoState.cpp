@@ -106,7 +106,7 @@ void DemoState::doAction(const DemoState::Action& action){
 	}else if(action.type == Action::Pinch){
 		arm.setLocally(ArmState{ .Pinch = (int8_t) action.pos });
 	}else if(action.type == Action::Move){
-		motors.setLocally(MotorDriveState{ .DriveDirection = { .dir = (uint8_t) action.dir, .speed = 1.0f }});
+		// motors.setLocally(MotorDriveState{ .DriveDirection = { .dir = (uint8_t) action.dir, .speed = 1.0f }});
 	}
 }
 
