@@ -3,13 +3,16 @@
 #include "Pins.hpp"
 #include "Util/Events.h"
 #include "Util/stdafx.h"
+#include "Services/Comm.h"
+#include "Util/Services.h"
 
 #define MAX_READ 2724	// 4.5V
 #define MIN_READ 2280	// 3.8V
 
 Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 2 * 1024, 5, 1),
 					 adc(adc, (gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
-					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3) {
+					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3), eventQueue(10){
+	Events::listen(Facility::TCP, &eventQueue);
 
 	adc_unit_t unit;
 	adc_channel_t chan;
@@ -20,6 +23,10 @@ Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 2 * 102
 			.bitwidth = ADC_BITWIDTH_12
 	});
 	sample(true);
+}
+
+Battery::~Battery(){
+	Events::unlisten(&eventQueue);
 }
 
 void Battery::begin() {
@@ -55,7 +62,55 @@ void Battery::sleepyLoop() {
 		return;
 	}
 
+	for(::Event event{}; eventQueue.get(event, 0);){
+		if(event.facility != Facility::TCP){
+			free(event.data);
+			continue;
+		}
+
+		TCPServer::Event* tcpEvent = (TCPServer::Event*) event.data;
+		if(tcpEvent == nullptr){
+			continue;
+		}
+
+		if(tcpEvent->status == TCPServer::Event::Status::Connected){
+			shouldSendState = true;
+
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				const uint8_t newValue = getPerc();
+				printf("send %d\n", newValue);
+				comm->sendBattery(newValue);
+				oldValueSent = newValue;
+			}
+
+		}else{
+			shouldSendState = false;
+			oldValueSent = 0;
+		}
+
+		free(event.data);
+	}
+
 	sample();
+
+	if(!shouldSendState){
+		return;
+	}
+
+	const uint8_t newValue = getPerc();
+
+	if(newValue == oldValueSent){
+		return;
+	}
+
+	Comm* comm = (Comm*) Services.get(Service::Comm);
+	if(comm == nullptr){
+		return;
+	}
+
+	printf("send %d\n", newValue);
+	comm->sendBattery(newValue);
+	oldValueSent = newValue;
 }
 
 void Battery::sample(bool fresh/* = false*/) {
