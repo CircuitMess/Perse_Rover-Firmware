@@ -58,7 +58,7 @@ ArmState ArmController::getDefaultState() const {
 	return ArmState{50, 50};
 }
 
-void ArmController::sendState(const ArmState& state) const {
+void ArmController::sendState(const ArmState& state, bool local) const {
 	auto comm = (Comm*)Services.get(Service::Comm);
 	if (comm == nullptr) {
 		return;

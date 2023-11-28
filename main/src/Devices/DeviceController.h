@@ -44,7 +44,7 @@ public:
 			write(state);
 			currentState = state;
 
-			sendState(state);
+			sendState(state, false);
 		}
 
 		control = value;
@@ -58,6 +58,7 @@ public:
 		currentState = state;
 
 		write(state);
+		sendState(state, true);
 	}
 
 	inline T getCurrentState() const{
@@ -70,7 +71,7 @@ protected:
 protected:
 	virtual void write(const T& state) = 0;
 	virtual T getDefaultState() const = 0;
-	virtual void sendState(const T& state) const = 0;
+	virtual void sendState(const T& state, bool local) const = 0;
 	virtual void processEvent(const Event& event) = 0;
 
 	inline void setRemotely(const T& state){

@@ -88,7 +88,7 @@ MotorDriveState MotorDriveController::getDefaultState() const {
 	return MotorDriveState{};
 }
 
-void MotorDriveController::sendState(const MotorDriveState &state) const {
+void MotorDriveController::sendState(const MotorDriveState &state, bool local) const {
 	// No need for Motor Drive to send state back at this time
 }
 

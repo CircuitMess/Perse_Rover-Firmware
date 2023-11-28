@@ -11,37 +11,69 @@ Comm::~Comm(){
 	stop();
 }
 
-void Comm::sendHeadlightsState(HeadlightsMode headlights){
+void Comm::sendHeadlightsState(HeadlightsMode headlights, bool local/* = false*/){
+	uint8_t data = 0x7F & (uint8_t) headlights;
+
+	if(local){
+		data |= 0x80;
+	}
+
 	const ControlPacket packet = {
 			.type = CommType::Headlights,
-			.data = (uint8_t) headlights
+			.data = data
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPositionState(ArmPos position){
+void Comm::sendArmPositionState(ArmPos position, bool local/* = false*/){
+	if(position < 0){
+		return;
+	}
+
+	uint8_t data = 0x7F & position;
+
+	if(local){
+		data |= 0x80;
+	}
+
 	const ControlPacket packet = {
 			.type = CommType::ArmPosition,
-			.data = (uint8_t) position
+			.data = data
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPinchState(ArmPinch pinch){
+void Comm::sendArmPinchState(ArmPinch pinch, bool local/* = false*/){
+	if(pinch < 0){
+		return;
+	}
+
+	uint8_t data = 0x7F & pinch;
+
+	if(local){
+		data |= 0x80;
+	}
+
 	const ControlPacket packet = {
 			.type = CommType::ArmPinch,
-			.data = (uint8_t) (pinch)
+			.data = data
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendCameraState(CameraRotation rotation){
+void Comm::sendCameraState(CameraRotation rotation, bool local/* = false*/){
+	uint8_t data = 0x7F & rotation;
+
+	if(local){
+		data |= 0x80;
+	}
+
 	const ControlPacket packet = {
 			.type = CommType::CameraRotation,
-			.data = rotation
+			.data = data
 	};
 
 	sendPacket(packet);

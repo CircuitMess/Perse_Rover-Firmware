@@ -20,7 +20,7 @@ public:
 protected:
 	virtual void write(const ArmState& state) override;
 	virtual ArmState getDefaultState() const override;
-	virtual void sendState(const ArmState& state) const override;
+	virtual void sendState(const ArmState& state, bool local) const override;
 	virtual void processEvent(const Event& event) override;
 
 private:
