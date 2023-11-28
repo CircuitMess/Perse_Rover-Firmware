@@ -34,7 +34,7 @@ void HeadlightsController::sendState(const HeadlightsState& state, bool local) c
 		return;
 	}
 
-	comm->sendHeadlightsState(state.Mode);
+	comm->sendHeadlightsState(state.Mode, local);
 }
 
 void HeadlightsController::processEvent(const Event& event){

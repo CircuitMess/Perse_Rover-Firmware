@@ -52,7 +52,7 @@ void CameraController::sendState(const CameraState &state, bool local) const {
 		return;
 	}
 
-	comm->sendCameraState(state.Rotation);
+	comm->sendCameraState(state.Rotation, local);
 }
 
 void CameraController::processEvent(const Event &event) {

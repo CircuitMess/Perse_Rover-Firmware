@@ -65,11 +65,11 @@ void ArmController::sendState(const ArmState& state, bool local) const {
 	}
 
 	if(state.Position >= 0){
-		comm->sendArmPositionState(state.Position);
+		comm->sendArmPositionState(state.Position, local);
 	}
 
 	if(state.Pinch >= 0){
-		comm->sendArmPinchState(state.Pinch);
+		comm->sendArmPinchState(state.Pinch, local);
 	}
 }
 

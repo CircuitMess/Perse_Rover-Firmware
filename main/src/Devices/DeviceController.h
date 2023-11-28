@@ -44,7 +44,7 @@ public:
 			write(state);
 			currentState = state;
 
-			sendState(state, false);
+			sendState(state, true);
 		}
 
 		control = value;
@@ -83,7 +83,7 @@ protected:
 		currentState = state;
 
 		write(state);
-		sendState(state);
+		sendState(state, false);
 	}
 
 private:

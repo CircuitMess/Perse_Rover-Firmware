@@ -91,8 +91,6 @@ void IRAM_ATTR Feed::sendFrame(){
 					 Event{ .type = EventType::MarkerScanned, .markerAction = MarkerAction::None });
 	}
 
-	printf("Send frame, quality: %d, enabled: %d\n", (uint8_t)feedQuality, (uint8_t)isScanningEnabled);
-
 	if(camera == nullptr){
 		return;
 	}
