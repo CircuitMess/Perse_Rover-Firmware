@@ -71,16 +71,16 @@ void MotorDriveController::write(const MotorDriveState &state) {
 		return;
 	}
 
-	if(abs(leftSpeed) >= 50.0f){
-		led->on(LED::MotorLeft);
-	}else{
+	if(abs(leftSpeed) <= 0.1f && abs(rightSpeed) <= 0.1f){
 		led->off(LED::MotorLeft);
-	}
-
-	if(abs(rightSpeed) >= 50.0f){
-		led->on(LED::MotorRight);
-	}else{
 		led->off(LED::MotorRight);
+	}else if(abs(leftSpeed - rightSpeed) <= 0.1f){
+		led->on(LED::MotorLeft);
+		led->on(LED::MotorRight);
+	}else if(leftSpeed > rightSpeed){
+		led->on(LED::MotorRight);
+	}else if(rightSpeed > leftSpeed){
+		led->on(LED::MotorLeft);
 	}
 }
 
