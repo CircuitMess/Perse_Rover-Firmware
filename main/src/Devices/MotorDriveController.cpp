@@ -2,6 +2,8 @@
 #include <esp_log.h>
 #include "Services/Comm.h"
 #include "Devices/Motors.h"
+#include "Services/LEDService.h"
+#include "Util/Services.h"
 
 static const char* const TAG = "MotorDriveController";
 
@@ -63,6 +65,23 @@ void MotorDriveController::write(const MotorDriveState &state) {
 
 	motorControl->setLeft(leftSpeed);
 	motorControl->setRight(rightSpeed);
+
+	LEDService* led = (LEDService*) Services.get(Service::LED);
+	if(led == nullptr){
+		return;
+	}
+
+	if(abs(leftSpeed) <= 0.1f && abs(rightSpeed) <= 0.1f){
+		led->off(LED::MotorLeft);
+		led->off(LED::MotorRight);
+	}else if(abs(leftSpeed - rightSpeed) <= 0.1f){
+		led->on(LED::MotorLeft);
+		led->on(LED::MotorRight);
+	}else if(leftSpeed > rightSpeed){
+		led->on(LED::MotorRight);
+	}else if(rightSpeed > leftSpeed){
+		led->on(LED::MotorLeft);
+	}
 }
 
 MotorDriveState MotorDriveController::getDefaultState() const {
