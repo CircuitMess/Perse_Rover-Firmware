@@ -132,6 +132,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.scanningEnable = packet.data;
 			break;
 		}
+		case CommType::Emergency:{
+			e.emergency = (bool)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 		case CommType::ModuleData:
 		case CommType::ModulesEnable:

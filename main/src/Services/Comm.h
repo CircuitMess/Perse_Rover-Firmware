@@ -20,6 +20,7 @@ public:
 			CameraRotation cameraRotation;
 			uint8_t feedQuality;
 			bool scanningEnable;
+			bool emergency;
 		};
 		uint8_t raw;
 	};

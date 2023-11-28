@@ -18,6 +18,8 @@
 #include "Actions/TakeSoilSampleAction.h"
 #include "Services/Feed.h"
 #include "Services/LEDService.h"
+#include "Services/Comm.h"
+#include "Actions/PanicAction.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -38,6 +40,7 @@ const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> Drive
 DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
+	Events::listen(Facility::Comm, &queue);
 
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
 		led->on(LED::StatusGreen);
@@ -72,6 +75,12 @@ void DriveState::loop(){
 							activeAction = actionMappings.at(feedEvent->markerAction)();
 						}
 					}
+				}
+			}
+		}else if(event.facility == Facility::Comm){
+			if(const Comm::Event* commEvent = (Comm::Event*)event.data){
+				if(commEvent->type == CommType::Emergency && commEvent->emergency){
+					activeAction = std::make_unique<PanicAction>();
 				}
 			}
 		}
