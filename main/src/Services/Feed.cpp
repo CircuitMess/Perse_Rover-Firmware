@@ -2,6 +2,8 @@
 #include <esp_log.h>
 #include "Services/Comm.h"
 #include "Util/stdafx.h"
+#include "Services/LEDService.h"
+#include "Util/Services.h"
 
 const char* tag = "Feed";
 
@@ -22,6 +24,10 @@ Feed::Feed(I2C& i2c) : SleepyThreaded(50, "Feed", 4 * 1024), queue(10),
 
 Feed::~Feed(){
 	frameSendingThread.stop();
+
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		led->off(LED::Camera);
+	}
 
 	if(camera != nullptr){
 		camera->releaseFrame();
@@ -98,9 +104,17 @@ void IRAM_ATTR Feed::sendFrame(){
 	camera->setFormat(PIXFORMAT_RGB565);
 
 	if(feedQuality == 0 && !isScanningEnabled){
+		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+			led->off(LED::Camera);
+		}
+
 		camera->deinit();
 		return;
 	}else{
+		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+			led->on(LED::Camera);
+		}
+
 		camera->init();
 	}
 
