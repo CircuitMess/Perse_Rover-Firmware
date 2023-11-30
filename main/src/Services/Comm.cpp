@@ -57,8 +57,13 @@ void Comm::sendBattery(uint8_t batteryPercent){
 }
 
 void Comm::sendModulePlug(ModuleType type, ModuleBus bus, bool insert){
-	uint8_t data = CommData::encodeModulePlug({ type, bus, insert });
-	ControlPacket packet{ CommType::ModulePlug, data };
+	const uint8_t data = CommData::encodeModulePlug({ type, bus, insert });
+
+	const ControlPacket packet{
+		CommType::ModulePlug,
+		data
+	};
+
 	sendPacket(packet);
 }
 

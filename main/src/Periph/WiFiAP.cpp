@@ -12,12 +12,14 @@ static const char* TAG = "WiFi_AP";
 
 static std::string mac2str(uint8_t ar[]){
 	std::string str;
+
 	for(int i = 0; i < 6; ++i){
 		char buf[3];
 		sprintf(buf, "%02X", ar[i]);
 		str += buf;
 		if(i < 5) str += ':';
 	}
+
 	return str;
 }
 
@@ -32,7 +34,7 @@ WiFiAP::WiFiAP(){
 	ESP_ERROR_CHECK(esp_netif_init());
 	createNetif();
 
-	wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
+	const wifi_init_config_t cfg_wifi = WIFI_INIT_CONFIG_DEFAULT();
 	esp_wifi_init(&cfg_wifi);
 
 	wifi_config_t cfg_ap = {
@@ -45,8 +47,8 @@ WiFiAP::WiFiAP(){
 			},
 	};
 
-	uint32_t randID = rand() % 1000000;
-	std::string ssid = "Perseverance Rover #" + std::to_string(randID);
+	const uint32_t randID = rand() % 1000000;
+	const std::string ssid = "Perseverance Rover #" + std::to_string(randID);
 	strcpy((char*) cfg_ap.ap.ssid, ssid.c_str());
 
 	ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
@@ -67,7 +69,7 @@ void WiFiAP::event(int32_t id, void* data){
 	ESP_LOGD(TAG, "Evt %ld", id);
 
 	if(id == WIFI_EVENT_AP_STACONNECTED){
-		auto event = (wifi_event_ap_staconnected_t*) data;
+		const auto event = (wifi_event_ap_staconnected_t*) data;
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s join, AID=%d", mac.c_str(), event->aid);
 
@@ -75,7 +77,7 @@ void WiFiAP::event(int32_t id, void* data){
 		memcpy(evt.connect.mac, event->mac, 6);
 		Events::post(Facility::WiFiAP, evt);
 	}else if(id == WIFI_EVENT_AP_STADISCONNECTED){
-		auto event = (wifi_event_ap_stadisconnected_t*) data;
+		const auto event = (wifi_event_ap_stadisconnected_t*) data;
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s leave, AID=%d", mac.c_str(), event->aid);
 

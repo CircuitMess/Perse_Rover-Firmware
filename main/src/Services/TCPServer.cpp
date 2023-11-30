@@ -53,10 +53,10 @@ bool TCPServer::accept(){
 		return false;
 	}
 
-	int keepAlive = 1;
-	int keepIdle = 4; // Time (in seconds) without packets before keep-alive packet sending begins
-	int keepInterval = 2; // Interval between keep-alive packets
-	int keepCount = 2; // Number of keep-alive packets before connection drops
+	constexpr int keepAlive = 1;
+	constexpr int keepIdle = 4; // Time (in seconds) without packets before keep-alive packet sending begins
+	constexpr int keepInterval = 2; // Interval between keep-alive packets
+	constexpr int keepCount = 2; // Number of keep-alive packets before connection drops
 	setsockopt(client, SOL_SOCKET, SO_KEEPALIVE, &keepAlive, sizeof(int));
 	setsockopt(client, IPPROTO_TCP, TCP_KEEPIDLE, &keepIdle, sizeof(int));
 	setsockopt(client, IPPROTO_TCP, TCP_KEEPINTVL, &keepInterval, sizeof(int));

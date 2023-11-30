@@ -30,7 +30,7 @@ bool UDPEmitter::write(uint8_t* data, size_t count){
 
 	size_t total = 0;
 	while(total < count){
-		int now = ::sendto(sock, data + total, count - total, 0, (sockaddr*) &dest, sizeof(dest));
+		const int now = ::sendto(sock, data + total, count - total, 0, (sockaddr*) &dest, sizeof(dest));
 
 		if(now == 0){
 			return false;

@@ -4,7 +4,7 @@
 #include <string.h>
 
 Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), playQueue(6){
-	i2s_config_t cfg_i2s = {
+	const i2s_config_t cfg_i2s = {
 			.mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_TX),
 			.sample_rate = 44100,
 			.bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
@@ -16,7 +16,7 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 	};
 	i2s_driver_install(I2S_NUM_0, &cfg_i2s, 0, nullptr);
 
-	i2s_pin_config_t cfg_i2s_pins = {
+	const i2s_pin_config_t cfg_i2s_pins = {
 			.mck_io_num = -1,
 			.bck_io_num = I2S_BCLK,
 			.ws_io_num = I2S_LRCLK,
@@ -71,7 +71,7 @@ void Audio::loop(){
 
 	const size_t FramesPerPlay = BufSize / (wav.channels * sizeof(int16_t));
 
-	auto framesToRead = std::min(FramesPerPlay, (size_t) wav.totalPCMFrameCount - framesPlayed);
+	const auto framesToRead = std::min(FramesPerPlay, (size_t) wav.totalPCMFrameCount - framesPlayed);
 	size_t framesActuallyRead = drwav_read_pcm_frames_s16(&wav, framesToRead, dataBuf.data());
 	framesPlayed += framesActuallyRead;
 
@@ -84,6 +84,10 @@ void Audio::loop(){
 }
 
 void Audio::openFile(const char* file){
+	if(file == nullptr){
+		return;
+	}
+
 	if(fileIsOpen){
 		closeFile();
 	}

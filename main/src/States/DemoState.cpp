@@ -75,17 +75,20 @@ DemoState::~DemoState(){
 }
 
 void DemoState::loop(){
-	Event evt{};
-	if(evts.get(evt, 5)){
-		auto data = (Input::Data*) evt.data;
-		if(data->btn == Input::Pair && data->action == Input::Data::Press){
-			free(evt.data);
+	{
+		Event evt{};
+		if(evts.get(evt, 5)){
+			auto data = (Input::Data*) evt.data;
+			if(data->btn == Input::Pair && data->action == Input::Data::Press){
+				free(evt.data);
 
-			auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
-			stateMachine->transition<PairState>();
+				auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
+				stateMachine->transition<PairState>();
 
-			return;
+				return;
+			}
 		}
+
 		free(evt.data);
 	}
 

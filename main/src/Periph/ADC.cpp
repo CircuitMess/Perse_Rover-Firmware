@@ -3,10 +3,11 @@
 static const char* TAG = "ADC";
 
 ADC::ADC(adc_unit_t unit) : unit(unit){
-	adc_oneshot_unit_init_cfg_t config = {
+	const adc_oneshot_unit_init_cfg_t config = {
 			.unit_id = unit,
 			.ulp_mode = ADC_ULP_MODE_DISABLE
 	};
+	
 	ESP_ERROR_CHECK(adc_oneshot_new_unit(&config, &hndl));
 }
 

@@ -5,14 +5,14 @@
 static const char* TAG = "SPIFFS";
 
 SPIFFS::SPIFFS(){
-	esp_vfs_spiffs_conf_t conf = {
+	const esp_vfs_spiffs_conf_t conf = {
 			.base_path = BasePath,
 			.partition_label = PartitionLabel,
 			.max_files = 8,
 			.format_if_mount_failed = false
 	};
 
-	auto ret = esp_vfs_spiffs_register(&conf);
+	const auto ret = esp_vfs_spiffs_register(&conf);
 	if(ret != ESP_OK){
 		if(ret == ESP_FAIL){
 			ESP_LOGE(TAG, "Failed to mount or format filesystem");

@@ -27,7 +27,7 @@ void Events::post(Facility facility, const void* data, size_t size){
 	const std::unordered_set<EventQueue*> subs = pair->second;
 	lock.unlock();
 
-	for(auto queue : subs){
+	for(const auto queue : subs){
 		void* qData = nullptr;
 		if(size != 0){
 			qData = malloc(size);
@@ -60,7 +60,7 @@ bool EventQueue::get(Event& event, TickType_t timeout){
 }
 
 bool EventQueue::post(Facility facility, void* data){
-	InternalEvent event = {
+	const InternalEvent event = {
 			.evt = {
 					.facility = facility,
 					.data = data
@@ -80,7 +80,7 @@ void EventQueue::reset(){
 }
 
 void EventQueue::unblock(){
-	InternalEvent event = {
+	const InternalEvent event = {
 			.killPill = true
 	};
 

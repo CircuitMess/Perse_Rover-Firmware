@@ -12,6 +12,7 @@ CO2Sensor::CO2Sensor(ModuleBus bus, ADC& adc) : SleepyThreaded(Modules::ModuleSe
 			.atten = ADC_ATTEN_DB_11,
 			.bitwidth = ADC_BITWIDTH_12
 	});
+
 	start();
 }
 
@@ -21,8 +22,10 @@ CO2Sensor::~CO2Sensor(){
 
 void CO2Sensor::sleepyLoop(){
 	bool status = adc.sample() < OKThreshold;
-	ModuleData data = {
+
+	const ModuleData data = {
 			ModuleType::CO2, bus, { .gas = { status } }
 	};
+
 	comm.sendModuleData(data);
 }

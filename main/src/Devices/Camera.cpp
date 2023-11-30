@@ -73,6 +73,10 @@ bool Camera::init(){
 	}
 
 	sensor_t* sensor = esp_camera_sensor_get();
+	if(sensor == nullptr){
+		return false;
+	}
+
 	sensor->set_hmirror(sensor, 0);
 	sensor->set_vflip(sensor, 0);
 

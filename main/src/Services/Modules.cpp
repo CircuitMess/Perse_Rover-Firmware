@@ -52,6 +52,7 @@ Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 
 									   connectionQueue(10){
 	Modules::sleepyLoop();
 	start();
+
 	Events::listen(Facility::Comm, &connectionQueue);
 	Events::listen(Facility::TCP, &connectionQueue);
 	connectionThread.start();
@@ -59,25 +60,34 @@ Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 
 
 Modules::~Modules(){
 	stop();
+
 	if(ModuleConstrDestr.contains(leftContext.current)){
 		ModuleConstrDestr.at(leftContext.current).second(leftContext.moduleInstance);
 		leftContext.moduleInstance = nullptr;
 	}
+
 	if(ModuleConstrDestr.contains(rightContext.current)){
 		ModuleConstrDestr.at(rightContext.current).second(rightContext.moduleInstance);
 		rightContext.moduleInstance = nullptr;
 	}
+
 	connectionThread.stop(0);
 	connectionQueue.unblock();
+
 	while(connectionThread.running()){
 		delayMillis(1);
 	}
+
 	Events::unlisten(&connectionQueue);
 }
 
 ModuleType Modules::getInserted(ModuleBus bus){
-	auto& context = getContext(bus);
-	if(!context.inserted) return ModuleType::Unknown;
+	const auto& context = getContext(bus);
+
+	if(!context.inserted){
+		return ModuleType::Unknown;
+	}
+
 	return (ModuleType) context.current;
 }
 
@@ -87,17 +97,18 @@ void Modules::sleepyLoop(){
 }
 
 bool Modules::checkInserted(ModuleBus bus){
-	auto scan = tca.readAll();
+	const auto scan = tca.readAll();
 
-	auto& context = getContext(bus);
-	bool det1 = scan & (1 << context.DetPins[0]);
-	bool det2 = scan & (1 << context.DetPins[1]);
+	const auto& context = getContext(bus);
+	const bool det1 = scan & (1 << context.DetPins[0]);
+	const bool det2 = scan & (1 << context.DetPins[1]);
 	return det1 == 0 && det2 == 1;
 }
 
 ModuleType Modules::checkAddr(ModuleBus bus){
-	auto& context = getContext(bus);
-	auto scan = tca.readAll();
+	const auto& context = getContext(bus);
+	const auto scan = tca.readAll();
+
 	uint8_t addr = 0;
 	for(int i = 0; i < 6; i++){
 		auto state = scan & (1 << context.AddrPins[i]);
@@ -106,7 +117,7 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 		}
 	}
 
-	auto& oppositeContext = getContext(bus == ModuleBus::Left ? ModuleBus::Right : ModuleBus::Left);
+	const auto& oppositeContext = getContext(bus == ModuleBus::Left ? ModuleBus::Right : ModuleBus::Left);
 
 	if(addr != I2CModuleAddress){
 		if(!AddressMap.contains(addr)){
@@ -122,6 +133,7 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 			return pair.second;
 		}
 	}
+
 	return ModuleType::Unknown;
 }
 
@@ -134,13 +146,12 @@ Modules::BusContext& Modules::getContext(ModuleBus bus){
 }
 
 void Modules::loopCheck(ModuleBus bus){
-	bool nowInserted = checkInserted(bus);
+	const bool nowInserted = checkInserted(bus);
 	auto& context = getContext(bus);
-
 
 	if(context.inserted && !nowInserted){
 		context.inserted = false;
-		auto removed = context.current;
+		const auto removed = context.current;
 		context.current = ModuleType::Unknown;
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
@@ -154,7 +165,7 @@ void Modules::loopCheck(ModuleBus bus){
 		context.moduleInstance = nullptr;
 
 	}else if(!context.inserted && nowInserted){
-		ModuleType addr = checkAddr(bus);
+		const ModuleType addr = checkAddr(bus);
 
 		context.current = addr;
 		context.inserted = true;
@@ -177,12 +188,12 @@ void Modules::connectionLoop(){
 	if(!running()) return;
 
 	if(e.facility == Facility::TCP){
-		auto& data = *((TCPServer::Event*) e.data);
+		const auto& data = *((TCPServer::Event*) e.data);
 		if(data.status != TCPServer::Event::Status::Disconnected) return;
 
 		modulesEnabled = false;
 	}else if(e.facility == Facility::Comm){
-		auto& data = *((Comm::Event*) e.data);
+		const auto& data = *((Comm::Event*) e.data);
 		if(data.type != CommType::ModulesEnable) return;
 		if(modulesEnabled == (bool) data.raw) return;
 

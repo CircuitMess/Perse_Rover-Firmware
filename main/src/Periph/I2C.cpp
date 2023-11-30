@@ -40,11 +40,13 @@ i2c_port_t I2C::getPort() const{
 
 void I2C::scan(TickType_t timeout){
 	printf("I2C scan:\n");
+
 	for(int i = 0; i < 127; i++){
 		if(probe(i, timeout) == ESP_OK){
 			printf("Found device on addr 0x%x\n", i);
 		}
 	}
+
 	printf("Scan done.\n");
 }
 
@@ -55,6 +57,7 @@ esp_err_t I2C::probe(uint8_t addr, TickType_t timeout){
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_WRITE, true);
 	i2c_master_stop(cmd);
+
 	auto status = i2c_master_cmd_begin(port, cmd, timeout);
 	i2c_cmd_link_delete(cmd);
 	return status;
@@ -103,7 +106,9 @@ esp_err_t I2C::write_read(uint8_t addr, uint8_t wdata, uint8_t& rdata, TickType_
 esp_err_t I2C::writeReg(uint8_t addr, uint8_t reg, const uint8_t* data, size_t size, TickType_t wait){
 	std::vector<uint8_t> buf(size+1);
 	buf[0] = reg;
+
 	memcpy(buf.data()+1, data, size);
+
 	return write(addr, buf.data(), buf.size(), wait);
 }
 

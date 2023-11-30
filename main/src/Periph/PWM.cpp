@@ -5,18 +5,19 @@
 static const char* TAG = "PMW";
 
 PWM::PWM(uint8_t pin, ledc_channel_t channel, bool invertDuty) : pin(pin), channel(channel), invertDuty(invertDuty){
-
-	ledc_timer_config_t ledc_timer = {
+	const ledc_timer_config_t ledc_timer = {
 			.speed_mode       = getSpeedMode(channel),
 			.duty_resolution  = DutyResDefault,
 			.timer_num        = getTimer(channel),
 			.freq_hz          = DefaultFreq,
 			.clk_cfg          = LEDC_AUTO_CLK
 	};
+
 	if(ledc_timer_config(&ledc_timer) != ESP_OK){
 		ESP_LOGE(TAG, "timer config failed!");
 		return;
 	}
+
 	attach();
 }
 
@@ -28,14 +29,13 @@ PWM::~PWM(){
 void PWM::setFreq(uint16_t freq){
 	if(pin == (uint8_t) -1) return;
 
-
 	if(!checkFrequency(freq)){
 		ESP_LOGW(TAG, "couldnt write frequency %d because of clock divisor limitations\n", freq);
 		return;
 	}
 
-	auto group = getSpeedMode(channel);
-	auto timer = getTimer(channel);
+	const auto group = getSpeedMode(channel);
+	const auto timer = getTimer(channel);
 
 	ledc_set_freq(group, timer, freq);
 	ledc_update_duty(group, channel);
@@ -43,8 +43,10 @@ void PWM::setFreq(uint16_t freq){
 
 void PWM::setDuty(uint8_t perc){
 	attach();
-	uint32_t duty = (FullDuty * perc) / 100;
-	auto group = getSpeedMode(channel);
+
+	const uint32_t duty = (FullDuty * perc) / 100;
+	const auto group = getSpeedMode(channel);
+
 	ledc_set_duty(group, channel, duty);
 	ledc_update_duty(group, channel);
 }
@@ -58,7 +60,7 @@ void PWM::attach(){
 	if(pin == (uint8_t) -1) return;
 	if(attached) return;
 
-	ledc_channel_config_t ledc_channel = {
+	const ledc_channel_config_t ledc_channel = {
 			.gpio_num       = pin,
 			.speed_mode     = getSpeedMode(channel),
 			.channel        = channel,
@@ -75,12 +77,15 @@ void PWM::attach(){
 
 void PWM::detach(){
 	if(!attached) return;
-	gpio_config_t cfg = {
+
+	const gpio_config_t cfg = {
 			.pin_bit_mask = 1ULL << pin,
 			.mode = GPIO_MODE_OUTPUT
 	};
+
 	gpio_config(&cfg);
 	gpio_set_level((gpio_num_t) pin, invertDuty);
+
 	attached = false;
 }
 

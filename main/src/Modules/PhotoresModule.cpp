@@ -22,10 +22,12 @@ PhotoresModule::~PhotoresModule(){
 }
 
 void PhotoresModule::sleepyLoop(){
-	auto level = getLevel();
-	ModuleData data = {
+	const auto level = getLevel();
+
+	const ModuleData data = {
 			ModuleType::PhotoRes, bus, { .photoRes = { level } }
 	};
+
 	comm.sendModuleData(data);
 }
 

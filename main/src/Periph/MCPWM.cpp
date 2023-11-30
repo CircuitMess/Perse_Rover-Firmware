@@ -3,7 +3,7 @@
 
 MCPWM::MCPWM(gpio_num_t gpioA, gpio_num_t gpioB, int groupID){
 	// mcpwm timer
-	mcpwm_timer_config_t timer_config = {
+	const mcpwm_timer_config_t timer_config = {
 			.group_id = groupID,
 			.clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
 			.resolution_hz = TimerResolution,
@@ -12,7 +12,7 @@ MCPWM::MCPWM(gpio_num_t gpioA, gpio_num_t gpioB, int groupID){
 	};
 	ESP_ERROR_CHECK(mcpwm_new_timer(&timer_config, &timerHandle));
 
-	mcpwm_operator_config_t operator_config = {
+	const mcpwm_operator_config_t operator_config = {
 			.group_id = groupID,
 	};
 
@@ -20,7 +20,7 @@ MCPWM::MCPWM(gpio_num_t gpioA, gpio_num_t gpioB, int groupID){
 
 	mcpwm_operator_connect_timer(operatorHandle, timerHandle);
 
-	mcpwm_comparator_config_t comparator_config = {
+	const mcpwm_comparator_config_t comparator_config = {
 			.flags = { .update_cmp_on_tez = true },
 	};
 	mcpwm_new_comparator(operatorHandle, &comparator_config, &compA);
@@ -64,7 +64,7 @@ MCPWM::~MCPWM(){
 
 
 void MCPWM::setSpeed(uint8_t speed){
-	uint32_t val = MaxDuty * speed / 100;
+	const uint32_t val = MaxDuty * speed / 100;
 	mcpwm_comparator_set_compare_value(compA, val);
 	mcpwm_comparator_set_compare_value(compB, val);
 
