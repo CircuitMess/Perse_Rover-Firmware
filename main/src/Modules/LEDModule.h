@@ -4,15 +4,17 @@
 #include "Services/Modules.h"
 #include "Periph/PinOut.h"
 
-class LEDModule : private Threaded{
+class LEDModule : private SleepyThreaded{
 public:
 	LEDModule(ModuleBus bus);
 	~LEDModule() override;
 private:
 	PinOut pinout;
 	EventQueue queue;
+	ModuleBus bus;
+	bool state = false;
 
-	void loop() override;
+	void sleepyLoop() override;
 };
 
 
