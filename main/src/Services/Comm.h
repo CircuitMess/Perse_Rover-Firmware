@@ -21,6 +21,7 @@ public:
 			uint8_t feedQuality;
 			bool scanningEnable;
 			bool emergency;
+			bool audio;
 		};
 		uint8_t raw;
 	};

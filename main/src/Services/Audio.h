@@ -16,9 +16,14 @@ public:
 	void play(const char* file);
 	void stop();
 
+	bool isEnabled() const;
+	void setEnabled(bool enabled);
+
 private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
 	static constexpr size_t BufSize = 1024;
+
+	bool enabled = true;
 
 	std::vector<int16_t> dataBuf;
 
