@@ -68,7 +68,7 @@ void Battery::sleepyLoop() {
 			continue;
 		}
 
-		TCPServer::Event* tcpEvent = (TCPServer::Event*) event.data;
+		const TCPServer::Event* tcpEvent = (TCPServer::Event*) event.data;
 		if(tcpEvent == nullptr){
 			continue;
 		}
@@ -78,7 +78,6 @@ void Battery::sleepyLoop() {
 
 			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
 				const uint8_t newValue = getPerc();
-				printf("send %d\n", newValue);
 				comm->sendBattery(newValue);
 				oldValueSent = newValue;
 			}
@@ -108,7 +107,6 @@ void Battery::sleepyLoop() {
 		return;
 	}
 
-	printf("send %d\n", newValue);
 	comm->sendBattery(newValue);
 	oldValueSent = newValue;
 }
