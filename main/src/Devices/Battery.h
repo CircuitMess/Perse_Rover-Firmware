@@ -6,6 +6,7 @@
 #include "Util/Threaded.h"
 #include "Util/Hysteresis.h"
 #include "Services/ADCReader.h"
+#include "Util/Events.h"
 
 class Battery : private SleepyThreaded
 {
@@ -22,7 +23,9 @@ public:
 	};
 
 public:
-	Battery(ADC& adc);
+	explicit Battery(ADC& adc);
+	virtual ~Battery();
+
 	void begin();
 
 	uint8_t getPerc() const;
@@ -43,6 +46,9 @@ private:
 	ADCReader adc;
 	Hysteresis hysteresis;
 	bool shutdown = false;
+	uint8_t oldValueSent = 0;
+	EventQueue eventQueue;
+	bool shouldSendState = false;
 
 private:
 	void sleepyLoop() override;

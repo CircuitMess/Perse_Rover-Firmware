@@ -88,14 +88,12 @@ void DriveState::loop(){
 		free(event.data);
 	}
 
-	if(activeAction == nullptr){
-		return;
-	}
-
-	if(activeAction->isMarkedForDestroy()){
-		activeAction.reset();
-	}else{
-		activeAction->loop();
+	if(activeAction != nullptr){
+		if(activeAction->isMarkedForDestroy()){
+			activeAction.reset();
+		}else{
+			activeAction->loop();
+		}
 	}
 
 	if(shouldTransition){

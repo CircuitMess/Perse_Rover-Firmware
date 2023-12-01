@@ -49,7 +49,7 @@ void Comm::sendCameraState(CameraRotation rotation){
 
 void Comm::sendBattery(uint8_t batteryPercent){
 	const ControlPacket packet = {
-			.type = CommType::CameraRotation,
+			.type = CommType::Battery,
 			.data = batteryPercent
 	};
 
