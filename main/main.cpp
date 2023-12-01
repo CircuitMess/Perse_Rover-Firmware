@@ -76,7 +76,7 @@ void init(){
 	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
 
-	led->on(LED::Rear);
+	led->breathe(LED::Rear);
 
 	auto input = new Input(*aw9523);
 	Services.set(Service::Input, input);

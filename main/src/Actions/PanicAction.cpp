@@ -62,7 +62,7 @@ PanicAction::~PanicAction(){
 
 	led->off(LED::StatusYellow);
 	led->off(LED::StatusRed);
-	led->on(LED::Rear);
+	led->breathe(LED::Rear);
 }
 
 void PanicAction::loop(){
