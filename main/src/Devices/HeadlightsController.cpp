@@ -28,13 +28,13 @@ HeadlightsState HeadlightsController::getDefaultState() const{
 	return HeadlightsState{};
 }
 
-void HeadlightsController::sendState(const HeadlightsState& state) const{
+void HeadlightsController::sendState(const HeadlightsState& state, bool local) const{
 	auto comm = (Comm*) Services.get(Service::Comm);
 	if(comm == nullptr){
 		return;
 	}
 
-	comm->sendHeadlightsState(state.Mode);
+	comm->sendHeadlightsState(state.Mode, local);
 }
 
 void HeadlightsController::processEvent(const Event& event){

@@ -46,13 +46,13 @@ CameraState CameraController::getDefaultState() const {
 	return CameraState{};
 }
 
-void CameraController::sendState(const CameraState &state) const {
+void CameraController::sendState(const CameraState &state, bool local) const {
 	auto comm = (Comm*)Services.get(Service::Comm);
 	if (comm == nullptr){
 		return;
 	}
 
-	comm->sendCameraState(state.Rotation);
+	comm->sendCameraState(state.Rotation, local);
 }
 
 void CameraController::processEvent(const Event &event) {

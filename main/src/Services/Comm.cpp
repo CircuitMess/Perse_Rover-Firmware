@@ -1,4 +1,5 @@
 #include "Comm.h"
+#include <RoverStateUtil.h>
 #include "Util/Services.h"
 
 Comm::Comm() : Threaded("Comm", 4 * 1024), tcp(*(TCPServer*) Services.get(Service::TCP)), queue(10){
@@ -11,37 +12,37 @@ Comm::~Comm(){
 	stop();
 }
 
-void Comm::sendHeadlightsState(HeadlightsMode headlights){
+void Comm::sendHeadlightsState(HeadlightsMode headlights, bool local){
 	const ControlPacket packet = {
 			.type = CommType::Headlights,
-			.data = (uint8_t) headlights
+			.data = encodeRoverState((uint8_t) headlights, local)
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPositionState(ArmPos position){
+void Comm::sendArmPositionState(ArmPos position, bool local){
 	const ControlPacket packet = {
 			.type = CommType::ArmPosition,
-			.data = (uint8_t) position
+			.data = encodeRoverState((uint8_t) position, local)
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendArmPinchState(ArmPinch pinch){
+void Comm::sendArmPinchState(ArmPinch pinch, bool local){
 	const ControlPacket packet = {
 			.type = CommType::ArmPinch,
-			.data = (uint8_t) (pinch)
+			.data = encodeRoverState((uint8_t) pinch, local)
 	};
 
 	sendPacket(packet);
 }
 
-void Comm::sendCameraState(CameraRotation rotation){
+void Comm::sendCameraState(CameraRotation rotation, bool local){
 	const ControlPacket packet = {
 			.type = CommType::CameraRotation,
-			.data = rotation
+			.data = encodeRoverState(rotation, local)
 	};
 
 	sendPacket(packet);

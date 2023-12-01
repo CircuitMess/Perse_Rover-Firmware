@@ -31,10 +31,10 @@ public:
 	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
 	void sendModuleData(ModuleData data);
 
-	void sendHeadlightsState(HeadlightsMode headlights);
-	void sendArmPositionState(ArmPos position);
-	void sendArmPinchState(ArmPinch pinch);
-	void sendCameraState(CameraRotation rotation);
+	void sendHeadlightsState(HeadlightsMode headlights, bool local = false);
+	void sendArmPositionState(ArmPos position, bool local = false);
+	void sendArmPinchState(ArmPinch pinch, bool local = false);
+	void sendCameraState(CameraRotation rotation, bool local = false);
 	void sendBattery(uint8_t batteryPercent);
 
 private:

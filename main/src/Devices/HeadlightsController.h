@@ -19,7 +19,7 @@ public:
 protected:
 	virtual void write(const HeadlightsState& state) override;
 	virtual HeadlightsState getDefaultState() const override;
-	virtual void sendState(const HeadlightsState& state) const override;
+	virtual void sendState(const HeadlightsState& state, bool local) const override;
 	virtual void processEvent(const Event& event) override;
 };
 
