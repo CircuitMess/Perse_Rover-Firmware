@@ -18,7 +18,7 @@ public:
 	pixformat_t getFormat() const;
 	void setFormat(pixformat_t format);
 
-    esp_err_t init();
+	esp_err_t init();
 	void deinit();
 	bool isInited();
 

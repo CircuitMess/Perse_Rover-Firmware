@@ -77,12 +77,12 @@ void Comm::sendModuleData(ModuleData data){
 }
 
 void Comm::sendNoFeed(bool noFeed){
-    const ControlPacket packet = {
-            .type = CommType::NoFeed,
-            .data = noFeed
-    };
+	const ControlPacket packet = {
+			.type = CommType::NoFeed,
+			.data = noFeed
+	};
 
-    sendPacket(packet);
+	sendPacket(packet);
 }
 
 void Comm::sendPacket(const ControlPacket& packet){

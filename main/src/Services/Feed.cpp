@@ -109,15 +109,15 @@ void IRAM_ATTR Feed::sendFrame(){
 			led->off(LED::Camera);
 		}
 
-        // If feed was previously on
-        if(camera->isInited()){
-            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
-                comm->sendNoFeed(true);
-            }
-        }
+		// If feed was previously on
+		if(camera->isInited()){
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				comm->sendNoFeed(true);
+			}
+		}
 
 		camera->deinit();
-        vTaskDelay(1000); // No need to constantly tick if there is no feed.
+		vTaskDelay(1000); // No need to constantly tick if there is no feed.
 
 		return;
 	}else{
@@ -125,33 +125,33 @@ void IRAM_ATTR Feed::sendFrame(){
 			led->on(LED::Camera);
 		}
 
-        // If feed was previously off
-        if(!camera->isInited()){
-            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
-                comm->sendNoFeed(false);
-            }
-        }
+		// If feed was previously off
+		if(!camera->isInited()){
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				comm->sendNoFeed(false);
+			}
+		}
 
-        const esp_err_t err = camera->init();
+		const esp_err_t err = camera->init();
 		if(err != ESP_OK){
-            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
-                comm->sendNoFeed(true);
-            }
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				comm->sendNoFeed(true);
+			}
 
-            if(shouldPlayAudioOnCamFailure){
-                if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-                    audio->stop();
-                    audio->play(""); // TODO
-                }
+			if(shouldPlayAudioOnCamFailure){
+				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+					audio->stop();
+					audio->play(""); // TODO
+				}
 
-                shouldPlayAudioOnCamFailure = false;
-            }
+				shouldPlayAudioOnCamFailure = false;
+			}
 
-            vTaskDelay(1000); // No need to constantly tick if there is no feed.
-            return;
-        }else{
-            shouldPlayAudioOnCamFailure = true;
-        }
+			vTaskDelay(1000); // No need to constantly tick if there is no feed.
+			return;
+		}else{
+			shouldPlayAudioOnCamFailure = true;
+		}
 	}
 
 	camera_fb_t* frameData = camera->getFrame();

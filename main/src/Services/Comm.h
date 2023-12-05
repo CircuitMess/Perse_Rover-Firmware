@@ -33,9 +33,9 @@ public:
 	void sendArmPinchState(ArmPinch pinch, bool local = false);
 	void sendCameraState(CameraRotation rotation, bool local = false);
 	void sendBattery(uint8_t batteryPercent);
-    void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
-    void sendModuleData(ModuleData data);
-    void sendNoFeed(bool noFeed);
+	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
+	void sendModuleData(ModuleData data);
+	void sendNoFeed(bool noFeed);
 
 private:
 	TCPServer& tcp;
