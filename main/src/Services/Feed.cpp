@@ -4,6 +4,7 @@
 #include "Util/stdafx.h"
 #include "Services/LEDService.h"
 #include "Util/Services.h"
+#include "Audio.h"
 
 const char* tag = "Feed";
 
@@ -137,8 +138,19 @@ void IRAM_ATTR Feed::sendFrame(){
                 comm->sendNoFeed(true);
             }
 
+            if(shouldPlayAudioOnCamFailure){
+                if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+                    audio->stop();
+                    audio->play(""); // TODO
+                }
+
+                shouldPlayAudioOnCamFailure = false;
+            }
+
             vTaskDelay(1000); // No need to constantly tick if there is no feed.
             return;
+        }else{
+            shouldPlayAudioOnCamFailure = true;
         }
 	}
 

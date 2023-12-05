@@ -39,6 +39,7 @@ private:
 	std::unique_ptr<Camera> camera;
 	std::unique_ptr<MarkerScanner> markerScanner;
 	MarkerAction oldAction = MarkerAction::None;
+    bool shouldPlayAudioOnCamFailure = true;
 
 	struct EventData {
 		enum Type {
