@@ -108,14 +108,38 @@ void IRAM_ATTR Feed::sendFrame(){
 			led->off(LED::Camera);
 		}
 
+        // If feed was previously on
+        if(camera->isInited()){
+            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+                comm->sendNoFeed(true);
+            }
+        }
+
 		camera->deinit();
+        vTaskDelay(1000); // No need to constantly tick if there is no feed.
+
 		return;
 	}else{
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 			led->on(LED::Camera);
 		}
 
-		camera->init();
+        // If feed was previously off
+        if(!camera->isInited()){
+            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+                comm->sendNoFeed(false);
+            }
+        }
+
+        const esp_err_t err = camera->init();
+		if(err != ESP_OK){
+            if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+                comm->sendNoFeed(true);
+            }
+
+            vTaskDelay(1000); // No need to constantly tick if there is no feed.
+            return;
+        }
 	}
 
 	camera_fb_t* frameData = camera->getFrame();
