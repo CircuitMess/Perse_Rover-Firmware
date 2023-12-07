@@ -125,12 +125,7 @@ void IRAM_ATTR Feed::sendFrame(){
 			led->on(LED::Camera);
 		}
 
-		// If feed was previously off
-		if(!camera->isInited()){
-			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
-				comm->sendNoFeed(false);
-			}
-		}
+		const bool wasCamOff = !camera->isInited();
 
 		const esp_err_t err = camera->init();
 		if(err != ESP_OK){
@@ -151,6 +146,12 @@ void IRAM_ATTR Feed::sendFrame(){
 			return;
 		}else{
 			shouldPlayAudioOnCamFailure = true;
+
+			if(wasCamOff && camera->isInited()){
+				if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+					comm->sendNoFeed(false);
+				}
+			}
 		}
 	}
 
