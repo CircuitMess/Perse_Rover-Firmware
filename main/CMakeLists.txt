@@ -13,4 +13,4 @@ add_prebuilt_library(opencv_imgproc "lib/opencv/libopencv_imgproc.a" PRIV_REQUIR
 add_prebuilt_library(opencv_core "lib/opencv/libopencv_core.a" PRIV_REQUIRES cxx)
 target_link_libraries(${COMPONENT_LIB} opencv_imgproc opencv_core)
 
-#spiffs_create_partition_image(storage ../spiffs_image FLASH_IN_PROJECT)
+spiffs_create_partition_image(storage ../spiffs_image FLASH_IN_PROJECT)
