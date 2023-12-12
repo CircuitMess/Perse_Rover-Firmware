@@ -1,7 +1,8 @@
 #include "Audio.h"
 #include "Pins.hpp"
 #include <driver/i2s.h>
-#include <string.h>
+#include <cstring>
+#include "Util/AACDecoder.hpp"
 
 Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), playQueue(6){
 	const i2s_config_t cfg_i2s = {
@@ -50,7 +51,7 @@ void Audio::stop(){
 }
 
 void Audio::loop(){
-	if(!fileIsOpen){
+	if(!aac){
 		std::unique_ptr<std::string> queued = playQueue.get(portMAX_DELAY);
 		if(queued == nullptr || queued->empty()) return;
 		openFile(queued->c_str());
@@ -67,18 +68,21 @@ void Audio::loop(){
 	}
 	queued.reset();
 
-	if(!fileIsOpen) return;
+	if(!aac){
+		return;
+	}
 
-	const size_t FramesPerPlay = BufSize / (wav.channels * sizeof(int16_t));
-
-	const auto framesToRead = std::min(FramesPerPlay, (size_t) wav.totalPCMFrameCount - framesPlayed);
-	size_t framesActuallyRead = drwav_read_pcm_frames_s16(&wav, framesToRead, dataBuf.data());
-	framesPlayed += framesActuallyRead;
+	if(!aac->getData(dataBuf.data())){
+		closeFile();
+		return;
+	}
 
 	size_t written;
-	i2s_write(I2S_NUM_0, dataBuf.data(), framesActuallyRead * wav.channels * sizeof(int16_t), &written, portMAX_DELAY);
+	i2s_write(I2S_NUM_0, dataBuf.data(), BufSize * sizeof(int16_t), &written, portMAX_DELAY);
 
-	if(framesPlayed >= wav.totalPCMFrameCount){
+	++framesPlayed;
+
+	if(framesPlayed >= aac->getFrameCount()){
 		closeFile();
 	}
 }
@@ -88,27 +92,18 @@ void Audio::openFile(const char* file){
 		return;
 	}
 
-	if(fileIsOpen){
-		closeFile();
-	}
+	closeFile();
 
-	drwav_init_file(&wav, file, nullptr);
-	if(wav.totalPCMFrameCount == 0){
-		fileIsOpen = true;
+	aac = std::make_unique<AACDecoder>(file);
+
+	if(aac->getFrameCount() == 0){
 		closeFile();
 		return;
 	}
 
 	framesPlayed = 0;
-	fileIsOpen = true;
 }
 
 void Audio::closeFile(){
-	if(!fileIsOpen) return;
-	drwav_uninit(&wav);
-	memset(&wav, 0, sizeof(wav));
-	fileIsOpen = false;
+	aac.reset();
 }
-
-#define DR_WAV_IMPLEMENTATION
-#include "dr_wav.h"

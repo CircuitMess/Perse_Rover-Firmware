@@ -1,7 +1,6 @@
 #ifndef PERSE_ROVER_AUDIO_H
 #define PERSE_ROVER_AUDIO_H
 
-#include <dr_wav.h>
 #include <string>
 #include "Devices/AW9523.h"
 #include "Util/Threaded.h"
@@ -18,7 +17,7 @@ public:
 
 private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
-	static constexpr size_t BufSize = 1024;
+	static constexpr size_t BufSize = 512;
 
 	std::vector<int16_t> dataBuf;
 
@@ -29,12 +28,11 @@ private:
 	void openFile(const char* file);
 	void closeFile();
 
-	drwav wav;
-	bool fileIsOpen = false;
+	std::unique_ptr<class AACDecoder> aac;
+
 	size_t framesPlayed;
 
 	PtrQueue<std::string> playQueue;
-
 };
 
 
