@@ -133,7 +133,7 @@ void IRAM_ATTR Feed::sendFrame(){
 				comm->sendNoFeed(true);
 			}
 
-			if(err == ESP_ERR_NOT_FOUND && shouldPlayAudioOnCamFailure){
+			if(shouldPlayAudioOnCamFailure){
 				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
 					audio->stop();
 					audio->play(""); // TODO
