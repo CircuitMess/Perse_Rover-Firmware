@@ -4,6 +4,7 @@
 #include "Util/stdafx.h"
 #include "Services/LEDService.h"
 #include "Util/Services.h"
+#include "Audio.h"
 
 const char* tag = "Feed";
 
@@ -108,14 +109,50 @@ void IRAM_ATTR Feed::sendFrame(){
 			led->off(LED::Camera);
 		}
 
+		// If feed was previously on
+		if(camera->isInited()){
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				comm->sendNoFeed(true);
+			}
+		}
+
 		camera->deinit();
+		vTaskDelay(1000); // No need to constantly tick if there is no feed.
+
 		return;
 	}else{
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 			led->on(LED::Camera);
 		}
 
-		camera->init();
+		const bool wasCamOff = !camera->isInited();
+
+		const esp_err_t err = camera->init();
+		if(err != ESP_OK){
+			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+				comm->sendNoFeed(true);
+			}
+
+			if(shouldPlayAudioOnCamFailure){
+				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+					audio->stop();
+					audio->play(""); // TODO
+				}
+
+				shouldPlayAudioOnCamFailure = false;
+			}
+
+			vTaskDelay(1000); // No need to constantly tick if there is no feed.
+			return;
+		}else{
+			shouldPlayAudioOnCamFailure = true;
+
+			if(wasCamOff && camera->isInited()){
+				if(Comm* comm = (Comm*) Services.get(Service::Comm)){
+					comm->sendNoFeed(false);
+				}
+			}
+		}
 	}
 
 	camera_fb_t* frameData = camera->getFrame();

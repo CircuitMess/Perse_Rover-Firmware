@@ -15,7 +15,7 @@ Camera::~Camera(){
 	deinit();
 }
 
-bool Camera::init(){
+esp_err_t Camera::init(){
 	if(resWait == res && formatWait == format && inited) return true;
 
 	if(inited){
@@ -24,8 +24,6 @@ bool Camera::init(){
 
 	format = formatWait;
 	res = resWait;
-
-	printf("Cam init size %d, format %d\n", res, format);
 
 	camera_config_t config;
 	config.ledc_channel = LEDC_CHANNEL_0;
@@ -67,14 +65,16 @@ bool Camera::init(){
 	auto lock = i2c.lockBus();
 
 	auto err = esp_camera_init(&config);
-	if(err != ESP_OK){
+	if(err == ESP_ERR_NOT_FOUND){
+		return err;
+	}else if(err != ESP_OK){
 		printf("Camera init failed with error 0x%x: %s\n", err, esp_err_to_name(err));
-		return false;
+		return err;
 	}
 
 	sensor_t* sensor = esp_camera_sensor_get();
 	if(sensor == nullptr){
-		return false;
+		return ESP_ERR_CAMERA_NOT_DETECTED;
 	}
 
 	sensor->set_hmirror(sensor, 0);
@@ -106,7 +106,7 @@ bool Camera::init(){
 	inited = true;
 	failedFrames = 0;
 
-	return true;
+	return ESP_OK;
 }
 
 void Camera::deinit(){
