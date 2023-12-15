@@ -1,6 +1,7 @@
 #ifndef PERSE_ROVER_AACDECODER_HPP
 #define PERSE_ROVER_AACDECODER_HPP
 
+#include <vector>
 #include <string>
 #include <fstream>
 #include <aacdec.h>
@@ -10,11 +11,7 @@ public:
 	explicit AACDecoder(const std::string& path);
 	virtual ~AACDecoder();
 
-	bool getData(int16_t* buffer);
-
-	uint32_t getBitrate() const;
-	uint32_t getChannelNum() const;
-	uint32_t getFrameCount() const;
+	size_t getData(int16_t* buffer, size_t size);
 
 private:
 	static constexpr size_t BufferSamples = 256;
@@ -27,15 +24,12 @@ private:
 	static constexpr size_t AacDecodeMinInputSize = 1024;
 	static constexpr size_t AacOutBufferSize = 1024 * 4;
 
-	uint32_t bitrate = 0;
-	uint32_t channels = 0;
-	uint32_t frameCount = 0;
-
 	HAACDecoder decoder = nullptr;
 	std::ifstream file;
+	int bytesRemaining = 0;
 
-	char* fillBuffer = nullptr;
-	char* dataBuffer = nullptr;
+	std::vector<char> fillBuffer;
+	std::vector<char> dataBuffer;
 };
 
 #endif //PERSE_ROVER_AACDECODER_HPP
