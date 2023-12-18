@@ -22,7 +22,7 @@ AACDecoder::~AACDecoder(){
 	AACFreeDecoder(decoder);
 }
 
-size_t AACDecoder::getData(int16_t* buffer, size_t size){
+size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
 	if(!file){
 		return 0;
 	}
@@ -35,22 +35,24 @@ size_t AACDecoder::getData(int16_t* buffer, size_t size){
 		return 0;
 	}
 
-	size_t bytesTransfered = 0;
+	if(bytes == 0){
+		return 0;
+	}
+
+	size_t bytesTransferred = 0;
 
 	if(!dataBuffer.empty()){
-		memcpy(buffer, dataBuffer.data(), std::min(dataBuffer.size(), size * sizeof(int16_t)));
-		bytesTransfered += dataBuffer.size();
+		memcpy(buffer, dataBuffer.data(), std::min(dataBuffer.size(), bytes));
+		bytesTransferred += dataBuffer.size();
 		dataBuffer.clear();
 	}
 
-	while(bytesTransfered < size * sizeof(int16_t)){
-		if(fillBuffer.size() < 512 && file){
-			fillBuffer.resize(fillBuffer.size() + 1024);
-			file.read(fillBuffer.data() + fillBuffer.size() - 1024, 1024);
+	while(bytesTransferred < bytes){
+		if(fillBuffer.size() < FileReadTreshold && file){
+			fillBuffer.resize(fillBuffer.size() + FileReadChunkSize);
+			file.read(fillBuffer.data() + fillBuffer.size() - FileReadChunkSize, FileReadChunkSize);
 			bytesRemaining += file.gcount();
-		}
-
-		if(bytesRemaining <= 0){
+		}else if(bytesRemaining <= 0){
 			break;
 		}
 
@@ -58,23 +60,22 @@ size_t AACDecoder::getData(int16_t* buffer, size_t size){
 
 		const int bytesRemainingBefore = bytesRemaining;
 
-		// TODO check if 1024 is actually correct. It should be, one decode run should equal to 1024 samples per channel, with one sample being two bytes, in this case there is only one, but I might be wrong
-		dataBuffer.resize(dataBuffer.size() + 1024 * sizeof(int16_t));
-		if(int ret = AACDecode(decoder, &inBuffer, &bytesRemaining, reinterpret_cast<short*>(dataBuffer.data() + dataBuffer.size() - 1024 * sizeof(int16_t )))){
+		dataBuffer.resize(dataBuffer.size() + DecodeOutBufferSize, 0);
+		if(int ret = AACDecode(decoder, &inBuffer, &bytesRemaining, reinterpret_cast<SampleType*>(dataBuffer.data() + dataBuffer.size() - DecodeOutBufferSize))){
 			ESP_LOGE(TAG, "AAC decoding error %d", ret);
-			return false;
+			return 0;
 		}
 
 		const int bytesDecoded = bytesRemainingBefore - bytesRemaining;
 
 		fillBuffer.erase(fillBuffer.begin(), fillBuffer.begin() + bytesDecoded);
 
-		const int bytesToTransfer = std::min(bytesDecoded, (int)(size * sizeof(int16_t) - bytesTransfered));
-		memcpy((buffer + bytesTransfered), dataBuffer.data(), bytesToTransfer);
+		const int bytesToTransfer = std::min(dataBuffer.size(), bytes - bytesTransferred);
+		memcpy((buffer + bytesTransferred / SampleSize), dataBuffer.data(), bytesToTransfer);
 		dataBuffer.erase(dataBuffer.begin(), dataBuffer.begin() + bytesToTransfer);
 
-		bytesTransfered += bytesToTransfer;
+		bytesTransferred += bytesToTransfer;
 	}
 
-	return bytesTransfered;
+	return bytesTransferred;
 }

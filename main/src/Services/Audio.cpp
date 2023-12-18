@@ -4,7 +4,7 @@
 #include <cstring>
 #include "Util/AACDecoder.hpp"
 
-Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), playQueue(6){
+Audio::Audio(AW9523& aw9523) : Threaded("Audio", 18 * 1024), aw9523(aw9523), playQueue(6){
 	const i2s_config_t cfg_i2s = {
 			.mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_TX),
 			.sample_rate = 24000,
@@ -26,7 +26,7 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 	};
 	i2s_set_pin(I2S_NUM_0, &cfg_i2s_pins);
 
-	dataBuf.resize(BufSize / sizeof(int16_t), 0);
+	dataBuf.resize(BufSize, 0);
 
 	aw9523.pinMode(EXP_SPKR_EN, AW9523::OUT);
 	aw9523.write(EXP_SPKR_EN, true);
@@ -40,7 +40,7 @@ Audio::~Audio(){
 	aw9523.write(EXP_SPKR_EN, false);
 }
 
-void Audio::play(const char* file){
+void Audio::play(const std::string& file){
 	auto str = std::make_unique<std::string>(file);
 	playQueue.post(std::move(str));
 }
@@ -50,11 +50,15 @@ void Audio::stop(){
 	playQueue.post(std::move(str));
 }
 
+const std::string& Audio::getCurrentPlayingFile() const{
+	return currentFile;
+}
+
 void Audio::loop(){
 	if(!aac){
 		std::unique_ptr<std::string> queued = playQueue.get(portMAX_DELAY);
 		if(queued == nullptr || queued->empty()) return;
-		openFile(queued->c_str());
+		openFile(*queued);
 	}
 
 	std::unique_ptr<std::string> queued = playQueue.get(0);
@@ -72,38 +76,28 @@ void Audio::loop(){
 		return;
 	}
 
-	if(!aac->getData(dataBuf.data())){
+	const size_t bytesToTransfer = aac->getData(dataBuf.data(), dataBuf.size() * sizeof(int16_t));
+	if(bytesToTransfer == 0){
 		closeFile();
 		return;
 	}
 
 	size_t written;
-	i2s_write(I2S_NUM_0, dataBuf.data(), BufSize * sizeof(int16_t), &written, portMAX_DELAY);
-
-	++framesPlayed;
-
-	if(framesPlayed >= aac->getFrameCount()){
-		closeFile();
-	}
+	i2s_write(I2S_NUM_0, dataBuf.data(), bytesToTransfer, &written, portMAX_DELAY);
 }
 
-void Audio::openFile(const char* file){
-	if(file == nullptr){
+void Audio::openFile(const std::string& file){
+	if(file.empty()){
 		return;
 	}
 
 	closeFile();
 
+	currentFile = file;
 	aac = std::make_unique<AACDecoder>(file);
-
-	if(aac->getFrameCount() == 0){
-		closeFile();
-		return;
-	}
-
-	framesPlayed = 0;
 }
 
 void Audio::closeFile(){
+	currentFile = "";
 	aac.reset();
 }

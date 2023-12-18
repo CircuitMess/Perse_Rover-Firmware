@@ -8,21 +8,19 @@
 
 class AACDecoder{
 public:
+	using SampleType = int16_t;
+
 	explicit AACDecoder(const std::string& path);
 	virtual ~AACDecoder();
 
-	size_t getData(int16_t* buffer, size_t size);
+	size_t getData(SampleType* buffer, size_t bytes);
 
 private:
-	static constexpr size_t BufferSamples = 256;
-	static constexpr size_t SampleRate = 24000;
-	static constexpr size_t BytesPerSample = 2;
-	static constexpr size_t NumberOfChannels = 1;
-	static constexpr size_t BufferSize = BufferSamples * BytesPerSample * NumberOfChannels;
-	static constexpr size_t AacReadBuffer = 1024 * 8;
-	static constexpr size_t AacReadChunk = 1024 * 2;
-	static constexpr size_t AacDecodeMinInputSize = 1024;
-	static constexpr size_t AacOutBufferSize = 1024 * 4;
+	static constexpr size_t FileReadTreshold = 512;
+	static constexpr size_t FileReadChunkSize = 1024;
+	static constexpr size_t ChannelNumber = 1;
+	static constexpr size_t SampleSize = sizeof(SampleType);
+	static constexpr size_t DecodeOutBufferSize = ChannelNumber * 1024 * SampleSize; // Size of decoded data from one decode pass is 1024 samples per channel
 
 	HAACDecoder decoder = nullptr;
 	std::ifstream file;

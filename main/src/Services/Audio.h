@@ -12,12 +12,14 @@ public:
 	Audio(AW9523& aw9523);
 	virtual ~Audio();
 
-	void play(const char* file);
+	void play(const std::string& file);
 	void stop();
+
+	const std::string& getCurrentPlayingFile() const;
 
 private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
-	static constexpr size_t BufSize = 512;
+	static constexpr size_t BufSize = 1024;
 
 	std::vector<int16_t> dataBuf;
 
@@ -25,14 +27,13 @@ private:
 
 	void loop() override;
 
-	void openFile(const char* file);
+	void openFile(const std::string& file);
 	void closeFile();
 
 	std::unique_ptr<class AACDecoder> aac;
 
-	size_t framesPlayed;
-
 	PtrQueue<std::string> playQueue;
+	std::string currentFile;
 };
 
 
