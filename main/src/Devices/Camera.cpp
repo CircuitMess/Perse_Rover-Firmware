@@ -16,7 +16,7 @@ Camera::~Camera(){
 }
 
 esp_err_t Camera::init(){
-	if(resWait == res && formatWait == format && inited) return true;
+	if(resWait == res && formatWait == format && inited) return ESP_OK;
 
 	if(inited){
 		deinit();
