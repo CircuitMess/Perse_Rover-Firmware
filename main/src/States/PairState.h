@@ -23,6 +23,8 @@ private:
 	void startPair();
 	void stopPair();
 
+	void unblock() override;
+
 };
 
 #endif //PERSE_ROVER_PAIRSTATE_H

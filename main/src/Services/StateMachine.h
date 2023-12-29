@@ -12,13 +12,15 @@ public:
 	virtual ~State() = default;
 
 	virtual void loop() {}
+
+	virtual void unblock(){}
 };
 
 class StateMachine : private Threaded
 {
 public:
 	StateMachine();
-	virtual ~StateMachine() = default;
+	virtual ~StateMachine() override;
 
 	void begin();
 
