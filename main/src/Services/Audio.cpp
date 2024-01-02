@@ -1,5 +1,6 @@
 #include "Audio.h"
 #include "Pins.hpp"
+#include "Util/stdafx.h"
 #include <driver/i2s.h>
 #include <string.h>
 
@@ -34,6 +35,11 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 16 * 1024), aw9523(aw9523), pla
 }
 
 Audio::~Audio(){
+	Threaded::stop(0);
+	playQueue.post(nullptr, portMAX_DELAY);
+	while(running()){
+		delayMillis(1);
+	}
 	closeFile();
 	i2s_driver_uninstall(Port);
 	aw9523.write(EXP_SPKR_EN, false);

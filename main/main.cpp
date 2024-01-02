@@ -27,6 +27,7 @@
 #include "Services/LEDService.h"
 #include "Services/Feed.h"
 #include "Services/Modules.h"
+#include "States/DemoState.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -104,6 +105,37 @@ void init(){
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
+
+	battery->setShutdownCallback([](){
+		if(TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
+			tcp->disconnect();
+		}
+
+		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+			Services.set(Service::StateMachine, nullptr);
+			delete stateMachine;
+		}
+
+		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+			Services.set(Service::Audio, nullptr);
+			delete audio;
+		}
+
+		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
+			motors->setControl(Local);
+			motors->setLocally({});
+		}
+
+		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+				led->off((LED) i);
+			}
+		}
+
+		delayMillis(1000);
+
+		shutdown();
+	});
 
 	battery->begin();
 }
