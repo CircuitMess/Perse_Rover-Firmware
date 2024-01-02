@@ -107,23 +107,29 @@ void init(){
 	stateMachine->begin();
 
 	battery->setShutdownCallback([](){
-		auto tcp = (TCPServer*) Services.get(Service::TCP);
-		tcp->disconnect();
+		if(TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
+			tcp->disconnect();
+		}
 
-		auto stateMachine = (StateMachine*) Services.get(Service::StateMachine);
-		delete stateMachine;
+		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+			Services.set(Service::StateMachine, nullptr);
+			delete stateMachine;
+		}
 
-		auto audio = (Audio*) Services.get(Service::Audio);
-		delete audio;
+		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+			Services.set(Service::Audio, nullptr);
+			delete audio;
+		}
 
-		auto motors = (MotorDriveController*) Services.get(Service::MotorDriveController);
-		motors->setControl(Local);
-		motors->setLocally({});
+		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
+			motors->setControl(Local);
+			motors->setLocally({});
+		}
 
-
-		auto led = (LEDService*) Services.get(Service::LED);
-		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
-			led->off((LED) i);
+		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+				led->off((LED) i);
+			}
 		}
 
 		delayMillis(1000);
