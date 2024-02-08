@@ -49,6 +49,8 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
 }
 
 DriveState::~DriveState() {
+	activeAction.reset();
+
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
 		led->off(LED::StatusGreen);
 		led->on(LED::StatusRed);

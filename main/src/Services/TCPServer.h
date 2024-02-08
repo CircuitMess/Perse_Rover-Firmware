@@ -15,7 +15,7 @@ public:
 
 	TCPServer();
 
-	bool isConnected();
+	bool isConnected() const;
 
 	bool accept();
 	void disconnect();
