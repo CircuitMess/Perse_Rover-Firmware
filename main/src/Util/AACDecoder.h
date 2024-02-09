@@ -1,5 +1,5 @@
-#ifndef PERSE_ROVER_AACDECODER_HPP
-#define PERSE_ROVER_AACDECODER_HPP
+#ifndef PERSE_ROVER_AACDECODER_H
+#define PERSE_ROVER_AACDECODER_H
 
 #include <vector>
 #include <string>
@@ -30,4 +30,4 @@ private:
 	std::vector<char> dataBuffer;
 };
 
-#endif //PERSE_ROVER_AACDECODER_HPP
+#endif //PERSE_ROVER_AACDECODER_H

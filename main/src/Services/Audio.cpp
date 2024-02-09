@@ -2,9 +2,8 @@
 #include "Pins.hpp"
 #include "Util/stdafx.h"
 #include <driver/i2s.h>
-#include <cstring>
 #include <string>
-#include "Util/AACDecoder.hpp"
+#include "Util/AACDecoder.h"
 
 Audio::Audio(AW9523& aw9523) : Threaded("Audio", 18 * 1024), aw9523(aw9523), playQueue(6){
 	const i2s_config_t cfg_i2s = {
