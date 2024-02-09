@@ -12,6 +12,10 @@ void PlayAudioAction::loop(){
 		return;
 	}
 
+	if(audio->getCurrentPlayingFile() == getFile()){
+		return;
+	}
+
 	audio->stop();
 	audio->play(getFile());
 

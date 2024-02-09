@@ -1,7 +1,6 @@
 #ifndef PERSE_ROVER_AUDIO_H
 #define PERSE_ROVER_AUDIO_H
 
-#include <dr_wav.h>
 #include <string>
 #include "Devices/AW9523.h"
 #include "Util/Threaded.h"
@@ -13,11 +12,13 @@ public:
 	Audio(AW9523& aw9523);
 	virtual ~Audio();
 
-	void play(const char* file);
+	void play(const std::string& file);
 	void stop();
 
 	bool isEnabled() const;
 	void setEnabled(bool enabled);
+
+	const std::string& getCurrentPlayingFile() const;
 
 private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
@@ -31,15 +32,13 @@ private:
 
 	void loop() override;
 
-	void openFile(const char* file);
+	void openFile(const std::string& file);
 	void closeFile();
 
-	drwav wav;
-	bool fileIsOpen = false;
-	size_t framesPlayed;
+	std::unique_ptr<class AACDecoder> aac;
 
 	PtrQueue<std::string> playQueue;
-
+	std::string currentFile;
 };
 
 
