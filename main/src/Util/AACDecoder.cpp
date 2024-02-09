@@ -48,7 +48,7 @@ size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
 	}
 
 	while(bytesTransferred < bytes){
-		if(fillBuffer.size() < FileReadTreshold && file){
+		if(fillBuffer.size() < FileReadThreshold && file){
 			fillBuffer.resize(fillBuffer.size() + FileReadChunkSize);
 			file.read(fillBuffer.data() + fillBuffer.size() - FileReadChunkSize, FileReadChunkSize);
 			bytesRemaining += file.gcount();

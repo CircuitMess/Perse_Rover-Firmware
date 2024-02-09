@@ -16,7 +16,7 @@ public:
 	size_t getData(SampleType* buffer, size_t bytes);
 
 private:
-	static constexpr size_t FileReadTreshold = 512;
+	static constexpr size_t FileReadThreshold = 1024;
 	static constexpr size_t FileReadChunkSize = 1024;
 	static constexpr size_t ChannelNumber = 1;
 	static constexpr size_t SampleSize = sizeof(SampleType);
