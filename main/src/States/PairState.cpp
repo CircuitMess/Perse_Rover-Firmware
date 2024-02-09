@@ -78,3 +78,7 @@ void PairState::stopPair(){
 		led->on(LED::StatusYellow);
 	}
 }
+
+void PairState::unblock(){
+	queue.unblock();
+}

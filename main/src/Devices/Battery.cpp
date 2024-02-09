@@ -1,5 +1,6 @@
 #include "Battery.h"
 #include <cmath>
+#include <utility>
 #include "Pins.hpp"
 #include "Util/Events.h"
 #include "Util/stdafx.h"
@@ -9,7 +10,7 @@
 #define MAX_READ 2724	// 4.5V
 #define MIN_READ 2280	// 3.8V
 
-Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 2 * 1024, 5, 1),
+Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
 					 adc(adc, (gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
 					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3), eventQueue(10){
 	Events::listen(Facility::TCP, &eventQueue);
@@ -55,6 +56,13 @@ uint16_t Battery::mapRawReading(uint16_t reading) {
 
 bool Battery::isShutdown() const {
 	return shutdown;
+}
+
+void Battery::setShutdownCallback(std::function<void()> callback){
+	shutdownCallback = std::move(callback);
+	if(!shutdownCallback || !shutdown) return;
+
+	shutdownCallback();
 }
 
 void Battery::sleepyLoop() {
@@ -134,6 +142,8 @@ void Battery::sample(bool fresh/* = false*/) {
 	if (getLevel() == Critical) {
 		stop(0);
 		shutdown = true;
+		if(!shutdownCallback) return;
+		shutdownCallback();
 		return;
 	}
 }

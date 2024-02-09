@@ -1,7 +1,9 @@
 #include "Audio.h"
 #include "Pins.hpp"
+#include "Util/stdafx.h"
 #include <driver/i2s.h>
 #include <cstring>
+#include <string>
 #include "Util/AACDecoder.hpp"
 
 Audio::Audio(AW9523& aw9523) : Threaded("Audio", 18 * 1024), aw9523(aw9523), playQueue(6){
@@ -35,12 +37,19 @@ Audio::Audio(AW9523& aw9523) : Threaded("Audio", 18 * 1024), aw9523(aw9523), pla
 }
 
 Audio::~Audio(){
+	Threaded::stop(0);
+	playQueue.post(nullptr, portMAX_DELAY);
+	while(running()){
+		delayMillis(1);
+	}
 	closeFile();
 	i2s_driver_uninstall(Port);
 	aw9523.write(EXP_SPKR_EN, false);
 }
 
 void Audio::play(const std::string& file){
+	if(!enabled) return;
+
 	auto str = std::make_unique<std::string>(file);
 	playQueue.post(std::move(str));
 }
@@ -48,6 +57,17 @@ void Audio::play(const std::string& file){
 void Audio::stop(){
 	auto str = std::make_unique<std::string>();
 	playQueue.post(std::move(str));
+}
+
+bool Audio::isEnabled() const{
+	return enabled;
+}
+
+void Audio::setEnabled(bool enabled){
+	Audio::enabled = enabled;
+	if(enabled) return;
+
+	stop();
 }
 
 const std::string& Audio::getCurrentPlayingFile() const{

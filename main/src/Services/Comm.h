@@ -21,6 +21,7 @@ public:
 			uint8_t feedQuality;
 			bool scanningEnable;
 			bool emergency;
+			bool audio;
 		};
 		uint8_t raw;
 	};
@@ -28,14 +29,14 @@ public:
 	Comm();
 	~Comm() override;
 
-	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
-	void sendModuleData(ModuleData data);
-
 	void sendHeadlightsState(HeadlightsMode headlights, bool local = false);
 	void sendArmPositionState(ArmPos position, bool local = false);
 	void sendArmPinchState(ArmPinch pinch, bool local = false);
 	void sendCameraState(CameraRotation rotation, bool local = false);
 	void sendBattery(uint8_t batteryPercent);
+	void sendModulePlug(ModuleType type, ModuleBus bus, bool insert);
+	void sendModuleData(ModuleData data);
+	void sendNoFeed(bool noFeed);
 
 private:
 	TCPServer& tcp;

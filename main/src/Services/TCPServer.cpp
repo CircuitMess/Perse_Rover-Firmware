@@ -31,7 +31,7 @@ TCPServer::TCPServer(){
 	fcntl(sock, F_SETFL, O_NONBLOCK);
 }
 
-bool TCPServer::isConnected(){
+bool TCPServer::isConnected() const{
 	return client != -1;
 }
 

@@ -76,6 +76,15 @@ void Comm::sendModuleData(ModuleData data){
 	tcp.write((uint8_t*) &data, sizeof(ModuleData));
 }
 
+void Comm::sendNoFeed(bool noFeed){
+	const ControlPacket packet = {
+			.type = CommType::NoFeed,
+			.data = noFeed
+	};
+
+	sendPacket(packet);
+}
+
 void Comm::sendPacket(const ControlPacket& packet){
 	if(!tcp.isConnected()) return;
 
@@ -140,6 +149,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 		}
 		case CommType::Emergency:{
 			e.emergency = (bool)packet.data;
+			break;
+		}
+		case CommType::Audio:{
+			e.audio = (bool)packet.data;
 			break;
 		}
 		case CommType::ModulePlug:
