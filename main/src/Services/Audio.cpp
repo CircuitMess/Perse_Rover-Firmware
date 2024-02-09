@@ -46,6 +46,8 @@ Audio::~Audio(){
 }
 
 void Audio::play(const char* file){
+	if(!enabled) return;
+
 	auto str = std::make_unique<std::string>(file);
 	playQueue.post(std::move(str));
 }
@@ -53,6 +55,17 @@ void Audio::play(const char* file){
 void Audio::stop(){
 	auto str = std::make_unique<std::string>();
 	playQueue.post(std::move(str));
+}
+
+bool Audio::isEnabled() const{
+	return enabled;
+}
+
+void Audio::setEnabled(bool enabled){
+	Audio::enabled = enabled;
+	if(enabled) return;
+
+	stop();
 }
 
 void Audio::loop(){

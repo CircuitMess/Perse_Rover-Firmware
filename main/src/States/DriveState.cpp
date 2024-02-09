@@ -20,6 +20,7 @@
 #include "Services/LEDService.h"
 #include "Services/Comm.h"
 #include "Actions/PanicAction.h"
+#include "Services/Audio.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -83,6 +84,13 @@ void DriveState::loop(){
 			if(const Comm::Event* commEvent = (Comm::Event*)event.data){
 				if(commEvent->type == CommType::Emergency && commEvent->emergency){
 					activeAction = std::make_unique<PanicAction>();
+				}else if(commEvent->type == CommType::Audio){
+					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+						audio->setEnabled(commEvent->audio);
+						if(commEvent->audio){
+							audio->play("/spiffs/audioOn.wav"); //TODO - play beep sound or something
+						}
+					}
 				}
 			}
 		}

@@ -151,6 +151,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.emergency = (bool)packet.data;
 			break;
 		}
+		case CommType::Audio:{
+			e.audio = (bool)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 		case CommType::ModuleData:
 		case CommType::ModulesEnable:
