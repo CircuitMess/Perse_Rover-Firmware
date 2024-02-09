@@ -53,20 +53,64 @@ Servo::~Servo(){
 }
 
 void Servo::enable(){
+	if(enabled) return;
+
 	ESP_ERROR_CHECK(mcpwm_timer_enable(timerHandle));
 	ESP_ERROR_CHECK(mcpwm_timer_start_stop(timerHandle, MCPWM_TIMER_START_NO_STOP));
+	enabled = true;
 }
 
 void Servo::disable(){
+	if(!enabled) return;
+
 	mcpwm_timer_start_stop(timerHandle, MCPWM_TIMER_STOP_EMPTY);
 	mcpwm_timer_disable(timerHandle);
+	enabled = false;
 }
 
 void Servo::setValue(uint8_t value){
+	if(!enabled){
+		enable();
+	}else if(disableQueued){
+		disable();
+		mcpwm_timer_event_callbacks_t cbs = {nullptr, nullptr, nullptr};
+		mcpwm_timer_register_event_callbacks(timerHandle, &cbs, nullptr);
+		enable();
+	}
+
+	setComp(value);
+}
+
+void Servo::setValueAndDisable(uint8_t value){
+	disable();
+
+	disableCBCounter = 0;
+	mcpwm_timer_event_callbacks_t cbs = {nullptr, disableCB, nullptr};
+	mcpwm_timer_register_event_callbacks(timerHandle, &cbs, this);
+
+	if(!enabled) enable();
+	setComp(value);
+
+	disableQueued = true;
+}
+
+void Servo::setComp(uint8_t value){
 	value = std::clamp((int) value, 0, 100);
 	mcpwm_comparator_set_compare_value(compHandle, angle_to_comparator_value(value));
 }
 
+bool Servo::disableCB(mcpwm_timer_handle_t timer, const mcpwm_timer_event_data_t* edata, void* user_ctx){
+	auto servo = (Servo*) user_ctx;
+	if(++servo->disableCBCounter >= SetAndDisableCycleCount){
+		mcpwm_timer_start_stop(timer, MCPWM_TIMER_STOP_EMPTY);
+		mcpwm_timer_disable(timer);
+		mcpwm_timer_event_callbacks_t cbs = {nullptr, nullptr, nullptr};
+		mcpwm_timer_register_event_callbacks(timer, &cbs, nullptr);
+		servo->enabled = false;
+		servo->disableQueued = false;
+	}
+	return false;
+}
 
 constexpr uint32_t Servo::angle_to_comparator_value(int value){
 	uint32_t val = map((double) value, 0, 100, MinPulseWidth, MaxPulseWidth);

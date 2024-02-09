@@ -3,6 +3,7 @@
 
 #include "driver/mcpwm_prelude.h"
 #include <hal/gpio_types.h>
+#include <atomic>
 #include "Util/Threaded.h"
 
 class Servo {
@@ -12,6 +13,7 @@ public:
 	void enable();
 	void disable();
 	void setValue(uint8_t value); //0 - 100, 0 is leftmost, 100 is rightmost
+	void setValueAndDisable(uint8_t value);
 
 private:
 	mcpwm_timer_handle_t timerHandle;
@@ -19,6 +21,13 @@ private:
 	mcpwm_cmpr_handle_t compHandle;
 	mcpwm_gen_handle_t genHandle;
 
+	void setComp(uint8_t value);
+
+	std::atomic_bool enabled = false;
+	std::atomic_bool disableQueued = false;
+	std::atomic_long disableCBCounter = 0;
+	static constexpr uint32_t SetAndDisableCycleCount = 10;
+	static bool disableCB(mcpwm_timer_handle_t timer, const mcpwm_timer_event_data_t *edata, void *user_ctx);
 
 	static constexpr uint32_t angle_to_comparator_value(int value);
 
