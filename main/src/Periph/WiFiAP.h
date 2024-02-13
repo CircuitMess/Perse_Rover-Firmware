@@ -29,6 +29,8 @@ public:
 
 	bool isHidden() const;
 
+	void generateNewSSID() const;
+
 private:
 	esp_event_handler_instance_t evtHandler;
 	void event(int32_t id, void* data);
