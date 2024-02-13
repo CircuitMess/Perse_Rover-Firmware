@@ -42,7 +42,7 @@ WiFiAP::WiFiAP(){
 					.password = "RoverRover",
 					.channel = 1,
 					.authmode = WIFI_AUTH_WPA2_PSK,
-					.ssid_hidden = false,
+					.ssid_hidden = true,
 					.max_connection = 1
 			},
 	};
@@ -57,11 +57,29 @@ WiFiAP::WiFiAP(){
 }
 
 void WiFiAP::setHidden(bool hidden){
-	return;
-
 	wifi_config_t config;
 	esp_wifi_get_config(WIFI_IF_AP, &config);
 	config.ap.ssid_hidden = hidden;
+	esp_wifi_set_config(WIFI_IF_AP, &config);
+}
+
+bool WiFiAP::isHidden() const{
+	wifi_config_t config;
+	esp_wifi_get_config(WIFI_IF_AP, &config);
+
+	return config.ap.ssid_hidden;
+}
+
+void WiFiAP::generateNewSSID() const{
+	wifi_config_t config;
+	esp_wifi_get_config(WIFI_IF_AP, &config);
+
+	const uint32_t randID = rand() % 1000000;
+	const std::string ssid = "Perseverance Rover #" + std::to_string(randID);
+	strcpy((char*) config.ap.ssid, ssid.c_str());
+
+	ESP_LOGI(TAG, "New SSID: %s", ssid.c_str());
+
 	esp_wifi_set_config(WIFI_IF_AP, &config);
 }
 
@@ -72,6 +90,11 @@ void WiFiAP::event(int32_t id, void* data){
 		const auto event = (wifi_event_ap_staconnected_t*) data;
 		const auto mac = mac2str(event->mac);
 		ESP_LOGI(TAG, "station %s join, AID=%d", mac.c_str(), event->aid);
+
+		if(!isHidden()){
+			setHidden(true);
+			return;
+		}
 
 		Event evt { .action = Event::Connect };
 		memcpy(evt.connect.mac, event->mac, 6);

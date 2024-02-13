@@ -39,6 +39,15 @@ const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> Drive
 };
 
 DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
+	if(const TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
+		if(!tcp->isConnected()){
+			if(StateMachine* parentStateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+				parentStateMachine->transition<PairState>();
+				return;
+			}
+		}
+	}
+
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
 	Events::listen(Facility::Comm, &queue);

@@ -11,11 +11,15 @@ PairService::PairService() : Threaded("PairService", 2 * 1024),
 }
 
 PairService::~PairService(){
-	wifi.setHidden(true);
 	stop();
 }
 
 void PairService::loop(){
+	if(!wifi.isHidden()){
+		delayMillis(100);
+		return;
+	}
+
 	const bool accepted = tcp.accept();
 
 	if(accepted){
