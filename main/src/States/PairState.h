@@ -7,6 +7,8 @@
 #include "Util/Events.h"
 #include "Services/PairService.h"
 
+class Audio;
+
 class PairState : public State
 {
 public:
@@ -19,6 +21,8 @@ protected:
 private:
 	EventQueue queue;
 	std::unique_ptr<PairService> pairService = nullptr;
+
+	Audio* audio;
 
 	void startPair();
 	void stopPair();

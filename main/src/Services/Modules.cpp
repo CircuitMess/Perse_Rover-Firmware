@@ -15,21 +15,21 @@
 
 const std::unordered_map<ModuleType, std::pair<std::function<void*(I2C& i2c, ModuleBus bus, ADC& adc)>, std::function<void(void*)>>> ModuleConstrDestr = {
 		{ ModuleType::TempHum,  { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new TempHumModule(i2c, bus); },
-										[](void* instance){ delete (TempHumModule*) instance; } } },
+										[](void* instance){ delete (TempHumModule*) instance; }}},
 		{ ModuleType::Gyro,     { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new GyroModule(i2c, bus); },
-										[](void* instance){ delete (GyroModule*) instance; } } },
+										[](void* instance){ delete (GyroModule*) instance; }}},
 		{ ModuleType::AltPress, { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new AltPressModule(i2c, bus); },
-										[](void* instance){ delete (AltPressModule*) instance; } } },
+										[](void* instance){ delete (AltPressModule*) instance; }}},
 		{ ModuleType::LED,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new LEDModule(bus); },
-										[](void* instance){ delete (LEDModule*) instance; } } },
+										[](void* instance){ delete (LEDModule*) instance; }}},
 		{ ModuleType::RGB,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new RGBModule(bus); },
-										[](void* instance){ delete (RGBModule*) instance; } } },
+										[](void* instance){ delete (RGBModule*) instance; }}},
 		{ ModuleType::PhotoRes, { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new PhotoresModule(bus, adc); },
-										[](void* instance){ delete (PhotoresModule*) instance; } } },
+										[](void* instance){ delete (PhotoresModule*) instance; }}},
 		{ ModuleType::Motion,   { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new MotionSensor(bus); },
-										[](void* instance){ delete (MotionSensor*) instance; } } },
+										[](void* instance){ delete (MotionSensor*) instance; }}},
 		{ ModuleType::CO2,      { [](I2C& i2c, ModuleBus bus, ADC& adc){ return new CO2Sensor(bus, adc); },
-										[](void* instance){ delete (CO2Sensor*) instance; } } }
+										[](void* instance){ delete (CO2Sensor*) instance; }}}
 };
 
 const std::unordered_map<uint8_t, ModuleType> Modules::AddressMap = {
@@ -46,8 +46,20 @@ const std::unordered_map<uint8_t, ModuleType> Modules::I2CAddressMap = {
 		{ 0x76, ModuleType::AltPress }
 };
 
+const std::unordered_map<ModuleType, Modules::ModuleAudio> Modules::AudioFilesMap = {
+		{ ModuleType::TempHum,  { "/spiffs/Modules/TempOn.aac",      "/spiffs/Modules/TempOff.aac" }},
+		{ ModuleType::Gyro,     { "/spiffs/Modules/GyroOn.aac",      "/spiffs/Modules/GyroOff.aac" }},
+		{ ModuleType::AltPress, { "/spiffs/Modules/AltiOn.aac",      "/spiffs/Modules/AltiOff.aac" }},
+		{ ModuleType::LED,      { "/spiffs/Modules/LedOn.aac",       "/spiffs/Modules/LedOff.aac" }},
+		{ ModuleType::RGB,      { "/spiffs/Modules/RgbOn.aac",       "/spiffs/Modules/RgbOff.aac" }},
+		{ ModuleType::PhotoRes, { "/spiffs/Modules/LightSensOn.aac", "/spiffs/Modules/LightSensOff.aac" }},
+		{ ModuleType::Motion,   { "/spiffs/Modules/MotionOn.aac",    "/spiffs/Modules/MotionOff.aac" }},
+		{ ModuleType::CO2,      { "/spiffs/Modules/AirOn.aac",       "/spiffs/Modules/AirOff.aac" }}
+};
+
 Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1),
-									   i2c(i2c), comm(*((Comm*) Services.get(Service::Comm))), adc(adc), tca(i2c),
+									   i2c(i2c), comm(*((Comm*) Services.get(Service::Comm))), adc(adc),
+									   audio(*((Audio*) Services.get(Service::Audio))), tca(i2c),
 									   connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
 									   connectionQueue(10){
 	Modules::sleepyLoop();
@@ -126,7 +138,7 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 		return AddressMap.at(addr);
 	}
 
-	for(auto& pair : I2CAddressMap){
+	for(auto& pair: I2CAddressMap){
 		if(oppositeContext.current == pair.second) continue;
 
 		if(i2c.probe(pair.first) == ESP_OK){
@@ -154,6 +166,8 @@ void Modules::loopCheck(ModuleBus bus){
 		const auto removed = context.current;
 		context.current = ModuleType::Unknown;
 
+		audio.play(AudioFilesMap.at(removed).insertedPath);
+
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
 		if(modulesEnabled){
 			comm.sendModulePlug(removed, bus, context.inserted);
@@ -169,6 +183,8 @@ void Modules::loopCheck(ModuleBus bus){
 
 		context.current = addr;
 		context.inserted = true;
+
+		audio.play(AudioFilesMap.at(context.current).insertedPath);
 
 		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
 		if(modulesEnabled){

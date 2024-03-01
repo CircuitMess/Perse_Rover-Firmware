@@ -8,6 +8,7 @@
 #include "CommData.h"
 #include "Comm.h"
 #include "Periph/ADC.h"
+#include "Audio.h"
 
 
 class Modules : private SleepyThreaded {
@@ -31,6 +32,7 @@ private:
 	I2C& i2c;
 	Comm& comm;
 	ADC& adc;
+	Audio& audio;
 
 	TCA9555 tca;
 	ThreadedClosure connectionThread;
@@ -68,6 +70,11 @@ private:
 	static const std::unordered_map<uint8_t, ModuleType> AddressMap;
 	static const std::unordered_map<uint8_t, ModuleType> I2CAddressMap;
 	static constexpr uint8_t I2CModuleAddress = 63;
+	struct ModuleAudio{
+		const char* insertedPath;
+		const char* removedPath;
+	};
+	static const std::unordered_map<ModuleType, ModuleAudio> AudioFilesMap;
 
 //	static constexpr uint8_t TesterBobAddr = Module::Bob | 0b00100000;
 

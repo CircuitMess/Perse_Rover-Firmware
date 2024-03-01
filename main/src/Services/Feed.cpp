@@ -71,6 +71,16 @@ void Feed::sleepyLoop(){
 					data.type = EventData::ScanningEnableChange;
 					data.isScanningEnabled = commEvent->scanningEnable;
 
+					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+						audio->stop();
+						if(data.isScanningEnabled){
+							audio->play("/spiffs/Systems/ScanOn.aac");
+						}else{
+							audio->play("/spiffs/General/ScanOff.aac");
+						}
+					}
+
+
 					communicationQueue.post(data, portMAX_DELAY);
 				}
 			}
@@ -136,7 +146,7 @@ void IRAM_ATTR Feed::sendFrame(){
 			if(shouldPlayAudioOnCamFailure){
 				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
 					audio->stop();
-					audio->play(""); // TODO
+					audio->play("/spiffs/General/CamFail.aac");
 				}
 
 				shouldPlayAudioOnCamFailure = false;

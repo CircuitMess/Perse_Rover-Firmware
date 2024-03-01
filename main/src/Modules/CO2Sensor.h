@@ -14,8 +14,11 @@ private:
 	ADCReader adc;
 	const ModuleBus bus;
 	Comm& comm;
+	Audio& audio;
 
 	void sleepyLoop() override;
+
+	bool OKreading = true;
 
 	static constexpr uint32_t OKThreshold = 2100; //TODO - check this value and adjust if necessary
 };

@@ -103,6 +103,8 @@ void init(){
 	auto stateMachine = new StateMachine();
 	Services.set(Service::StateMachine, stateMachine);
 
+	audio->play("/spiffs/General/PowerOn.aac");
+
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
 
@@ -116,11 +118,6 @@ void init(){
 			delete stateMachine;
 		}
 
-		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-			Services.set(Service::Audio, nullptr);
-			delete audio;
-		}
-
 		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
 			motors->setControl(Local);
 			motors->setLocally({});
@@ -132,7 +129,13 @@ void init(){
 			}
 		}
 
-		delayMillis(1000);
+		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+			Services.set(Service::Audio, nullptr);
+			audio->play("/spiffs/General/BattEmptyRover.aac");
+			delayMillis(3000);
+			delete audio;
+		}
+
 
 		shutdown();
 	});

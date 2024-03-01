@@ -60,6 +60,12 @@ PanicAction::~PanicAction(){
 		return;
 	}
 
+	Audio* audio = (Audio*) Services.get(Service::Audio);
+	if (audio != nullptr) {
+		audio->stop();
+		audio->play("/spiffs/Systems/PanicOff.aac");
+	}
+
 	led->off(LED::StatusYellow);
 	led->off(LED::StatusRed);
 	led->breathe(LED::Rear);
@@ -102,7 +108,7 @@ void PanicAction::loop(){
 		Audio* audio = (Audio*) Services.get(Service::Audio);
 		if (audio != nullptr) {
 			audio->stop();
-			audio->play(""); // TODO
+			audio->play("/spiffs/Systems/PanicOn.aac");
 		}
 
 		LEDService* led = (LEDService*) Services.get(Service::LED);

@@ -97,7 +97,7 @@ void DriveState::loop(){
 					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
 						audio->setEnabled(commEvent->audio);
 						if(commEvent->audio){
-							audio->play("/spiffs/audioOn.wav"); //TODO - play beep sound or something
+							audio->play("/spiffs/Beep3.aac");
 						}
 					}
 				}

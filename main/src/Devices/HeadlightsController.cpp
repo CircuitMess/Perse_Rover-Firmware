@@ -2,6 +2,7 @@
 #include "Services/Comm.h"
 #include "Util/Services.h"
 #include "Services/LEDService.h"
+#include "Services/Audio.h"
 
 HeadlightsController::HeadlightsController() : DeviceController("Headlights Controller", false){
 	setControl(DeviceControlType::Local);
@@ -50,6 +51,13 @@ void HeadlightsController::processEvent(const Event& event){
 	HeadlightsState state = {
 			.Mode = commEvent->headlights
 	};
+
+	Audio* audio = (Audio*) Services.get(Service::Audio);
+	if(commEvent->headlights == HeadlightsMode::On){
+		audio->play("/spiffs/Systems/LightOn.aac");
+	}else if(commEvent->headlights == HeadlightsMode::Off){
+		audio->play("/spiffs/Systems/LightOff.aac");
+	}
 
 	setRemotely(state);
 }

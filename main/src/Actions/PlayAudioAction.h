@@ -5,7 +5,7 @@
 
 class PlayAudioAction : public Action{
 public:
-	inline virtual constexpr char* getFile() const = 0;
+	inline virtual constexpr const char* getFile() const = 0;
 
 protected:
 	virtual void loop() override;

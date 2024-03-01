@@ -13,8 +13,12 @@ private:
 	gpio_num_t pin;
 	ModuleBus bus;
 	Comm& comm;
+	Audio& audio;
+
 	void loop() override;
-	static void isr(void* arg);
+	IRAM_ATTR static void isr(void* arg);
+
+	bool motionDetected = false;
 
 	SemaphoreHandle_t sem;
 	std::atomic_bool exitFlag = false;

@@ -5,6 +5,7 @@
 #include "Services/Comm.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include "Services/Audio.h"
 
 static const char* const TAG = "HeadlightsController";
 
@@ -91,6 +92,13 @@ void ArmController::processEvent(const Event& event) {
 			.Position = commEvent->armPos,
 			.Pinch = commEvent->armPinch
 	};
+
+/*	Audio* audio = (Audio*) Services.get(Service::Audio);
+	if(commEvent->armEnabled == On){
+		audio->play("/spiffs/Systems/ArmOn.aac");
+	}else if(commEvent->armEnabled == Off){
+		audio->play("/spiffs/Systems/ArmOff.aac");
+	}*/
 
 	setRemotely(state);
 }
