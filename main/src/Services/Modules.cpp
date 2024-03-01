@@ -166,7 +166,7 @@ void Modules::loopCheck(ModuleBus bus){
 		const auto removed = context.current;
 		context.current = ModuleType::Unknown;
 
-		audio.play(AudioFilesMap.at(removed).insertedPath);
+		audio.play(AudioFilesMap.at(removed).removedPath);
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
 		if(modulesEnabled){

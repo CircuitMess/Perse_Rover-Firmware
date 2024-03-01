@@ -38,7 +38,7 @@ const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> Drive
 		{ MarkerAction::TurnLeftGoAhead,      []() -> std::unique_ptr<Action>{ return std::make_unique<TurnLeftGoAheadAction>(); }}
 };
 
-DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
+DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Audio*) Services.get(Service::Audio)){
 	if(const TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
 		if(!tcp->isConnected()){
 			if(StateMachine* parentStateMachine = (StateMachine*) Services.get(Service::StateMachine)){
@@ -77,6 +77,7 @@ void DriveState::loop(){
 			if(auto* tcpEvent = (TCPServer::Event*) event.data){
 				if(tcpEvent->status == TCPServer::Event::Status::Disconnected){
 					shouldTransition = true;
+					audio.play("/spiffs/General/SignalLost.aac");
 				}
 			}
 		}else if(event.facility == Facility::Feed){
@@ -94,11 +95,9 @@ void DriveState::loop(){
 				if(commEvent->type == CommType::Emergency && commEvent->emergency){
 					activeAction = std::make_unique<PanicAction>();
 				}else if(commEvent->type == CommType::Audio){
-					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-						audio->setEnabled(commEvent->audio);
-						if(commEvent->audio){
-							audio->play("/spiffs/Beep3.aac");
-						}
+					audio.setEnabled(commEvent->audio);
+					if(commEvent->audio){
+						audio.play("/spiffs/Beep3.aac");
 					}
 				}
 			}

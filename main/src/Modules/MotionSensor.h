@@ -18,8 +18,6 @@ private:
 	void loop() override;
 	IRAM_ATTR static void isr(void* arg);
 
-	bool motionDetected = false;
-
 	SemaphoreHandle_t sem;
 	std::atomic_bool exitFlag = false;
 };

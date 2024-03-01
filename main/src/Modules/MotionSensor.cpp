@@ -56,10 +56,9 @@ void MotionSensor::loop(){
 
 	const bool lvl = !gpio_get_level(pin);
 
-	if(lvl && !motionDetected){
+	if(!lvl){
 		audio.play("/spiffs/Modules/MotionDetect.aac");
 	}
-	motionDetected = lvl;
 
 	const ModuleData data = {
 			ModuleType::Motion, bus, { .motion = { lvl }}

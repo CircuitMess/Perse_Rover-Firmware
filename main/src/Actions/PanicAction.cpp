@@ -33,6 +33,11 @@ PanicAction::PanicAction() : startTime(millis()), eventQueue(10){
 	if(motorDriveController != nullptr){
 		motorDriveController->setControl(DeviceControlType::Local);
 	}
+	Audio* audio = (Audio*) Services.get(Service::Audio);
+	if (audio != nullptr) {
+		audio->stop();
+		audio->play("/spiffs/Systems/PanicOn.aac");
+	}
 }
 
 PanicAction::~PanicAction(){
@@ -105,11 +110,7 @@ void PanicAction::loop(){
 	}else if(iteration == 7){
 		motorDriveController->setLocally({.DriveDirection = {.dir = 0, .speed = 0.0f}});
 
-		Audio* audio = (Audio*) Services.get(Service::Audio);
-		if (audio != nullptr) {
-			audio->stop();
-			audio->play("/spiffs/Systems/PanicOn.aac");
-		}
+
 
 		LEDService* led = (LEDService*) Services.get(Service::LED);
 		if (led == nullptr){
