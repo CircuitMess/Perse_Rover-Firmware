@@ -28,6 +28,7 @@
 #include "Services/Feed.h"
 #include "Services/Modules.h"
 #include "States/DemoState.h"
+#include "Services/BatteryLowService.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -103,6 +104,9 @@ void init(){
 	auto stateMachine = new StateMachine();
 	Services.set(Service::StateMachine, stateMachine);
 
+	auto lowBatteryService = new BatteryLowService();
+	Services.set(Service::LowBattery, lowBatteryService);
+
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
 
@@ -124,6 +128,11 @@ void init(){
 		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
 			motors->setControl(Local);
 			motors->setLocally({});
+		}
+
+		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
+			Services.set(Service::LowBattery, nullptr);
+			delete lowBatteryService;
 		}
 
 		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
