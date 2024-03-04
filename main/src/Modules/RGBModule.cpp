@@ -6,6 +6,10 @@ RGBModule::RGBModule(ModuleBus bus) : SleepyThreaded(500, "RGBModule", 2 * 1024)
 	srand(millis());
 }
 
+RGBModule::~RGBModule(){
+	stop();
+}
+
 void RGBModule::setAll(glm::vec<3, uint8_t> color){
 	rgb.setAll(color);
 }
