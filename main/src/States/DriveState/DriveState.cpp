@@ -1,7 +1,7 @@
 #include "DriveState.h"
 #include "Pins.hpp"
 #include "Services/TCPServer.h"
-#include "PairState.h"
+#include "States/PairState.h"
 #include "Util/Services.h"
 #include "Actions/Action.h"
 #include "Actions/GoTowardsAction.h"
@@ -36,6 +36,18 @@ const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> Drive
 		{ MarkerAction::Alert,                []() -> std::unique_ptr<Action>{ return std::make_unique<AlertAction>(); }},
 		{ MarkerAction::CallSampleLander,     []() -> std::unique_ptr<Action>{ return std::make_unique<CallSampleLanderAction>(); }},
 		{ MarkerAction::TurnLeftGoAhead,      []() -> std::unique_ptr<Action>{ return std::make_unique<TurnLeftGoAheadAction>(); }}
+};
+
+const std::unordered_set<CommType> DriveState::IdleResetComms = {
+		CommType::DriveDir,
+		CommType::Headlights,
+		CommType::ArmPosition,
+		CommType::ArmPinch,
+		CommType::CameraRotation,
+		CommType::ScanMarkers,
+		CommType::Emergency,
+		CommType::Audio,
+		CommType::ModulePlug
 };
 
 DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
@@ -85,12 +97,17 @@ void DriveState::loop(){
 					if(actionMappings.contains(feedEvent->markerAction) && actionMappings.at(feedEvent->markerAction) != nullptr){
 						if(activeAction == nullptr || activeAction->readyToTransition()){
 							activeAction = actionMappings.at(feedEvent->markerAction)();
+							randSoundPlayer.resetTimer();
 						}
 					}
 				}
 			}
 		}else if(event.facility == Facility::Comm){
-			if(const Comm::Event* commEvent = (Comm::Event*)event.data){
+			if(const Comm::Event* commEvent = (Comm::Event*) event.data){
+				if(IdleResetComms.contains(commEvent->type)){
+					randSoundPlayer.resetTimer();
+				}
+
 				if(commEvent->type == CommType::Emergency && commEvent->emergency){
 					activeAction = std::make_unique<PanicAction>();
 				}else if(commEvent->type == CommType::Audio){
@@ -106,6 +123,8 @@ void DriveState::loop(){
 
 		free(event.data);
 	}
+
+	randSoundPlayer.loop();
 
 	if(activeAction != nullptr){
 		if(activeAction->isMarkedForDestroy()){
