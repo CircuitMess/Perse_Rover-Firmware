@@ -155,6 +155,18 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.audio = (bool)packet.data;
 			break;
 		}
+		case CommType::ArmControl:{
+			e.armEnabled = (bool)packet.data;
+			break;
+		}
+		case CommType::ControllerBatteryCritical:{
+			e.controllerBatteryCritical = (bool)packet.data;
+			break;
+		}
+		case CommType::ConnectionStrength:{
+			e.connectionStrength = (ConnectionStrength)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 		case CommType::ModuleData:
 		case CommType::ModulesEnable:

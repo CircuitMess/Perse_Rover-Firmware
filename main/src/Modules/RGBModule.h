@@ -7,6 +7,7 @@
 class RGBModule : private SleepyThreaded{
 public:
 	RGBModule(ModuleBus bus);
+	~RGBModule() override;
 
 	void setAll(glm::vec<3, uint8_t> color);
 	void setPixel(glm::vec<3, uint8_t> color, uint32_t index);

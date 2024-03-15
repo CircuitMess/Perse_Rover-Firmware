@@ -38,6 +38,18 @@ const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> Drive
 		{ MarkerAction::TurnLeftGoAhead,      []() -> std::unique_ptr<Action>{ return std::make_unique<TurnLeftGoAheadAction>(); }}
 };
 
+const std::unordered_set<CommType> DriveState::IdleResetComms = {
+		CommType::DriveDir,
+		CommType::Headlights,
+		CommType::ArmPosition,
+		CommType::ArmPinch,
+		CommType::CameraRotation,
+		CommType::ScanMarkers,
+		CommType::Emergency,
+		CommType::Audio,
+		CommType::ModulePlug
+};
+
 DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Audio*) Services.get(Service::Audio)){
 	if(const TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
 		if(!tcp->isConnected()){
@@ -86,12 +98,17 @@ void DriveState::loop(){
 					if(actionMappings.contains(feedEvent->markerAction) && actionMappings.at(feedEvent->markerAction) != nullptr){
 						if(activeAction == nullptr || activeAction->readyToTransition()){
 							activeAction = actionMappings.at(feedEvent->markerAction)();
+							randSoundPlayer.resetTimer();
 						}
 					}
 				}
 			}
 		}else if(event.facility == Facility::Comm){
-			if(const Comm::Event* commEvent = (Comm::Event*)event.data){
+			if(const Comm::Event* commEvent = (Comm::Event*) event.data){
+				if(IdleResetComms.contains(commEvent->type)){
+					randSoundPlayer.resetTimer();
+				}
+
 				if(commEvent->type == CommType::Emergency && commEvent->emergency){
 					activeAction = std::make_unique<PanicAction>();
 				}else if(commEvent->type == CommType::Audio){
@@ -105,6 +122,8 @@ void DriveState::loop(){
 
 		free(event.data);
 	}
+
+	randSoundPlayer.loop();
 
 	if(activeAction != nullptr){
 		if(activeAction->isMarkedForDestroy()){

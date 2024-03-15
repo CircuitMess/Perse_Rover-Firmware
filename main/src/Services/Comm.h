@@ -22,6 +22,9 @@ public:
 			bool scanningEnable;
 			bool emergency;
 			bool audio;
+			bool armEnabled;
+			bool controllerBatteryCritical;
+			ConnectionStrength connectionStrength;
 		};
 		uint8_t raw;
 	};
