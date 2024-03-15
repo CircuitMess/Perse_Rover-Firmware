@@ -163,6 +163,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.controllerBatteryCritical = (bool)packet.data;
 			break;
 		}
+		case CommType::ConnectionStrength:{
+			e.connectionStrength = (ConnectionStrength)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 		case CommType::ModuleData:
 		case CommType::ModulesEnable:
