@@ -22,6 +22,7 @@ public:
 			bool scanningEnable;
 			bool emergency;
 			bool audio;
+			bool armEnabled;
 		};
 		uint8_t raw;
 	};
