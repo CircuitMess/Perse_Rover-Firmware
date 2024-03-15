@@ -1,7 +1,6 @@
 #include "DriveState.h"
 #include "Pins.hpp"
 #include "Services/TCPServer.h"
-#include "PairState.h"
 #include "Util/Services.h"
 #include "Actions/Action.h"
 #include "Actions/GoTowardsAction.h"
@@ -21,6 +20,8 @@
 #include "Services/Comm.h"
 #include "Actions/PanicAction.h"
 #include "Services/Audio.h"
+#include "States/PairState.h"
+#include "Devices/Battery.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -63,6 +64,7 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Au
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
 	Events::listen(Facility::Comm, &queue);
+	Events::listen(Facility::Battery, &queue);
 
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
 		led->on(LED::StatusGreen);
@@ -116,6 +118,26 @@ void DriveState::loop(){
 					if(commEvent->audio){
 						audio.play("/spiffs/Beep3.aac");
 					}
+				}else if(commEvent->type == CommType::ControllerBatteryCritical){
+					if(commEvent->controllerBatteryCritical && audio.getCurrentPlayingFile() != "/spiffs/General/BattEmptyCtrl.aac"){
+						audio.play("/spiffs/General/BattEmptyCtrl.aac");
+					}
+				}else if(commEvent->type == CommType::ConnectionStrength){
+					if(commEvent->connectionStrength == ConnectionStrength::VeryLow && audio.getCurrentPlayingFile() != "/spiffs/General/SignalWeak.aac"){
+						audio.play("/spiffs/General/SignalWeak.aac");
+					}
+				}else if(commEvent->type == CommType::ArmControl){
+					if(commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOn.aac"){
+						audio.play("/spiffs/Systems/ArmOn.aac");
+					}else if(!commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOff.aac"){
+						audio.play("/spiffs/Systems/ArmOff.aac");
+					}
+				}
+			}
+		}else if(event.facility == Facility::Battery){
+			if(const Battery::Event* batEvent = (Battery::Event*) event.data){
+				if(batEvent->level == Battery::Low && audio.getCurrentPlayingFile() != "/spiffs/General/BattLowRover.aac"){
+					audio.play("/spiffs/General/BattLowRover.aac");
 				}
 			}
 		}

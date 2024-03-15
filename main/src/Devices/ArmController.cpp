@@ -93,12 +93,5 @@ void ArmController::processEvent(const Event& event) {
 			.Pinch = commEvent->armPinch
 	};
 
-/*	Audio* audio = (Audio*) Services.get(Service::Audio);
-	if(commEvent->armEnabled == On){
-		audio->play("/spiffs/Systems/ArmOn.aac");
-	}else if(commEvent->armEnabled == Off){
-		audio->play("/spiffs/Systems/ArmOff.aac");
-	}*/
-
 	setRemotely(state);
 }
