@@ -8,6 +8,8 @@
 #include "Services/StateMachine.h"
 #include "Devices/AW9523.h"
 #include "Util/Events.h"
+#include "RandSoundPlayer.h"
+#include "CommData.h"
 
 class DriveState : public State {
 public:
@@ -21,6 +23,9 @@ private:
 	static const std::map<MarkerAction, std::function<std::unique_ptr<class Action>(void)>> actionMappings;
 	EventQueue queue;
 	std::unique_ptr<Action> activeAction;
+
+	RandSoundPlayer randSoundPlayer;
+	static const std::unordered_set<CommType> IdleResetComms;
 };
 
 #endif //PERSE_ROVER_DRIVESTATE_H
