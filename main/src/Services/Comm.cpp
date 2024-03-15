@@ -159,6 +159,10 @@ Comm::Event Comm::processPacket(const ControlPacket& packet){
 			e.armEnabled = (bool)packet.data;
 			break;
 		}
+		case CommType::ControllerBatteryCritical:{
+			e.controllerBatteryCritical = (bool)packet.data;
+			break;
+		}
 		case CommType::ModulePlug:
 		case CommType::ModuleData:
 		case CommType::ModulesEnable:

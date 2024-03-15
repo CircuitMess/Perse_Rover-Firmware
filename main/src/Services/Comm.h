@@ -23,6 +23,7 @@ public:
 			bool emergency;
 			bool audio;
 			bool armEnabled;
+			bool controllerBatteryCritical;
 		};
 		uint8_t raw;
 	};
