@@ -12,7 +12,7 @@ public:
 	Audio(AW9523& aw9523);
 	virtual ~Audio();
 
-	void play(const std::string& file);
+	void play(const std::string& file, bool priority = false);
 	void stop();
 
 	bool isEnabled() const;
@@ -24,6 +24,11 @@ private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
 	static constexpr size_t BufSize = 1024;
 
+	struct AudioFile {
+		std::string file;
+		bool priority;
+	};
+
 	bool enabled = true;
 
 	std::vector<int16_t> dataBuf;
@@ -32,13 +37,14 @@ private:
 
 	void loop() override;
 
-	void openFile(const std::string& file);
+	void openFile(const AudioFile& audioFile);
 	void closeFile();
 
 	std::unique_ptr<class AACDecoder> aac;
 
-	PtrQueue<std::string> playQueue;
-	std::string currentFile;
+	PtrQueue<AudioFile> playQueue;
+	AudioFile currentFile;
+	AudioFile queuedFile;
 };
 
 

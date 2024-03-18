@@ -46,15 +46,15 @@ Audio::~Audio(){
 	aw9523.write(EXP_SPKR_EN, false);
 }
 
-void Audio::play(const std::string& file){
+void Audio::play(const std::string& file, bool priority){
 	if(!enabled) return;
 
-	auto str = std::make_unique<std::string>(file);
+	auto str = std::make_unique<AudioFile>(file, priority);
 	playQueue.post(std::move(str));
 }
 
 void Audio::stop(){
-	auto str = std::make_unique<std::string>();
+	auto str = std::make_unique<AudioFile>();
 	playQueue.post(std::move(str));
 }
 
@@ -70,23 +70,27 @@ void Audio::setEnabled(bool enabled){
 }
 
 const std::string& Audio::getCurrentPlayingFile() const{
-	return currentFile;
+	return currentFile.file;
 }
 
 void Audio::loop(){
 	if(!aac){
-		std::unique_ptr<std::string> queued = playQueue.get(portMAX_DELAY);
-		if(queued == nullptr || queued->empty()) return;
+		std::unique_ptr<AudioFile> queued = playQueue.get(portMAX_DELAY);
+		if(queued == nullptr || queued->file.empty()) return;
 		openFile(*queued);
 	}
 
-	std::unique_ptr<std::string> queued = playQueue.get(0);
+	std::unique_ptr<AudioFile> queued = playQueue.get(0);
 	if(queued){
-		if(queued->empty()){
+		if(queued->file.empty()){
 			closeFile();
 			return;
+		}
+
+		if(queued->priority){
+			openFile(*queued);
 		}else{
-			openFile(queued->c_str());
+			queuedFile = *queued;
 		}
 	}
 	queued.reset();
@@ -98,6 +102,10 @@ void Audio::loop(){
 	const size_t bytesToTransfer = aac->getData(dataBuf.data(), dataBuf.size() * sizeof(int16_t));
 	if(bytesToTransfer == 0){
 		closeFile();
+		if(!queuedFile.file.empty()){
+			openFile(queuedFile);
+			queuedFile = {};
+		}
 		return;
 	}
 
@@ -105,18 +113,19 @@ void Audio::loop(){
 	i2s_write(I2S_NUM_0, dataBuf.data(), bytesToTransfer, &written, portMAX_DELAY);
 }
 
-void Audio::openFile(const std::string& file){
-	if(file.empty()){
+void Audio::openFile(const AudioFile& audioFile){
+	if(audioFile.file.empty()){
 		return;
 	}
 
 	closeFile();
 
-	currentFile = file;
-	aac = std::make_unique<AACDecoder>(file);
+	currentFile = audioFile;
+	aac = std::make_unique<AACDecoder>(audioFile.file);
 }
 
 void Audio::closeFile(){
-	currentFile = "";
+	currentFile.file = "";
+	currentFile.priority = false;
 	aac.reset();
 }
