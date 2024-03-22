@@ -64,7 +64,6 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Au
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
 	Events::listen(Facility::Comm, &queue);
-	Events::listen(Facility::Battery, &queue);
 
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
 		led->on(LED::StatusGreen);
@@ -132,12 +131,6 @@ void DriveState::loop(){
 					}else if(!commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOff.aac"){
 						audio.play("/spiffs/Systems/ArmOff.aac");
 					}
-				}
-			}
-		}else if(event.facility == Facility::Battery){
-			if(const Battery::Event* batEvent = (Battery::Event*) event.data){
-				if(batEvent->level == Battery::Low && audio.getCurrentPlayingFile() != "/spiffs/General/BattLowRover.aac"){
-					audio.play("/spiffs/General/BattLowRover.aac", true);
 				}
 			}
 		}

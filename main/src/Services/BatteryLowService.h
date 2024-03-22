@@ -3,6 +3,7 @@
 
 #include "Util/Threaded.h"
 #include "Util/Events.h"
+#include "Audio.h"
 
 class BatteryLowService : private Threaded {
 public:
@@ -12,6 +13,8 @@ public:
 private:
 	EventQueue queue;
 	void loop() override;
+
+	Audio& audio;
 };
 
 #endif //PERSE_ROVER_BATTERYLOWSERVICE_H
