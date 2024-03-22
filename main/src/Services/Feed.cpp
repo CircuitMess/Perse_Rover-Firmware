@@ -76,7 +76,7 @@ void Feed::sleepyLoop(){
 						if(data.isScanningEnabled){
 							audio->play("/spiffs/Systems/ScanOn.aac");
 						}else{
-							audio->play("/spiffs/General/ScanOff.aac");
+							audio->play("/spiffs/Systems/ScanOff.aac");
 						}
 					}
 
