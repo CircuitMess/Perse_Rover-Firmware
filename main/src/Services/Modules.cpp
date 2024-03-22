@@ -166,7 +166,7 @@ void Modules::loopCheck(ModuleBus bus){
 		const auto removed = context.current;
 		context.current = ModuleType::Unknown;
 
-		audio.play(AudioFilesMap.at(removed).removedPath);
+		audio.play(AudioFilesMap.at(removed).removedPath); //TODO - maybe set priority=true
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
 		if(modulesEnabled){
@@ -184,7 +184,7 @@ void Modules::loopCheck(ModuleBus bus){
 		context.current = addr;
 		context.inserted = true;
 
-		audio.play(AudioFilesMap.at(context.current).insertedPath);
+		audio.play(AudioFilesMap.at(context.current).insertedPath); //TODO - maybe set priority=true
 
 		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
 		if(modulesEnabled){

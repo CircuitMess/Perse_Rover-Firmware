@@ -56,7 +56,7 @@ void PairState::loop() {
 		const PairService::Event* pairEvent = (PairService::Event*)event.data;
 		if (pairEvent != nullptr && pairEvent->success) {
 			if(audio->getCurrentPlayingFile() != "/spiffs/General/PairSuccess.aac"){
-				audio->play("/spiffs/General/PairSuccess.aac");
+				audio->play("/spiffs/General/PairSuccess.aac", true);
 			}
 
 			if (StateMachine* stateMachine = (StateMachine*)Services.get(Service::StateMachine)) {
@@ -64,7 +64,7 @@ void PairState::loop() {
 			}
 		}else if(pairEvent != nullptr && !pairEvent->success){
 			if(audio->getCurrentPlayingFile() != "/spiffs/General/PairFail.aac"){
-				audio->play("/spiffs/General/PairFail.aac");
+				audio->play("/spiffs/General/PairFail.aac", true);
 			}
 		}
 	}
@@ -83,7 +83,7 @@ void PairState::startPair(){
 	}
 
 	if(audio->getCurrentPlayingFile() != "/spiffs/General/PairStart.aac"){
-		audio->play("/spiffs/General/PairStart.aac");
+		audio->play("/spiffs/General/PairStart.aac", true);
 	}
 }
 

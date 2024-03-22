@@ -146,7 +146,7 @@ void IRAM_ATTR Feed::sendFrame(){
 			if(shouldPlayAudioOnCamFailure){
 				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
 					audio->stop();
-					audio->play("/spiffs/General/CamFail.aac");
+					audio->play("/spiffs/General/CamFail.aac", true);
 				}
 
 				shouldPlayAudioOnCamFailure = false;

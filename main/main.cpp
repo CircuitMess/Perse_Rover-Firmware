@@ -107,7 +107,7 @@ void init(){
 	auto lowBatteryService = new BatteryLowService();
 	Services.set(Service::LowBattery, lowBatteryService);
 
-	audio->play("/spiffs/General/PowerOn.aac");
+	audio->play("/spiffs/General/PowerOn.aac", true);
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
@@ -140,7 +140,7 @@ void init(){
 
 		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
 			Services.set(Service::Audio, nullptr);
-			audio->play("/spiffs/General/BattEmptyRover.aac");
+			audio->play("/spiffs/General/BattEmptyRover.aac", true);
 			delayMillis(3000);
 			delete audio;
 		}

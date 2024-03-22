@@ -91,7 +91,7 @@ void DriveState::loop(){
 			if(auto* tcpEvent = (TCPServer::Event*) event.data){
 				if(tcpEvent->status == TCPServer::Event::Status::Disconnected){
 					shouldTransition = true;
-					audio.play("/spiffs/General/SignalLost.aac");
+					audio.play("/spiffs/General/SignalLost.aac", true);
 				}
 			}
 		}else if(event.facility == Facility::Feed){
@@ -116,15 +116,15 @@ void DriveState::loop(){
 				}else if(commEvent->type == CommType::Audio){
 					audio.setEnabled(commEvent->audio);
 					if(commEvent->audio){
-						audio.play("/spiffs/Beep3.aac");
+						audio.play("/spiffs/Beep3.aac", true);
 					}
 				}else if(commEvent->type == CommType::ControllerBatteryCritical){
 					if(commEvent->controllerBatteryCritical && audio.getCurrentPlayingFile() != "/spiffs/General/BattEmptyCtrl.aac"){
-						audio.play("/spiffs/General/BattEmptyCtrl.aac");
+						audio.play("/spiffs/General/BattEmptyCtrl.aac", true);
 					}
 				}else if(commEvent->type == CommType::ConnectionStrength){
 					if(commEvent->connectionStrength == ConnectionStrength::VeryLow && audio.getCurrentPlayingFile() != "/spiffs/General/SignalWeak.aac"){
-						audio.play("/spiffs/General/SignalWeak.aac");
+						audio.play("/spiffs/General/SignalWeak.aac", true);
 					}
 				}else if(commEvent->type == CommType::ArmControl){
 					if(commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOn.aac"){
@@ -137,7 +137,7 @@ void DriveState::loop(){
 		}else if(event.facility == Facility::Battery){
 			if(const Battery::Event* batEvent = (Battery::Event*) event.data){
 				if(batEvent->level == Battery::Low && audio.getCurrentPlayingFile() != "/spiffs/General/BattLowRover.aac"){
-					audio.play("/spiffs/General/BattLowRover.aac");
+					audio.play("/spiffs/General/BattLowRover.aac", true);
 				}
 			}
 		}
