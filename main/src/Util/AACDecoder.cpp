@@ -23,19 +23,18 @@ AACDecoder::~AACDecoder(){
 }
 
 size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
-	if(!file){
-		return 0;
-	}
-
 	if(decoder == nullptr){
+		ESP_LOGD(TAG, "early return, decoder == nullptr");
 		return 0;
 	}
 
 	if(buffer == nullptr){
+		ESP_LOGD(TAG, "early return, buffer == nullptr");
 		return 0;
 	}
 
 	if(bytes == 0){
+		ESP_LOGD(TAG, "early return, bytes == 0");
 		return 0;
 	}
 
@@ -48,11 +47,16 @@ size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
 	}
 
 	while(bytesTransferred < bytes){
+		ESP_LOGD(TAG, "bytesRemaining: %d", bytesRemaining);
+
 		if(fillBuffer.size() < FileReadThreshold && file){
 			fillBuffer.resize(fillBuffer.size() + FileReadChunkSize);
 			file.read(fillBuffer.data() + fillBuffer.size() - FileReadChunkSize, FileReadChunkSize);
 			bytesRemaining += file.gcount();
-		}else if(bytesRemaining <= 0){
+			ESP_LOGD(TAG, "fillBuffer resized, bytesRemaining: %d", bytesRemaining);
+		}
+
+		if(bytesRemaining <= 0){
 			break;
 		}
 
@@ -67,6 +71,7 @@ size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
 		}
 
 		const int bytesDecoded = bytesRemainingBefore - bytesRemaining;
+		ESP_LOGD(TAG, "decoded: %d", bytesDecoded);
 
 		fillBuffer.erase(fillBuffer.begin(), fillBuffer.begin() + bytesDecoded);
 
@@ -75,6 +80,7 @@ size_t AACDecoder::getData(SampleType* buffer, size_t bytes){
 		dataBuffer.erase(dataBuffer.begin(), dataBuffer.begin() + bytesToTransfer);
 
 		bytesTransferred += bytesToTransfer;
+		ESP_LOGD(TAG, "bytesTransferred: %d", bytesTransferred);
 	}
 
 	return bytesTransferred;

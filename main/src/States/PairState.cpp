@@ -23,6 +23,8 @@ PairState::PairState() : State(), queue(10), audio((Audio*) Services.get(Service
 		wifi->setHidden(true);
 		wifi->generateNewSSID();
 	}
+	auto* audio = (Audio*) Services.get(Service::Audio);
+	audio->setEnabled(true);
 }
 
 PairState::~PairState() {
