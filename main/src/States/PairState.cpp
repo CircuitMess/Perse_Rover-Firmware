@@ -57,17 +57,13 @@ void PairState::loop() {
 	else if (event.facility == Facility::Pair) {
 		const PairService::Event* pairEvent = (PairService::Event*)event.data;
 		if (pairEvent != nullptr && pairEvent->success) {
-			if(audio->getCurrentPlayingFile() != "/spiffs/General/PairSuccess.aac"){
-				audio->play("/spiffs/General/PairSuccess.aac", true);
-			}
+			audio->play("/spiffs/General/PairSuccess.aac", true);
 
 			if (StateMachine* stateMachine = (StateMachine*)Services.get(Service::StateMachine)) {
 				stateMachine->transition<DriveState>();
 			}
 		}else if(pairEvent != nullptr && !pairEvent->success){
-			if(audio->getCurrentPlayingFile() != "/spiffs/General/PairFail.aac"){
-				audio->play("/spiffs/General/PairFail.aac", true);
-			}
+			audio->play("/spiffs/General/PairFail.aac", true);
 		}
 	}
 

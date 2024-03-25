@@ -70,16 +70,16 @@ void Feed::sleepyLoop(){
 					EventData data;
 					data.type = EventData::ScanningEnableChange;
 					data.isScanningEnabled = commEvent->scanningEnable;
-
-					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-						audio->stop();
-						if(data.isScanningEnabled){
-							audio->play("/spiffs/Systems/ScanOn.aac");
-						}else{
-							audio->play("/spiffs/Systems/ScanOff.aac");
+					if(feedQuality != 0){
+						if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+							audio->stop();
+							if(data.isScanningEnabled){
+								audio->play("/spiffs/Systems/ScanOn.aac");
+							}else{
+								audio->play("/spiffs/Systems/ScanOff.aac");
+							}
 						}
 					}
-
 
 					communicationQueue.post(data, portMAX_DELAY);
 				}
