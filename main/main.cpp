@@ -42,8 +42,12 @@
 void init(){
 	auto adc1 = new ADC(ADC_UNIT_1);
 
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+
 	auto battery = new Battery(*adc1);
 	if(battery->isShutdown()){
+		aw9523->resetDimOutputs();
 		shutdown();
 		return;
 	}
@@ -65,9 +69,6 @@ void init(){
 	Services.set(Service::WiFi, wifi);
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);
-
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	auto aw9523 = new AW9523(*i2c, 0x5b);
 
 	auto feed = new Feed(*i2c);
 	Services.set(Service::Feed, feed);
