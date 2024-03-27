@@ -18,8 +18,8 @@ private:
 	uint32_t counter = 0; //TODO - implement using HW timers
 
 	//10-20s between random sounds
-	static constexpr uint32_t RandThreshMin = 10000; //[ms]
-	static constexpr uint32_t RandThreshMax = 20000; //[ms]
+	static constexpr uint32_t RandThreshMin = 20000; //[ms]
+	static constexpr uint32_t RandThreshMax = 40000; //[ms]
 
 	static constexpr uint32_t RandSamplesNum = 5;
 	std::unordered_set<uint8_t> randIdSet;

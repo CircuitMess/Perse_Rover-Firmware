@@ -57,8 +57,6 @@ void init(){
 		vTaskDelete(nullptr);
 	}
 
-	auto spiffs = new SPIFFS();
-
 	auto adc1 = new ADC(ADC_UNIT_1);
 
 	auto battery = new Battery(*adc1);
@@ -68,6 +66,8 @@ void init(){
 	}
 
 	Services.set(Service::Battery, battery);
+
+	auto spiffs = new SPIFFS();
 
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);

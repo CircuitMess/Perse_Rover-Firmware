@@ -53,10 +53,13 @@ void HeadlightsController::processEvent(const Event& event){
 	};
 
 	Audio* audio = (Audio*) Services.get(Service::Audio);
-	if(commEvent->headlights == HeadlightsMode::On){
-		audio->play("/spiffs/Systems/LightOn.aac");
-	}else if(commEvent->headlights == HeadlightsMode::Off){
-		audio->play("/spiffs/Systems/LightOff.aac");
+
+	if(getCurrentState().Mode != state.Mode){
+		if(commEvent->headlights == HeadlightsMode::On){
+			audio->play("/spiffs/Systems/LightOn.aac");
+		}else if(commEvent->headlights == HeadlightsMode::Off){
+			audio->play("/spiffs/Systems/LightOff.aac");
+		}
 	}
 
 	setRemotely(state);
