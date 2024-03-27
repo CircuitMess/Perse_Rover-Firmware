@@ -54,6 +54,11 @@ void init(){
 
 	Services.set(Service::Battery, battery);
 
+	auto led = new LEDService(*aw9523);
+	Services.set(Service::LED, led);
+
+	led->on(LED::Arm);
+
 	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
 	auto ret = nvs_flash_init();
@@ -75,9 +80,6 @@ void init(){
 
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
-
-	auto led = new LEDService(*aw9523);
-	Services.set(Service::LED, led);
 
 	led->breathe(LED::Rear);
 
