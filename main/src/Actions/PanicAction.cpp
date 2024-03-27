@@ -9,8 +9,13 @@
 #include "Services/TCPServer.h"
 #include "Services/LEDService.h"
 #include "Services/Audio.h"
+#include "Services/Feed.h"
 
 PanicAction::PanicAction() : startTime(millis()), eventQueue(10){
+	if(Feed* feed = (Feed*) Services.get(Service::Feed)){
+		feed->disableScanning();
+	}
+
 	Events::listen(Facility::Comm, &eventQueue);
 	Events::listen(Facility::TCP, &eventQueue);
 
@@ -33,6 +38,7 @@ PanicAction::PanicAction() : startTime(millis()), eventQueue(10){
 	if(motorDriveController != nullptr){
 		motorDriveController->setControl(DeviceControlType::Local);
 	}
+
 	Audio* audio = (Audio*) Services.get(Service::Audio);
 	if (audio != nullptr) {
 		audio->stop();

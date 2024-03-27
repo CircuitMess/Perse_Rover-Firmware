@@ -27,6 +27,8 @@ public:
 
 	virtual ~Feed();
 
+	void disableScanning();
+
 protected:
 	virtual void sleepyLoop() override;
 
