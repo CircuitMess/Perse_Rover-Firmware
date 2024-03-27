@@ -4,7 +4,7 @@
 #include "PlayAudioAction.h"
 
 class LifeDetectedAction : public PlayAudioAction {
-	inline virtual constexpr char* getFile() const override{ return ""; } // TODO
+	inline virtual constexpr const char* getFile() const override{ return "/spiffs/Markers/Life.aac"; }
 };
 
 #endif //PERSE_ROVER_LIFEDETECTEDACTION_H

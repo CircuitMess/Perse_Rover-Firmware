@@ -10,6 +10,7 @@
 #include "Util/Events.h"
 #include "RandSoundPlayer.h"
 #include "CommData.h"
+#include "Services/Audio.h"
 
 class DriveState : public State {
 public:
@@ -26,6 +27,8 @@ private:
 
 	RandSoundPlayer randSoundPlayer;
 	static const std::unordered_set<CommType> IdleResetComms;
+
+	Audio& audio;
 };
 
 #endif //PERSE_ROVER_DRIVESTATE_H

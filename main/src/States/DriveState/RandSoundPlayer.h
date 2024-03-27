@@ -1,6 +1,7 @@
 #ifndef PERSE_ROVER_RANDSOUNDPLAYER_H
 #define PERSE_ROVER_RANDSOUNDPLAYER_H
 
+#include <unordered_set>
 #include "Services/Audio.h"
 
 class RandSoundPlayer {
@@ -19,6 +20,9 @@ private:
 	//10-20s between random sounds
 	static constexpr uint32_t RandThreshMin = 10000; //[ms]
 	static constexpr uint32_t RandThreshMax = 20000; //[ms]
+
+	static constexpr uint32_t RandSamplesNum = 5;
+	std::unordered_set<uint8_t> randIdSet;
 };
 
 

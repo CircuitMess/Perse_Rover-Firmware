@@ -4,14 +4,14 @@
 #include "Devices/Battery.h"
 #include "Util/stdafx.h"
 
-BatteryLowService::BatteryLowService() : Threaded("BattLowService", 2 * 1024), queue(6){
+BatteryLowService::BatteryLowService() : Threaded("BattLowService", 2 * 1024), queue(6), audio(*(Audio*) Services.get(Service::Audio)){
 	Events::listen(Facility::Battery, &queue);
 
 	if(const Battery* battery = (Battery*) Services.get(Service::Battery)){
 		const Battery::Level level = battery->getLevel();
 
 		if(level == Battery::VeryLow){
-			//TODO - play roverBattLow.aac
+			audio.play("/spiffs/General/BattLowRover.aac", true);
 		}
 	}
 
@@ -37,7 +37,7 @@ void BatteryLowService::loop(){
 		auto* data = (Battery::Event*) event.data;
 		if(data->action == Battery::Event::LevelChange){
 			if(data->level == Battery::VeryLow){
-				//TODO - play roverBattLow.aac
+				audio.play("/spiffs/General/BattLowRover.aac", true);
 			}
 		}
 	}

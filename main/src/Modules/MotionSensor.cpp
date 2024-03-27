@@ -5,7 +5,8 @@
 
 MotionSensor::MotionSensor(ModuleBus bus) : Threaded("MotionSens", 2 * 1024),
 											pin(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1), bus(bus),
-											comm(*((Comm*) Services.get(Service::Comm))){
+											comm(*((Comm*) Services.get(Service::Comm))),
+											audio(*((Audio*) Services.get(Service::Audio))){
 	sem = xSemaphoreCreateBinary();
 
 	const gpio_config_t io_conf = {
@@ -38,7 +39,7 @@ MotionSensor::~MotionSensor(){
 	vSemaphoreDelete(sem);
 }
 
-void MotionSensor::isr(void* arg){
+IRAM_ATTR void MotionSensor::isr(void* arg){
 	if(arg == nullptr){
 		return;
 	}
@@ -55,8 +56,12 @@ void MotionSensor::loop(){
 
 	const bool lvl = !gpio_get_level(pin);
 
+	if(!lvl){
+		audio.play("/spiffs/Modules/MotionDetect.aac");
+	}
+
 	const ModuleData data = {
-			ModuleType::Motion, bus, { .motion = { lvl } }
+			ModuleType::Motion, bus, { .motion = { lvl }}
 	};
 
 	comm.sendModuleData(data);

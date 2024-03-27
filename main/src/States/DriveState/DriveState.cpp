@@ -1,7 +1,6 @@
 #include "DriveState.h"
 #include "Pins.hpp"
 #include "Services/TCPServer.h"
-#include "States/PairState.h"
 #include "Util/Services.h"
 #include "Actions/Action.h"
 #include "Actions/GoTowardsAction.h"
@@ -21,6 +20,8 @@
 #include "Services/Comm.h"
 #include "Actions/PanicAction.h"
 #include "Services/Audio.h"
+#include "States/PairState.h"
+#include "Devices/Battery.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -50,7 +51,7 @@ const std::unordered_set<CommType> DriveState::IdleResetComms = {
 		CommType::ModulePlug
 };
 
-DriveState::DriveState() : State(), queue(10), activeAction(nullptr){
+DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Audio*) Services.get(Service::Audio)){
 	if(const TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
 		if(!tcp->isConnected()){
 			if(StateMachine* parentStateMachine = (StateMachine*) Services.get(Service::StateMachine)){
@@ -89,6 +90,7 @@ void DriveState::loop(){
 			if(auto* tcpEvent = (TCPServer::Event*) event.data){
 				if(tcpEvent->status == TCPServer::Event::Status::Disconnected){
 					shouldTransition = true;
+					audio.play("/spiffs/General/SignalLost.aac", true);
 				}
 			}
 		}else if(event.facility == Facility::Feed){
@@ -111,11 +113,23 @@ void DriveState::loop(){
 				if(commEvent->type == CommType::Emergency && commEvent->emergency){
 					activeAction = std::make_unique<PanicAction>();
 				}else if(commEvent->type == CommType::Audio){
-					if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-						audio->setEnabled(commEvent->audio);
-						if(commEvent->audio){
-							audio->play("/spiffs/audioOn.wav"); //TODO - play beep sound or something
-						}
+					audio.setEnabled(commEvent->audio);
+					if(commEvent->audio){
+						audio.play("/spiffs/Beep3.aac", true);
+					}
+				}else if(commEvent->type == CommType::ControllerBatteryCritical){
+					if(commEvent->controllerBatteryCritical && audio.getCurrentPlayingFile() != "/spiffs/General/BattEmptyCtrl.aac"){
+						audio.play("/spiffs/General/BattEmptyCtrl.aac", true);
+					}
+				}else if(commEvent->type == CommType::ConnectionStrength){
+					if(commEvent->connectionStrength == ConnectionStrength::VeryLow && audio.getCurrentPlayingFile() != "/spiffs/General/SignalWeak.aac"){
+						audio.play("/spiffs/General/SignalWeak.aac", true);
+					}
+				}else if(commEvent->type == CommType::ArmControl){
+					if(commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOn.aac"){
+						audio.play("/spiffs/Systems/ArmOn.aac");
+					}else if(!commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOff.aac"){
+						audio.play("/spiffs/Systems/ArmOff.aac");
 					}
 				}
 			}

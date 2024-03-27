@@ -115,6 +115,8 @@ void init(){
 	auto lowBatteryService = new BatteryLowService();
 	Services.set(Service::LowBattery, lowBatteryService);
 
+	audio->play("/spiffs/General/PowerOn.aac", true);
+
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
 
@@ -126,11 +128,6 @@ void init(){
 		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
 			Services.set(Service::StateMachine, nullptr);
 			delete stateMachine;
-		}
-
-		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-			Services.set(Service::Audio, nullptr);
-			delete audio;
 		}
 
 		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
@@ -149,7 +146,12 @@ void init(){
 			}
 		}
 
-		delayMillis(1000);
+		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+			Services.set(Service::Audio, nullptr);
+			audio->play("/spiffs/General/BattEmptyRover.aac", true);
+			delayMillis(3000);
+			delete audio;
+		}
 
 		shutdown();
 	});

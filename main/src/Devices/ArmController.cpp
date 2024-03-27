@@ -5,6 +5,7 @@
 #include "Services/Comm.h"
 #include "Util/Services.h"
 #include "Util/stdafx.h"
+#include "Services/Audio.h"
 
 static const char* const TAG = "HeadlightsController";
 

@@ -1,10 +1,11 @@
 #include "PairState.h"
 #include "Util/Services.h"
-#include "States/DriveState/DriveState.h"
 #include "Services/LEDService.h"
 #include "Devices/Input.h"
+#include "Services/Audio.h"
+#include "States/DriveState/DriveState.h"
 
-PairState::PairState() : State(), queue(10) {
+PairState::PairState() : State(), queue(10), audio((Audio*) Services.get(Service::Audio)){
 	Events::listen(Facility::Input, &queue);
 	Events::listen(Facility::Pair, &queue);
 
@@ -56,9 +57,13 @@ void PairState::loop() {
 	else if (event.facility == Facility::Pair) {
 		const PairService::Event* pairEvent = (PairService::Event*)event.data;
 		if (pairEvent != nullptr && pairEvent->success) {
+			audio->play("/spiffs/General/PairSuccess.aac", true);
+
 			if (StateMachine* stateMachine = (StateMachine*)Services.get(Service::StateMachine)) {
 				stateMachine->transition<DriveState>();
 			}
+		}else if(pairEvent != nullptr && !pairEvent->success){
+			audio->play("/spiffs/General/PairFail.aac", true);
 		}
 	}
 
@@ -73,6 +78,10 @@ void PairState::startPair(){
 	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
 		led->off(LED::StatusRed);
 		led->blink(LED::StatusYellow, 0);
+	}
+
+	if(audio->getCurrentPlayingFile() != "/spiffs/General/PairStart.aac"){
+		audio->play("/spiffs/General/PairStart.aac", true);
 	}
 }
 

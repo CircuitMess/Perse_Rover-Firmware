@@ -6,6 +6,7 @@
 #include "Util/stdafx.h"
 #include "Services/Comm.h"
 #include "Util/Services.h"
+#include "Services/Audio.h"
 
 #define MAX_READ 2724	// 4.5V
 #define MIN_READ 2280	// 3.8V
