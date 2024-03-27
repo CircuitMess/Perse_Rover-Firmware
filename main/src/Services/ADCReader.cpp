@@ -8,7 +8,10 @@ ADCReader::ADCReader(ADC& adc, gpio_num_t pin, float ema_a, int min, int max, fl
 }
 
 float ADCReader::sample(){
-	int raw = adc.read(chan);
+	int raw = 0;
+	if(adc.read(chan, raw) != ESP_OK){
+		return getValue();
+	}
 
 	if(value == -1 || emaA == 1){
 		value = raw;

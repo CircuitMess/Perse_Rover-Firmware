@@ -23,8 +23,6 @@ adc_unit_t ADC::getUnit() const{
 	return unit;
 }
 
-int ADC::read(adc_channel_t chan){
-	int val;
-	ESP_ERROR_CHECK(adc_oneshot_read(hndl, chan, &val));
-	return val;
+esp_err_t ADC::read(adc_channel_t chan, int& valueOut){
+	return adc_oneshot_read(hndl, chan, &valueOut);
 }

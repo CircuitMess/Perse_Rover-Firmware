@@ -12,7 +12,7 @@ public:
 
 	void config(adc_channel_t chan, const adc_oneshot_chan_cfg_t& cfg);
 
-	int read(adc_channel_t chan);
+	esp_err_t read(adc_channel_t chan, int& valueOut);
 
 private:
 	adc_oneshot_unit_handle_t hndl;
