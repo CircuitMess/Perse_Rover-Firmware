@@ -29,7 +29,6 @@
 #include "Services/Modules.h"
 #include "States/DemoState.h"
 #include "Services/BatteryLowService.h"
-#include "JigHWTest/JigHWTest.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -41,6 +40,16 @@
 }
 
 void init(){
+	auto adc1 = new ADC(ADC_UNIT_1);
+
+	auto battery = new Battery(*adc1);
+	if(battery->isShutdown()){
+		shutdown();
+		return;
+	}
+
+	Services.set(Service::Battery, battery);
+
 	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
 	auto ret = nvs_flash_init();
@@ -51,23 +60,6 @@ void init(){
 	ESP_ERROR_CHECK(ret);
 
 	auto spiffs = new SPIFFS();
-
-	if(JigHWTest::checkJig()){
-		printf("Jig\n");
-		auto test = new JigHWTest();
-		test->start();
-		vTaskDelete(nullptr);
-	}
-
-	auto adc1 = new ADC(ADC_UNIT_1);
-
-	auto battery = new Battery(*adc1);
-	if(battery->isShutdown()){
-		shutdown();
-		return;
-	}
-
-	Services.set(Service::Battery, battery);
 
 	auto wifi = new WiFiAP();
 	Services.set(Service::WiFi, wifi);
