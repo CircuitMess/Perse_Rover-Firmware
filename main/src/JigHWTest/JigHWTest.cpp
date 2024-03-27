@@ -3,13 +3,12 @@
 #include <Pins.hpp>
 #include <soc/efuse_reg.h>
 #include <esp_efuse.h>
-#include <ctime>
 #include <iostream>
 #include <esp_mac.h>
 #include "Util/Services.h"
 #include <driver/adc.h>
-#include <driver/gptimer.h>
 #include <driver/ledc.h>
+#include <esp_camera.h>
 #include "Devices/Input.h"
 #include "Util/Events.h"
 
@@ -22,12 +21,21 @@ Audio* JigHWTest::audio = nullptr;
 
 JigHWTest::JigHWTest(){
 	i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	aw9523 = new AW9523(*i2c);
+	aw9523 = new AW9523(*i2c, 0x5b);
 	audio = new Audio(*aw9523);
+
+	const gpio_config_t cfg = {
+			.pin_bit_mask = 1ULL << CAM_PIN_PWDN,
+			.mode = GPIO_MODE_OUTPUT
+	};
+
+	gpio_config(&cfg);
+	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 1);
 
 	test = this;
 
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
+	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
@@ -196,7 +204,7 @@ bool JigHWTest::BatteryCheck(){
 }
 
 bool JigHWTest::AW9523Check(){
-	if(i2c->probe(0x58, 200) == ESP_OK){
+	if(i2c->probe(0x5b, 200) == ESP_OK){
 		return true;
 	}
 
@@ -232,6 +240,70 @@ bool JigHWTest::SPIFFSTest(){
 	return true;
 }
 
+bool JigHWTest::CameraCheck(){
+	camera_config_t config;
+	config.ledc_channel = LEDC_CHANNEL_0;
+	config.ledc_timer = LEDC_TIMER_0;
+
+	config.pin_pwdn = -1;
+	config.pin_reset = CAM_PIN_RESET;
+	config.pin_xclk = CAM_PIN_XCLK;
+	config.pin_d7 = CAM_PIN_D7;
+	config.pin_d6 = CAM_PIN_D6;
+	config.pin_d5 = CAM_PIN_D5;
+	config.pin_d4 = CAM_PIN_D4;
+	config.pin_d3 = CAM_PIN_D3;
+	config.pin_d2 = CAM_PIN_D2;
+	config.pin_d1 = CAM_PIN_D1;
+	config.pin_d0 = CAM_PIN_D0;
+	config.pin_vsync = CAM_PIN_VSYNC;
+	config.pin_href = CAM_PIN_HREF;
+	config.pin_pclk = CAM_PIN_PCLK;
+
+	config.xclk_freq_hz = 14000000;
+
+	config.sccb_i2c_port = i2c->getPort();
+	config.pin_sccb_sda = -1;
+	config.pin_sccb_scl = -1;
+
+	config.frame_size = FRAMESIZE_QQVGA;
+	config.pixel_format = PIXFORMAT_JPEG;
+	config.fb_count = 2;
+	config.fb_location = CAMERA_FB_IN_PSRAM;
+	config.grab_mode = CAMERA_GRAB_LATEST;
+	config.jpeg_quality = 12;
+
+	gpio_set_level((gpio_num_t) CAM_PIN_PWDN, 0);
+
+	auto lock = i2c->lockBus();
+
+	auto err = esp_camera_init(&config);
+	if(err == ESP_ERR_NOT_FOUND){
+		test->log("camera", "not found");
+		return false;
+	}else if(err != ESP_OK){
+		test->log("camera error", esp_err_to_name(err));
+		return false;
+	}
+
+	sensor_t* sensor = esp_camera_sensor_get();
+	if(sensor == nullptr){
+		test->log("camera", "sensor not found");
+		return false;
+	}
+
+	sensor->set_hmirror(sensor, 0);
+	sensor->set_vflip(sensor, 0);
+
+	sensor->set_saturation(sensor, 2);
+	sensor->set_awb_gain(sensor, 1);
+	sensor->set_wb_mode(sensor, 0);
+	sensor->set_exposure_ctrl(sensor, 0);
+	sensor->set_gain_ctrl(sensor, 0);
+
+	return true;
+}
+
 uint32_t JigHWTest::calcChecksum(FILE* file){
 	if(file == nullptr) return 0;
 
@@ -259,6 +331,9 @@ void JigHWTest::AudioVisualTest(){
 	Events::listen(Facility::Input, &queue);
 	bool mute = false;
 
+	aw9523->pinMode(EXP_LED_MOTOR_L, AW9523::LED);
+	aw9523->pinMode(EXP_LED_MOTOR_R, AW9523::LED);
+
 	for(;;){
 		Event evt;
 		if(queue.get(evt, 0)){
@@ -269,16 +344,22 @@ void JigHWTest::AudioVisualTest(){
 			free(evt.data);
 		}
 
-		if(!mute){
-			// TODO play some audio
+		if(!mute && audio != nullptr){
+			audio->play("/spiffs/Beep3.aac", true);
 		}
 
-		vTaskDelay(2000);
+		aw9523->dim(EXP_LED_MOTOR_L, 255);
+		aw9523->dim(EXP_LED_MOTOR_R, 255);
 
-		if(!mute){
-			// TODO stop playing audio
+		vTaskDelay(1000);
+
+		if(!mute && audio != nullptr){
+			audio->stop();
 		}
 
-		vTaskDelay(2000);
+		aw9523->dim(EXP_LED_MOTOR_L, 0);
+		aw9523->dim(EXP_LED_MOTOR_R, 0);
+
+		vTaskDelay(1000);
 	}
 }

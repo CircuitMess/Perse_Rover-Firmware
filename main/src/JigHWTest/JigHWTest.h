@@ -43,11 +43,12 @@ private:
 	static bool BatteryCheck();
 	static bool AW9523Check();
 	static bool SPIFFSTest();
+	static bool CameraCheck();
 	static uint32_t calcChecksum(FILE* file);
 
-	void AudioVisualTest();
+	static void AudioVisualTest();
 
-	static const int16_t referenceVoltage = 4050; // 50mV for backlight voltage drop compensation
+	static const int16_t referenceVoltage = 4000;
 
 	static constexpr uint32_t CheckTimeout = 500;
 

@@ -50,14 +50,14 @@ void init(){
 	}
 	ESP_ERROR_CHECK(ret);
 
-	auto spiffs = new SPIFFS();
-
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 		auto test = new JigHWTest();
 		test->start();
 		vTaskDelete(nullptr);
 	}
+
+	auto spiffs = new SPIFFS();
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
