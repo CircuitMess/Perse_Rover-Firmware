@@ -355,6 +355,7 @@ void JigHWTest::AudioVisualTest(){
 
 	aw9523->pinMode(EXP_LED_MOTOR_L, AW9523::LED);
 	aw9523->pinMode(EXP_LED_MOTOR_R, AW9523::LED);
+	aw9523->pinMode(EXP_LED_CAM, AW9523::LED);
 
 	for(;;){
 		Event evt;
@@ -370,8 +371,9 @@ void JigHWTest::AudioVisualTest(){
 			audio->play("/spiffs/Beep3.aac", true);
 		}
 
-		aw9523->dim(EXP_LED_MOTOR_L, 255);
-		aw9523->dim(EXP_LED_MOTOR_R, 255);
+		aw9523->dim(EXP_LED_MOTOR_L, 100);
+		aw9523->dim(EXP_LED_MOTOR_R, 100);
+		aw9523->dim(EXP_LED_CAM, 100);
 
 		vTaskDelay(1000);
 
@@ -381,6 +383,7 @@ void JigHWTest::AudioVisualTest(){
 
 		aw9523->dim(EXP_LED_MOTOR_L, 0);
 		aw9523->dim(EXP_LED_MOTOR_R, 0);
+		aw9523->dim(EXP_LED_CAM, 0);
 
 		vTaskDelay(1000);
 	}
