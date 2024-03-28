@@ -4,6 +4,7 @@
 #include <glm.hpp>
 #include "Periph/I2C.h"
 #include "Services/Comm.h"
+#include "Services/Audio.h"
 
 class GyroModule : private SleepyThreaded {
 public:
@@ -14,6 +15,7 @@ private:
 	I2C& i2c;
 	ModuleBus bus;
 	Comm& comm;
+	Audio& audio;
 
 	glm::vec3 value;
 	float emaA = 0.75f;
@@ -26,6 +28,9 @@ private:
 	void sleepyLoop() override;
 
 	static constexpr uint8_t Addr = 0x18;
+
+	bool tilted = false;
+	static constexpr uint8_t TiltThreshold = 20;
 };
 
 
