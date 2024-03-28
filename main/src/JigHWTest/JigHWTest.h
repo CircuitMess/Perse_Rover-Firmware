@@ -63,6 +63,8 @@ private:
 			.max_files = 8,
 			.format_if_mount_failed = false
 	};
+
+	static adc_oneshot_unit_handle_t hndl;
 };
 
 #endif //CLOCKSTAR_FIRMWARE_JIGHWTEST_H
