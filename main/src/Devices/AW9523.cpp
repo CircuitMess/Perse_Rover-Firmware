@@ -57,6 +57,12 @@ AW9523::AW9523(I2C& i2c, uint8_t addr) : i2c(i2c), Addr(addr){
 	writeReg(REG_INTR, regs.intr, 2);
 }
 
+void AW9523::resetDimOutputs(){
+	for(int i = 0; i < 16; ++i){
+		dim(i, 0);
+	}
+}
+
 void AW9523::pinMode(uint8_t pin, AW9523::PinMode mode){
 	if(pin >= 16) return;
 
@@ -66,7 +72,6 @@ void AW9523::pinMode(uint8_t pin, AW9523::PinMode mode){
 	const uint8_t regMode = REG(REG_MODE, pin);
 	uint8_t& intRegDir = regs.dir[it];
 	uint8_t& intRegMode = regs.mode[it];
-
 
 	if(mode == LED){
 		intRegMode = intRegMode & ~mask;

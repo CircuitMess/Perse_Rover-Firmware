@@ -7,6 +7,8 @@ class AW9523 {
 public:
 	AW9523(I2C& i2c, uint8_t addr = 0x58);
 
+	void resetDimOutputs();
+
 	enum PinMode { IN, OUT, LED };
 
 	/**

@@ -8,8 +8,10 @@
 #include "Util/Services.h"
 #include "Services/Audio.h"
 
-#define MAX_READ 2724	// 4.5V
-#define MIN_READ 2280	// 3.8V
+#define BATT_MAP 2 * 3100 / 4096
+#define BATT_MAP_INV 4096 / (2 * 3100)
+#define MAX_READ (4500 * BATT_MAP_INV)	// 4.5V
+#define MIN_READ (3800 * BATT_MAP_INV)	// 3.8V
 
 Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
 					 adc(adc, (gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
@@ -52,7 +54,7 @@ int16_t Battery::getVoltOffset() {
 }
 
 uint16_t Battery::mapRawReading(uint16_t reading) {
-	return std::round(map((double)reading, MIN_READ, MAX_READ, 3800, 4500));
+	return reading * BATT_MAP;
 }
 
 bool Battery::isShutdown() const {

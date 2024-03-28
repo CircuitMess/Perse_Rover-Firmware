@@ -41,15 +41,6 @@
 }
 
 void init(){
-	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
-
-	auto ret = nvs_flash_init();
-	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
-		ESP_ERROR_CHECK(nvs_flash_erase());
-		ret = nvs_flash_init();
-	}
-	ESP_ERROR_CHECK(ret);
-
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 		auto test = new JigHWTest();
@@ -59,13 +50,31 @@ void init(){
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
+	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto aw9523 = new AW9523(*i2c, 0x5b);
+
 	auto battery = new Battery(*adc1);
 	if(battery->isShutdown()){
+		aw9523->resetDimOutputs();
 		shutdown();
 		return;
 	}
 
 	Services.set(Service::Battery, battery);
+
+	auto led = new LEDService(*aw9523);
+	Services.set(Service::LED, led);
+
+	led->on(LED::Arm);
+
+	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
+
+	auto ret = nvs_flash_init();
+	if(ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND){
+		ESP_ERROR_CHECK(nvs_flash_erase());
+		ret = nvs_flash_init();
+	}
+	ESP_ERROR_CHECK(ret);
 
 	auto spiffs = new SPIFFS();
 
@@ -74,17 +83,11 @@ void init(){
 	auto tcp = new TCPServer();
 	Services.set(Service::TCP, tcp);
 
-	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	auto aw9523 = new AW9523(*i2c, 0x5b);
-
 	auto feed = new Feed(*i2c);
 	Services.set(Service::Feed, feed);
 
 	auto audio = new Audio(*aw9523);
 	Services.set(Service::Audio, audio);
-
-	auto led = new LEDService(*aw9523);
-	Services.set(Service::LED, led);
 
 	led->breathe(LED::Rear);
 

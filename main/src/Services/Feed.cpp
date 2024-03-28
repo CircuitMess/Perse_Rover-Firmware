@@ -45,6 +45,13 @@ Feed::~Feed(){
 	free(txBuf);
 }
 
+void Feed::disableScanning(){
+	EventData data;
+	data.type = EventData::ScanningEnableChange;
+	data.isScanningEnabled = false;
+	communicationQueue.post(data, portMAX_DELAY);
+}
+
 void Feed::sleepyLoop(){
 	::Event event{};
 	if(queue.get(event, portMAX_DELAY)){
