@@ -29,6 +29,7 @@
 #include "Services/Modules.h"
 #include "States/DemoState.h"
 #include "Services/BatteryLowService.h"
+#include "JigHWTest/JigHWTest.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -40,6 +41,13 @@
 }
 
 void init(){
+	if(JigHWTest::checkJig()){
+		printf("Jig\n");
+		auto test = new JigHWTest();
+		test->start();
+		vTaskDelete(nullptr);
+	}
+
 	auto adc1 = new ADC(ADC_UNIT_1);
 
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
