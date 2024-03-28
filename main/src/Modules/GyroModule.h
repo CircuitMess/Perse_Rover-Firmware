@@ -15,6 +15,11 @@ private:
 	ModuleBus bus;
 	Comm& comm;
 
+	glm::vec3 value;
+	float emaA = 0.75f;
+
+	size_t loopCounter = 0;
+
 	glm::vec3 getAccelerometer() const;
 	[[maybe_unused]] int8_t getTemperature() const;
 
