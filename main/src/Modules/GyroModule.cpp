@@ -3,7 +3,8 @@
 #include "Util/Services.h"
 
 GyroModule::GyroModule(I2C& i2c, ModuleBus bus) : SleepyThreaded(50, "Gyro", 3 * 1024), i2c(i2c), bus(bus),
-												  comm(*((Comm*) Services.get(Service::Comm))){
+												  comm(*((Comm*) Services.get(Service::Comm))),
+												  audio(*((Audio*) Services.get(Service::Audio))){
 	const uint8_t initData[2] = { 0x20, 0b01010001 };
 
 	ESP_ERROR_CHECK(i2c.write(Addr, initData, 2));
@@ -71,6 +72,13 @@ void GyroModule::sleepyLoop(){
 		const ModuleData data = {
 				ModuleType::Gyro, bus, { .gyro = { xAngle, yAngle }}
 		};
+
+		if((abs(xAngle) >= TiltThreshold || abs(yAngle) >= TiltThreshold) && !tilted){
+			tilted = true;
+			audio.play("/spiffs/Modules/GyroTilt.aac");
+		}else if(abs(xAngle) < (TiltThreshold - 5) && abs(yAngle) < (TiltThreshold - 5) && tilted){
+			tilted = false;
+		}
 
 		comm.sendModuleData(data);
 
