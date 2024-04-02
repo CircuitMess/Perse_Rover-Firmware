@@ -11,7 +11,7 @@
 #include "Services/Audio.h"
 #include "Services/Feed.h"
 
-PanicAction::PanicAction() : startTime(millis()), eventQueue(10){
+PanicAction::PanicAction() : startTime(millis()), lastPlay(startTime), eventQueue(10){
 	if(Feed* feed = (Feed*) Services.get(Service::Feed)){
 		feed->disableScanning();
 	}
@@ -116,8 +116,6 @@ void PanicAction::loop(){
 	}else if(iteration == 7){
 		motorDriveController->setLocally({.DriveDirection = {.dir = 0, .speed = 0.0f}});
 
-
-
 		LEDService* led = (LEDService*) Services.get(Service::LED);
 		if (led == nullptr){
 			return;
@@ -134,6 +132,16 @@ void PanicAction::loop(){
 		}
 
 		led->blink(LED::StatusYellow, 0, 2 * DelayBetweenMovements);
+	}
+
+	if(iteration >= 4 && millis() - lastPlay >= DelayBetweenBeeps){
+		lastPlay = millis();
+
+		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+			if(audio->getCurrentPlayingFile().empty()){
+				audio->play("/spiffs/Beep3.aac");
+			}
+		}
 	}
 }
 

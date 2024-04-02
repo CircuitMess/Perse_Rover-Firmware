@@ -15,12 +15,14 @@ public:
 
 private:
 	static constexpr uint64_t DelayBetweenMovements = 1000;
+	static constexpr uint64_t DelayBetweenBeeps = 1000;
 	class ArmController* armController = nullptr;
 	class CameraController* cameraController = nullptr;
 	class HeadlightsController* headlightsController = nullptr;
 	class MotorDriveController* motorDriveController = nullptr;
 
 	uint64_t startTime = 0;
+	uint64_t lastPlay = 0;
 	EventQueue eventQueue;
 };
 
