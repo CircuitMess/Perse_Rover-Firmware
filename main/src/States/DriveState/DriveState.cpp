@@ -66,7 +66,8 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Au
 	Events::listen(Facility::Comm, &queue);
 
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
-		led->on(LED::StatusGreen);
+		led->breathe(LED::StatusGreen);
+		led->breathe(LED::Rear);
 	}
 }
 
