@@ -39,6 +39,10 @@ public:
 
 	void breathe(LED led, uint32_t period = 1000);
 
+	void set(LED led, float percent);
+
+	void breatheTo(LED led, float targetPercent, uint32_t duration = 250);
+
 protected:
 	virtual void loop() override;
 
@@ -62,7 +66,9 @@ private:
 		On,
 		Off,
 		Blink,
-		Breathe
+		Breathe,
+		Set,
+		BreatheTo
 	};
 
 	struct LEDInstructionInfo {
@@ -70,6 +76,7 @@ private:
 		LEDInstruction instruction;
 		uint32_t count;
 		uint32_t period;
+		float targetPercent;
 	};
 
 	std::map<LED, class SingleLED*> ledDevices;
@@ -84,6 +91,10 @@ private:
 	void blinkInternal(LED led, uint32_t count, uint32_t period);
 
 	void breatheInternal(LED led, uint32_t period);
+
+	void setInternal(LED led, float percent);
+
+	void breatheToInternal(LED led, float targetPercent, uint32_t duration);
 };
 
 #endif //PERSE_ROVER_LEDSERVICE_H
