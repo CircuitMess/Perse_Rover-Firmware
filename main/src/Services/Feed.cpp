@@ -107,6 +107,12 @@ void IRAM_ATTR Feed::sendFrame(){
 			feedQuality = data.feedQuality;
 		}else if(data.type == EventData::ScanningEnableChange){
 			isScanningEnabled = data.isScanningEnabled;
+
+			if(isScanningEnabled){
+				if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+					led->blink(LED::Camera, 0);
+				}
+			}
 		}
 	}
 
@@ -138,8 +144,10 @@ void IRAM_ATTR Feed::sendFrame(){
 
 		return;
 	}else{
-		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-			led->on(LED::Camera);
+		if(!isScanningEnabled){
+			if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+				led->on(LED::Camera);
+			}
 		}
 
 		const bool wasCamOff = !camera->isInited();
