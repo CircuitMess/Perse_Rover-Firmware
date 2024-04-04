@@ -17,11 +17,13 @@ MotorDriveController::~MotorDriveController() {
 	delete motorControl;
 }
 
-void MotorDriveController::write(const MotorDriveState &state) {
+void MotorDriveController::write(const MotorDriveState& state) {
 	if (motorControl == nullptr) {
 		ESP_LOGW(TAG, "Motor drive controller has motor control = nullptr.");
 		return;
 	}
+
+	const MotorDriveState previousState = getCurrentState();
 
 	const uint8_t dir = state.DriveDirection.dir;
 	const float speed = state.DriveDirection.speed;
@@ -66,21 +68,25 @@ void MotorDriveController::write(const MotorDriveState &state) {
 	motorControl->setLeft(leftSpeed);
 	motorControl->setRight(rightSpeed);
 
-	LEDService* led = (LEDService*) Services.get(Service::LED);
-	if(led == nullptr){
-		return;
-	}
+	if(previousState.DriveDirection.dir != dir || dir == 0){
+		LEDService* led = (LEDService*) Services.get(Service::LED);
+		if(led == nullptr){
+			return;
+		}
 
-	if(abs(leftSpeed) <= 0.1f && abs(rightSpeed) <= 0.1f){
-		led->off(LED::MotorLeft);
-		led->off(LED::MotorRight);
-	}else if(abs(leftSpeed - rightSpeed) <= 0.1f){
-		led->on(LED::MotorLeft);
-		led->on(LED::MotorRight);
-	}else if(leftSpeed > rightSpeed){
-		led->on(LED::MotorRight);
-	}else if(rightSpeed > leftSpeed){
-		led->on(LED::MotorLeft);
+		if(state.DriveDirection.speed < 0.1f){
+			led->breatheTo(LED::MotorLeft, 0.0f);
+			led->breatheTo(LED::MotorRight, 0.0f);
+		}else if(dir == 0 || dir == 4){
+			led->breatheTo(LED::MotorLeft, 100.0f);
+			led->breatheTo(LED::MotorRight, 100.0f);
+		}else if(dir == 1 || dir == 2 || dir == 5){
+			led->breatheTo(LED::MotorRight, 100.0f);
+			led->breatheTo(LED::MotorLeft, 0.0f);
+		}else if(dir == 3 || dir == 6 || dir == 7){
+			led->breatheTo(LED::MotorRight, 0.0f);
+			led->breatheTo(LED::MotorLeft, 100.0f);
+		}
 	}
 }
 

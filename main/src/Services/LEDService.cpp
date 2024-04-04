@@ -5,6 +5,7 @@
 #include "Util/LEDBlinkFunction.h"
 #include "Util/LEDBreatheFunction.h"
 #include "Pins.hpp"
+#include "Util/LEDBreatheToFunction.h"
 
 static const char* TAG = "LEDService";
 
@@ -92,6 +93,27 @@ void LEDService::breathe(LED led, uint32_t period /*= 1000*/){
 	instructionQueue.post(instruction);
 }
 
+void LEDService::set(LED led, float percent){
+	LEDInstructionInfo instruction{
+		.led = led,
+		.instruction = Set,
+		.targetPercent = std::clamp(percent, 0.0f, 100.0f)
+	};
+
+	instructionQueue.post(instruction);
+}
+
+void LEDService::breatheTo(LED led, float targetPercent, uint32_t duration){
+	LEDInstructionInfo instruction{
+			.led = led,
+			.instruction = BreatheTo,
+			.period = duration,
+			.targetPercent = std::clamp(targetPercent, 0.0f, 100.0f)
+	};
+
+	instructionQueue.post(instruction);
+}
+
 void LEDService::loop(){
 	for(LEDInstructionInfo instructionInfo; instructionQueue.get(instructionInfo, 10);){
 		if(instructionInfo.instruction == On){
@@ -102,6 +124,10 @@ void LEDService::loop(){
 			blinkInternal(instructionInfo.led, instructionInfo.count, instructionInfo.period);
 		}else if(instructionInfo.instruction == Breathe){
 			breatheInternal(instructionInfo.led, instructionInfo.period);
+		}else if(instructionInfo.instruction == BreatheTo){
+			breatheToInternal(instructionInfo.led, instructionInfo.targetPercent, instructionInfo.period);
+		}else if(instructionInfo.instruction == Set){
+			setInternal(instructionInfo.led, instructionInfo.targetPercent);
 		}
 	}
 
@@ -170,4 +196,33 @@ void LEDService::breatheInternal(LED led, uint32_t period){
 	}
 
 	ledFunctions[led] = std::make_unique<LEDBreatheFunction>(*ledDevices[led], period);
+}
+
+void LEDService::setInternal(LED led, float percent){
+	if(ledFunctions.contains(led)){
+		ledFunctions.erase(led);
+	}
+
+	if(!ledDevices.contains(led)){
+		return;
+	}
+
+	if(ledDevices[led] == nullptr){
+		return;
+	}
+
+	ledDevices[led]->setValue(0xFF * percent);
+}
+
+void LEDService::breatheToInternal(LED led, float targetPercent, uint32_t duration){
+	if(ledFunctions.contains(led)){
+		ledFunctions.erase(led);
+	}
+
+	if(!ledDevices.contains(led)){
+		ESP_LOGW(TAG, "LED %d is set to breathe to value, but does not exist.", (uint8_t) led);
+		return;
+	}
+
+	ledFunctions[led] = std::make_unique<LEDBreatheToFunction>(*ledDevices[led], targetPercent, duration);
 }

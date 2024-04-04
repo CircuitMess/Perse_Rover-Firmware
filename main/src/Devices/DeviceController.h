@@ -55,9 +55,9 @@ public:
 			return;
 		}
 
+		write(state);
 		currentState = state;
 
-		write(state);
 		sendState(state, true);
 	}
 
@@ -80,9 +80,9 @@ protected:
 			return;
 		}
 
+		write(state);
 		currentState = state;
 
-		write(state);
 		sendState(state, false);
 	}
 
