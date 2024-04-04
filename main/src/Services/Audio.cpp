@@ -101,8 +101,19 @@ void Audio::loop(){
 
 	const size_t bytesToTransfer = aac->getData(dataBuf.data(), dataBuf.size() * sizeof(int16_t));
 	if(bytesToTransfer == 0){
-		closeFile();
-		if(!queuedFile.file.empty()){
+		if(currentFile.state == AudioFile::State::Prefix){
+			aac.reset();
+			aac = std::make_unique<AACDecoder>(currentFile.file);
+			currentFile.state = AudioFile::State::Main;
+		}else if(currentFile.state == AudioFile::State::Main){
+			aac.reset();
+			aac = std::make_unique<AACDecoder>(Beeps[rand() % 3]);
+			currentFile.state = AudioFile::State::Suffix;
+		}else if(currentFile.state == AudioFile::State::Suffix){
+			closeFile();
+
+			if(queuedFile.file.empty()) return;
+
 			openFile(queuedFile);
 			queuedFile = {};
 		}
@@ -121,11 +132,19 @@ void Audio::openFile(const AudioFile& audioFile){
 	closeFile();
 
 	currentFile = audioFile;
-	aac = std::make_unique<AACDecoder>(audioFile.file);
+	std::string path;
+	if(currentFile.file == Beeps[0] || currentFile.file == Beeps[1] || currentFile.file == Beeps[2]){
+		path = currentFile.file;
+		currentFile.state = AudioFile::State::Suffix;
+	}else{
+		path = Beeps[rand() % 3];
+	}
+	aac = std::make_unique<AACDecoder>(path);
 }
 
 void Audio::closeFile(){
 	currentFile.file = "";
 	currentFile.priority = false;
+	currentFile.state = AudioFile::State::Prefix;
 	aac.reset();
 }

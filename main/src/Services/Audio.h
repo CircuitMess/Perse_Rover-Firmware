@@ -27,6 +27,9 @@ private:
 	struct AudioFile {
 		std::string file;
 		bool priority;
+		enum class State : uint8_t {
+			Prefix, Main, Suffix
+		} state = State::Prefix;
 	};
 
 	bool enabled = true;
@@ -45,6 +48,8 @@ private:
 	PtrQueue<AudioFile> playQueue;
 	AudioFile currentFile;
 	AudioFile queuedFile;
+
+	static constexpr const char* Beeps[] = { "/spiffs/Beep.aac", "/spiffs/Beep2.aac", "/spiffs/Beep3.aac" };
 };
 
 
