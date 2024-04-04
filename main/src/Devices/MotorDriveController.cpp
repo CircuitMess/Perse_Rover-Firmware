@@ -82,7 +82,9 @@ void MotorDriveController::write(const MotorDriveState& state) {
 			led->breatheTo(LED::MotorRight, 100.0f);
 		}else if(dir == 1 || dir == 2 || dir == 5){
 			led->breatheTo(LED::MotorRight, 100.0f);
+			led->breatheTo(LED::MotorLeft, 0.0f);
 		}else if(dir == 3 || dir == 6 || dir == 7){
+			led->breatheTo(LED::MotorRight, 0.0f);
 			led->breatheTo(LED::MotorLeft, 100.0f);
 		}
 	}
