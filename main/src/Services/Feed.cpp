@@ -79,7 +79,6 @@ void Feed::sleepyLoop(){
 					data.isScanningEnabled = commEvent->scanningEnable;
 					if(feedQuality != 0){
 						if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-							audio->stop();
 							if(data.isScanningEnabled){
 								audio->play("/spiffs/Systems/ScanOn.aac");
 							}else{
@@ -160,7 +159,6 @@ void IRAM_ATTR Feed::sendFrame(){
 
 			if(shouldPlayAudioOnCamFailure){
 				if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-					audio->stop();
 					audio->play("/spiffs/General/CamFail.aac", true);
 				}
 

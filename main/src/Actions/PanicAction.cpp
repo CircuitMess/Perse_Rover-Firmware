@@ -41,7 +41,6 @@ PanicAction::PanicAction() : startTime(millis()), lastPlay(startTime), eventQueu
 
 	Audio* audio = (Audio*) Services.get(Service::Audio);
 	if (audio != nullptr) {
-		audio->stop();
 		audio->play("/spiffs/Systems/PanicOn.aac", true);
 	}
 }
@@ -73,7 +72,6 @@ PanicAction::~PanicAction(){
 
 	Audio* audio = (Audio*) Services.get(Service::Audio);
 	if (audio != nullptr) {
-		audio->stop();
 		audio->play("/spiffs/Systems/PanicOff.aac", true);
 	}
 
