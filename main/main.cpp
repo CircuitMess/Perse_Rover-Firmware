@@ -30,6 +30,7 @@
 #include "States/DemoState.h"
 #include "Services/BatteryLowService.h"
 #include "JigHWTest/JigHWTest.h"
+#include "Services/InactivityService.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -117,6 +118,8 @@ void init(){
 
 	auto lowBatteryService = new BatteryLowService();
 	Services.set(Service::LowBattery, lowBatteryService);
+
+	auto inactivityService = new InactivityService();
 
 	audio->play("/spiffs/General/PowerOn.aac", true);
 
