@@ -101,8 +101,27 @@ void Audio::loop(){
 
 	const size_t bytesToTransfer = aac->getData(dataBuf.data(), dataBuf.size() * sizeof(int16_t));
 	if(bytesToTransfer == 0){
-		closeFile();
-		if(!queuedFile.file.empty()){
+		if(currentFile.state == AudioFile::State::Prefix){
+			aac.reset();
+			aac = std::make_unique<AACDecoder>(currentFile.file);
+			currentFile.state = AudioFile::State::Main;
+		}else if(currentFile.state == AudioFile::State::Main){
+			aac.reset();
+
+			//to avoid 2 back-to-back beeps when file is queued
+			if(!queuedFile.file.empty()){
+				closeFile();
+				openFile(queuedFile);
+				queuedFile = {};
+			}else{
+				aac = std::make_unique<AACDecoder>(Beeps[rand() % 3]);
+				currentFile.state = AudioFile::State::Suffix;
+			}
+		}else if(currentFile.state == AudioFile::State::Suffix){
+			closeFile();
+
+			if(queuedFile.file.empty()) return;
+
 			openFile(queuedFile);
 			queuedFile = {};
 		}
@@ -118,14 +137,27 @@ void Audio::openFile(const AudioFile& audioFile){
 		return;
 	}
 
+	//to avoid 2 back-to-back beeps, if first was interrupted halfway
+	bool beepInterrupted = !currentFile.file.empty() && (currentFile.state == AudioFile::State::Prefix || currentFile.state == AudioFile::State::Suffix);
 	closeFile();
 
 	currentFile = audioFile;
-	aac = std::make_unique<AACDecoder>(audioFile.file);
+	std::string path;
+	if(currentFile.file == Beeps[0] || currentFile.file == Beeps[1] || currentFile.file == Beeps[2]){
+		path = currentFile.file;
+		currentFile.state = AudioFile::State::Suffix;
+	}else if(beepInterrupted){
+		path = currentFile.file;
+		currentFile.state = AudioFile::State::Main;
+	}else{
+		path = Beeps[rand() % 3];
+	}
+	aac = std::make_unique<AACDecoder>(path);
 }
 
 void Audio::closeFile(){
 	currentFile.file = "";
 	currentFile.priority = false;
+	currentFile.state = AudioFile::State::Prefix;
 	aac.reset();
 }

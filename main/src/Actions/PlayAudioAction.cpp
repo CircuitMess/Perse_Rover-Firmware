@@ -16,8 +16,7 @@ void PlayAudioAction::loop(){
 		return;
 	}
 
-	audio->stop();
-	audio->play(getFile());
+	audio->play(getFile(), true);
 
 	played = true;
 }
