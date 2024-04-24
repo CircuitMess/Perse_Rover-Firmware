@@ -2,14 +2,18 @@
 #define PERSE_ROVER_CAMERAPROSPECTAROUNDACTION_H
 
 #include <cstdint>
-#include "Action.h"
+#include "PlayAudioAction.h"
 
-class CameraProspectAroundAction : public Action{
+class CameraProspectAroundAction : public PlayAudioAction{
 public:
 	CameraProspectAroundAction();
 	virtual ~CameraProspectAroundAction() override;
 
 protected:
+	inline virtual constexpr const char* getFile() const override {
+		return "/spiffs/Markers/Scouting.aac";
+	}
+
 	virtual void loop() override;
 	virtual bool readyToTransition() const override;
 

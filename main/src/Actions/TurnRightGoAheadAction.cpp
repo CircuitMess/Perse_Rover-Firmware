@@ -23,6 +23,8 @@ TurnRightGoAheadAction::~TurnRightGoAheadAction(){
 }
 
 void TurnRightGoAheadAction::loop(){
+	PlayAudioAction::loop();
+
 	if(controller == nullptr){
 		markForDestroy();
 		return;

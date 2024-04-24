@@ -2,14 +2,18 @@
 #define PERSE_ROVER_TURNLEFTGOAHEADACTION_H
 
 #include <cstdint>
-#include "Action.h"
+#include "PlayAudioAction.h"
 
-class TurnLeftGoAheadAction : public Action {
+class TurnLeftGoAheadAction : public PlayAudioAction {
 public:
 	TurnLeftGoAheadAction();
 	virtual ~TurnLeftGoAheadAction() override;
 
 protected:
+	inline virtual constexpr const char* getFile() const override {
+		return "/spiffs/Markers/LeftForward.aac";
+	}
+
 	virtual void loop() override;
 	virtual bool readyToTransition() const override;
 

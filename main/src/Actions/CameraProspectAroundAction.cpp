@@ -22,6 +22,8 @@ CameraProspectAroundAction::~CameraProspectAroundAction(){
 }
 
 void CameraProspectAroundAction::loop(){
+	PlayAudioAction::loop();
+
 	if(controller == nullptr){
 		markForDestroy();
 		return;

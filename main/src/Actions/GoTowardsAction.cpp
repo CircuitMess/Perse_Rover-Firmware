@@ -22,6 +22,8 @@ GoTowardsAction::~GoTowardsAction(){
 }
 
 void GoTowardsAction::loop(){
+	PlayAudioAction::loop();
+
 	if (controller == nullptr){
 		markForDestroy();
 		return;

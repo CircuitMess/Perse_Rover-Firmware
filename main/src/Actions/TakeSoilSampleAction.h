@@ -3,14 +3,18 @@
 
 #include <cstdint>
 #include <CommData.h>
-#include "Action.h"
+#include "PlayAudioAction.h"
 
-class TakeSoilSampleAction : public Action {
+class TakeSoilSampleAction : public PlayAudioAction {
 public:
 	TakeSoilSampleAction();
 	virtual ~TakeSoilSampleAction() override;
 
 protected:
+	inline virtual constexpr const char* getFile() const override {
+		return "/spiffs/Markers/TakingSample.aac";
+	}
+
 	virtual void loop() override;
 	virtual bool readyToTransition() const override;
 

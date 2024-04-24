@@ -33,6 +33,8 @@ Rotate180Action::~Rotate180Action(){
 }
 
 void Rotate180Action::loop(){
+	PlayAudioAction::loop();
+
 	if(controller == nullptr){
 		markForDestroy();
 		return;

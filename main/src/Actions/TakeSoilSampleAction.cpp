@@ -22,6 +22,8 @@ TakeSoilSampleAction::~TakeSoilSampleAction(){
 }
 
 void TakeSoilSampleAction::loop(){
+	PlayAudioAction::loop();
+
 	if (controller == nullptr){
 		markForDestroy();
 		return;
