@@ -80,11 +80,11 @@ esp_err_t Camera::init(){
 	sensor->set_hmirror(sensor, 0);
 	sensor->set_vflip(sensor, 0);
 
-	sensor->set_saturation(sensor, 2);
-	sensor->set_awb_gain(sensor, 1);
-	sensor->set_wb_mode(sensor, 0);
-	sensor->set_exposure_ctrl(sensor, 0);
-	sensor->set_gain_ctrl(sensor, 0);
+	// sensor->set_saturation(sensor, 2);
+	// sensor->set_awb_gain(sensor, 1);
+	// sensor->set_wb_mode(sensor, 0);
+	//sensor->set_exposure_ctrl(sensor, 0);
+	sensor->set_gain_ctrl(sensor, 1);
 
 	/*if(res > FRAMESIZE_QQVGA){
 		sensor->set_brightness(sensor, -2);
