@@ -4,6 +4,7 @@
 #include <glm.hpp>
 #include "DeviceController.h"
 #include "CommData.h"
+#include "Util/Easer.h"
 
 struct ArmState
 {
@@ -28,6 +29,9 @@ private:
 	Servo* pinchServo = nullptr;
 	static constexpr glm::vec<2, uint8_t> positionLimits = {0, 80};
 	static constexpr glm::vec<2, uint8_t> pinchLimits = {30, 55};
+
+	Easer posEase;
+	Easer pinchEase;
 };
 
 #endif //PERSE_ROVER_ARMCONTROLLER_H

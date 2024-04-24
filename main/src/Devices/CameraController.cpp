@@ -8,7 +8,7 @@
 
 static const char* const TAG = "HeadlightsController";
 
-CameraController::CameraController() : DeviceController("CameraController") {
+CameraController::CameraController() : DeviceController("CameraController"), ease("Cam", 1, 5, [this](int32_t val){ cameraServo->setValue(val); }){
 	cameraServo = new Servo((gpio_num_t)SERVO_3_PWM, 0);
 
 	if (cameraServo == nullptr) {
@@ -39,7 +39,7 @@ void CameraController::write(const CameraState &state) {
 	}
 
 	uint8_t value = map(std::clamp(state.Rotation, (uint8_t)0, (uint8_t)100), 0, 100, rotationLimits.x, rotationLimits.y);
-	cameraServo->setValue(value);
+	ease.set(value);
 }
 
 CameraState CameraController::getDefaultState() const {

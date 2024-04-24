@@ -9,7 +9,7 @@
 
 static const char* const TAG = "HeadlightsController";
 
-ArmController::ArmController() : DeviceController("ArmController") {
+ArmController::ArmController() : DeviceController("ArmController"), posEase("ArmPos", 1, 10, [this](int32_t val){ positionServo->setValue(val); }), pinchEase("ArmPinch", 1, 10, [this](int32_t val){ pinchServo->setValue(val); }){
 	positionServo = new Servo((gpio_num_t)SERVO_1_PWM, 0);
 	pinchServo = new Servo((gpio_num_t)SERVO_2_PWM, 0);
 
@@ -46,16 +46,12 @@ void ArmController::write(const ArmState& state) {
 
 	if (state.Pinch >= 0) {
 		const uint8_t servoValue = map(std::clamp(state.Pinch, (int8_t)0, (int8_t)100), 0, 100, pinchLimits.x, pinchLimits.y);
-		if(state.Pinch >= 90){
-			pinchServo->setValueAndDisable(servoValue);
-		}else{
-			pinchServo->setValue(servoValue);
-		}
+		pinchEase.set(servoValue);
 	}
 
 	if (state.Position >= 0) {
 		const uint8_t servoValue = map(std::clamp(state.Position, (int8_t)0, (int8_t)100), 0, 100, positionLimits.x, positionLimits.y);
-		positionServo->setValue(servoValue);
+		posEase.set(servoValue);
 	}
 }
 

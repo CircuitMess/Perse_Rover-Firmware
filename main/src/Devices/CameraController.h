@@ -3,6 +3,7 @@
 
 #include "DeviceController.h"
 #include "CommData.h"
+#include "Util/Easer.h"
 #include <glm.hpp>
 
 struct CameraState
@@ -25,6 +26,9 @@ protected:
 private:
 	class Servo* cameraServo = nullptr;
 	static constexpr glm::vec<2, uint8_t> rotationLimits = {10, 100};
+
+	Easer ease;
+
 };
 
 #endif //PERSE_ROVER_CAMERACONTROLLER_H
