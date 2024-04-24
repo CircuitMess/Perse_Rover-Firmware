@@ -32,7 +32,7 @@ private:
 	framesize_t res = FRAMESIZE_INVALID;
 	pixformat_t format = PIXFORMAT_RGB444;
 
-	static constexpr int MaxFailedFrames = 2;
+	static constexpr int MaxFailedFrames = 100;
 	int failedFrames = 0;
 
 	I2C& i2c;
