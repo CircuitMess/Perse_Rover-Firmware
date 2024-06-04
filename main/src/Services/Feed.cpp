@@ -193,11 +193,18 @@ void IRAM_ATTR Feed::sendFrame(){
 
 		markerScanner->process(frameData->buf, driveInfo);
 
-		if(driveInfo.markerInfo.action != oldAction){
-			oldAction = driveInfo.markerInfo.action;
-
-			Events::post(Facility::Feed,
-						 Event{ .type = EventType::MarkerScanned, .markerAction = driveInfo.markerInfo.action });
+		if(driveInfo.markerInfo.action != MarkerAction::None){
+			frameFilterCounter = 0;
+			if(driveInfo.markerInfo.action != oldAction){
+				oldAction = driveInfo.markerInfo.action;
+				Events::post(Facility::Feed, Event{ .type = EventType::MarkerScanned, .markerAction = driveInfo.markerInfo.action });
+			}
+		}else if(driveInfo.markerInfo.action != oldAction){ //currently None, previously not None
+			frameFilterCounter++;
+			if(frameFilterCounter >= FrameFilterCount){
+				oldAction = driveInfo.markerInfo.action;
+				Events::post(Facility::Feed, Event{ .type = EventType::MarkerScanned, .markerAction = driveInfo.markerInfo.action });
+			}
 		}
 	}
 

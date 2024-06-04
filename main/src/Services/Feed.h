@@ -62,6 +62,9 @@ private:
 	static constexpr size_t TxBufSize = 10000;
 	uint8_t* txBuf;
 
+	uint8_t frameFilterCounter = 0;
+	static constexpr uint8_t FrameFilterCount = 4; //scanned marker always persists for at least 4 frames, to smoothen recognition
+
 private:
 	void sendFrame();
 };
