@@ -3,6 +3,7 @@
 
 
 #include "Periph/Timer.h"
+#include "Threaded.h"
 
 class Easer {
 public:
@@ -22,6 +23,10 @@ private:
 	bool isSet = false;
 	int32_t current;
 	int32_t target;
+
+	void process();
+	static QueueHandle_t easerQueue; //queue of ptrs that need to be processed
+	static ThreadedClosure easerTask;
 
 };
 
