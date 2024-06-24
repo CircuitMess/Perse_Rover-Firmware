@@ -8,14 +8,15 @@
 #include "Util/Services.h"
 #include "Services/Audio.h"
 
-#define BATT_MAP 2 * 3100 / 4096
-#define BATT_MAP_INV 4096 / (2 * 3100)
-#define MAX_READ (4500 * BATT_MAP_INV)	// 4.5V
-#define MIN_READ (3800 * BATT_MAP_INV)	// 3.8V
+#define MAX_READ 4600    // 4.6V
+#define MIN_READ 3600    // 3.6V
+#define FACTOR2 0.0000535803f
+#define FACTOR1 1.3658f
+#define FACTOR0 526.332f
 
 Battery::Battery(ADC& adc) : SleepyThreaded(MeasureIntverval, "Battery", 3 * 1024, 5, 1),
-					 adc(adc, (gpio_num_t)BATTERY_ADC, 0.05, MIN_READ, MAX_READ, getVoltOffset()),
-					 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3), eventQueue(10){
+							 adc(adc, (gpio_num_t) PIN_BATT, 0.05, MIN_READ, MAX_READ, (float) getVoltOffset() + FACTOR0, FACTOR1, FACTOR2),
+							 hysteresis({ 0, 4, 15, 30, 70, 100 }, 3), eventQueue(10){
 	Events::listen(Facility::TCP, &eventQueue);
 
 	adc_unit_t unit;
@@ -54,7 +55,8 @@ int16_t Battery::getVoltOffset() {
 }
 
 uint16_t Battery::mapRawReading(uint16_t reading) {
-	return reading * BATT_MAP;
+	const float fval = reading;
+	return std::round(FACTOR0 + fval * FACTOR1 + std::pow(fval, 2.0f) * FACTOR2);
 }
 
 bool Battery::isShutdown() const {
