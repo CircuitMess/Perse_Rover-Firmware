@@ -12,14 +12,14 @@ static const char* TAG = "LEDService";
 const std::map<LED, LEDService::PwnMappingInfo> LEDService::PwmMappings = {};
 
 const std::map<LED, LEDService::ExpanderMappingInfo> LEDService::ExpanderMappings = {
-		{ LED::Camera,          { EXP_LED_CAM,           0xFF }},
+		{ LED::Camera,          { EXP_LED_CAM,           0x05 }},
 		{ LED::Rear,            { EXP_LED_REAR,          0xFF }},
 		{ LED::MotorLeft,       { EXP_LED_MOTOR_L,       0xFF }},
 		{ LED::MotorRight,      { EXP_LED_MOTOR_R,       0xFF }},
 		{ LED::Arm,             { EXP_LED_ARM,           0xFF }},
-		{ LED::HeadlightLeft,   { EXP_LED_FRONT_L,       0x20 }},
-		{ LED::HeadlightsRight, { EXP_LED_FRONT_R,       0x20 }},
-		{ LED::StatusGreen,     { EXP_LED_STATUS_GREEN,  0x20 }},
+		{ LED::HeadlightLeft,   { EXP_LED_FRONT_L,       0x10 }},
+		{ LED::HeadlightsRight, { EXP_LED_FRONT_R,       0x10 }},
+		{ LED::StatusGreen,     { EXP_LED_STATUS_GREEN,  0xFF }},
 		{ LED::StatusYellow,    { EXP_LED_STATUS_YELLOW, 0xFF }},
 		{ LED::StatusRed,       { EXP_LED_STATUS_RED,    0xFF }},
 };
