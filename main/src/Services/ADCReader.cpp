@@ -1,12 +1,14 @@
 #include "ADCReader.h"
 #include <algorithm>
+#include <math.h>
 
-ADCReader::ADCReader(ADC& adc, gpio_num_t pin, float ema_a, int min, int max, float readingOffset) : adc(adc), emaA(ema_a), min(min), max(max), readingOffset(readingOffset){
+ADCReader::ADCReader(ADC& adc, gpio_num_t pin, float ema_a, int min, int max, float readingOffset, float readingFactor1, float readingFactor2) : adc(adc), emaA(ema_a), min(min), max(max), readingOffset(readingOffset), readingFactor1(readingFactor1), readingFactor2(readingFactor2){
 	adc_unit_t unit;
 	ESP_ERROR_CHECK(adc_oneshot_io_to_channel(pin, &unit, &chan));
 	assert(unit == adc.getUnit());
 }
 
+float rawValue = 0;
 float ADCReader::sample(){
 	int raw = 0;
 	if(adc.read(chan, raw) != ESP_OK){
@@ -23,8 +25,10 @@ float ADCReader::sample(){
 }
 
 float ADCReader::getValue() const{
+	const float adjusted = readingOffset + value * readingFactor1 + std::pow(value, 2.0f) * readingFactor2;
+
 	if(max == 0 && min == 0){
-		return value + readingOffset;
+		return adjusted;
 	}
 
 	float minimum = min;
@@ -34,7 +38,7 @@ float ADCReader::getValue() const{
 		std::swap(minimum, maximum);
 	}
 
-	float val = std::clamp(value, minimum, maximum);
+	float val = std::clamp(adjusted, minimum, maximum);
 	val = (val - minimum) / (maximum - minimum);
 	val = std::clamp(val * 100.0f, 0.0f, 100.0f);
 
