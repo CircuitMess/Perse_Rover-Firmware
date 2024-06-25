@@ -44,6 +44,7 @@ private:
 	static bool AW9523Check();
 	static bool SPIFFSTest();
 	static bool CameraCheck();
+	static bool HWVersion();
 	static uint32_t calcChecksum(FILE* file);
 
 	static void AudioVisualTest();

@@ -11,6 +11,7 @@
 #include <esp_camera.h>
 #include "Devices/Input.h"
 #include "Util/Events.h"
+#include "Util/HWVersion.h"
 
 
 JigHWTest* JigHWTest::test = nullptr;
@@ -40,6 +41,7 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
+	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){} });
 }
 
 bool JigHWTest::checkJig(){
@@ -387,4 +389,8 @@ void JigHWTest::AudioVisualTest(){
 
 		vTaskDelay(1000);
 	}
+}
+
+bool JigHWTest::HWVersion(){
+	return HWVersion::write() && HWVersion::check();
 }
