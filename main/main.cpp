@@ -31,6 +31,7 @@
 #include "Services/BatteryLowService.h"
 #include "JigHWTest/JigHWTest.h"
 #include "Services/InactivityService.h"
+#include "Util/HWVersion.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -47,6 +48,13 @@ void init(){
 		auto test = new JigHWTest();
 		test->start();
 		vTaskDelete(nullptr);
+	}
+
+	if(!HWVersion::check()){
+		while(true){
+			vTaskDelay(1000);
+			HWVersion::log();
+		}
 	}
 
 	auto adc1 = new ADC(ADC_UNIT_1);
