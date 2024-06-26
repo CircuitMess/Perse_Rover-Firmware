@@ -48,7 +48,7 @@ private:
 
 	static void AudioVisualTest();
 
-	static const int16_t referenceVoltage = 4000;
+	static constexpr int16_t ReferenceVoltage = 4810;
 
 	static constexpr uint32_t CheckTimeout = 500;
 

@@ -172,7 +172,7 @@ bool JigHWTest::BatteryCalib(){
 
 	uint32_t mapped = Battery::mapRawReading(reading);
 
-	int16_t offset = referenceVoltage - mapped;
+	int16_t offset = ReferenceVoltage - mapped;
 
 	test->log("reading", reading);
 	test->log("mapped", mapped);
@@ -220,7 +220,7 @@ bool JigHWTest::BatteryCheck(){
 	reading /= numReadings;
 
 	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
-	if(voltage < referenceVoltage - 100 || voltage > referenceVoltage + 100){
+	if(voltage < ReferenceVoltage - 100 || voltage > ReferenceVoltage + 100){
 		test->log("raw", reading);
 		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
 		test->log("offset", (int32_t) Battery::getVoltOffset());
