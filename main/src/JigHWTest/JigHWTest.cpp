@@ -198,6 +198,15 @@ bool JigHWTest::BatteryCalib(){
 
 
 bool JigHWTest::BatteryCheck(){
+	if(hndl == nullptr){
+		const adc_oneshot_unit_init_cfg_t config = {
+				.unit_id = ADC_UNIT_1,
+				.ulp_mode = ADC_ULP_MODE_DISABLE
+		};
+
+		adc_oneshot_new_unit(&config, &hndl);
+	}
+
 	adc_unit_t unit;
 	adc_channel_t chan;
 	adc_oneshot_io_to_channel((gpio_num_t)BATTERY_ADC, &unit, &chan);
