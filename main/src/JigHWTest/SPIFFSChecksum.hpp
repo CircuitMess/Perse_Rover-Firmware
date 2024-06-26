@@ -5,9 +5,9 @@ struct {
 	const char* name;
 	uint32_t sum;
 } static const SPIFFSChecksums[] = {
-	{ "/spiffs/Beep.aac", 375949},
-	{ "/spiffs/Beep2.aac", 388499},
-	{ "/spiffs/Beep3.aac", 378175},
+	{ "/spiffs/Beep.aac", 312585},
+	{ "/spiffs/Beep2.aac", 304054},
+	{ "/spiffs/Beep3.aac", 307052},
 	{ "/spiffs/EasterEggs/Random1.aac", 1494827},
 	{ "/spiffs/EasterEggs/Random2.aac", 1705068},
 	{ "/spiffs/EasterEggs/Random3.aac", 1451374},
@@ -23,11 +23,17 @@ struct {
 	{ "/spiffs/General/PowerOn.aac", 1110982},
 	{ "/spiffs/General/SignalLost.aac", 1431508},
 	{ "/spiffs/General/SignalWeak.aac", 3566650},
+	{ "/spiffs/Markers/Advancing.aac", 993199},
 	{ "/spiffs/Markers/Alert.aac", 2319082},
 	{ "/spiffs/Markers/Ingenuity.aac", 2277302},
+	{ "/spiffs/Markers/LeftForward.aac", 1095938},
 	{ "/spiffs/Markers/Life.aac", 1362875},
 	{ "/spiffs/Markers/Rende.aac", 2470966},
+	{ "/spiffs/Markers/RightForward.aac", 1192027},
+	{ "/spiffs/Markers/Rotate.aac", 885660},
 	{ "/spiffs/Markers/Samples.aac", 1837410},
+	{ "/spiffs/Markers/Scouting.aac", 554964},
+	{ "/spiffs/Markers/TakingSample.aac", 976956},
 	{ "/spiffs/Modules/AirBad.aac", 2312611},
 	{ "/spiffs/Modules/AirOff.aac", 1987785},
 	{ "/spiffs/Modules/AirOn.aac", 1895356},
@@ -54,8 +60,7 @@ struct {
 	{ "/spiffs/Systems/PanicOff.aac", 2330457},
 	{ "/spiffs/Systems/PanicOn.aac", 2004366},
 	{ "/spiffs/Systems/ScanOff.aac", 1192538},
-	{ "/spiffs/Systems/ScanOn.aac", 942646},
-
+	{ "/spiffs/Systems/ScanOn.aac", 942646}
 };
 
 #endif //SPIFFSCHECKSUM_HPP
