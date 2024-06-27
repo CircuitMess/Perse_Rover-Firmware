@@ -19,6 +19,7 @@ I2C* JigHWTest::i2c = nullptr;
 AW9523* JigHWTest::aw9523 = nullptr;
 Audio* JigHWTest::audio = nullptr;
 adc_oneshot_unit_handle_t JigHWTest::hndl = nullptr;
+int16_t JigHWTest::voltOffset = 0;
 
 
 JigHWTest::JigHWTest(){
@@ -39,9 +40,9 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
 	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
-	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){} });
+	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){ esp_efuse_batch_write_cancel(); }});
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
-	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){} });
+	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); } });
 }
 
 bool JigHWTest::checkJig(){
@@ -77,6 +78,8 @@ void JigHWTest::start(){
 	esp_efuse_mac_get_default((uint8_t*) (&_chipmacid));
 	printf("\nTEST:begin:%llx\n", _chipmacid);
 
+	esp_efuse_batch_write_begin();
+
 	bool pass = true;
 	for(const Test& test : tests){
 		currentTest = test.name;
@@ -101,6 +104,7 @@ void JigHWTest::start(){
 		vTaskDelete(nullptr);
 	}
 
+	esp_efuse_batch_write_commit();
 	printf("TEST:passall\n");
 
 	//------------------------------------------------------
@@ -193,6 +197,8 @@ bool JigHWTest::BatteryCalib(){
 	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
 	esp_efuse_batch_write_commit();
 
+	voltOffset = offset;
+
 	return true;
 }
 
@@ -230,11 +236,11 @@ bool JigHWTest::BatteryCheck(){
 	}
 	reading /= numReadings;
 
-	uint32_t voltage = Battery::mapRawReading(reading) + Battery::getVoltOffset();
+	uint32_t voltage = Battery::mapRawReading(reading) + voltOffset;
 	if(voltage < ReferenceVoltage - 100 || voltage > ReferenceVoltage + 100){
 		test->log("raw", reading);
 		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
-		test->log("offset", (int32_t) Battery::getVoltOffset());
+		test->log("offset", (int32_t) voltOffset);
 		test->log("mapped+offset", voltage);
 		return false;
 	}
@@ -401,5 +407,17 @@ void JigHWTest::AudioVisualTest(){
 }
 
 bool JigHWTest::HWVersion(){
-	return HWVersion::write() && HWVersion::check();
+	uint16_t version = 1;
+	bool result = HWVersion::readVersion(version);
+
+	if(!result) return false;
+
+	if(version != 0) return false;
+
+	bool ok = HWVersion::write();
+
+	if(!ok) return false;
+
+
+	return  HWVersion::check();
 }
