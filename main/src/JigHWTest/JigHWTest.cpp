@@ -410,14 +410,15 @@ bool JigHWTest::HWVersion(){
 	uint16_t version = 1;
 	bool result = HWVersion::readVersion(version);
 
-	if(!result) return false;
+	if(!result){
+		test->log("HW version", "couldn't read from efuse");
+		return false;
+	}
 
-	if(version != 0) return false;
+	if(version != 0){
+		test->log("Existing HW version", (uint32_t)version);
+		return false;
+	}
 
-	bool ok = HWVersion::write();
-
-	if(!ok) return false;
-
-
-	return  HWVersion::check();
+	return  HWVersion::write();
 }
