@@ -143,6 +143,7 @@ void JigHWTest::log(const char* property, const std::string& value){
 bool JigHWTest::BatteryCalib(){
 	if(Battery::getVoltOffset() != 0){
 		test->log("calibrated", (int32_t) Battery::getVoltOffset());
+		voltOffset = Battery::getVoltOffset();
 		return true;
 	}
 
