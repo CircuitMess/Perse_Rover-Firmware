@@ -59,7 +59,7 @@ const std::unordered_map<ModuleType, Modules::ModuleAudio> Modules::AudioFilesMa
 
 Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1),
 									   i2c(i2c), comm(*((Comm*) Services.get(Service::Comm))), adc(adc),
-									   audio(*((Audio*) Services.get(Service::Audio))), tca(i2c),
+									   audio(((Audio*) Services.get(Service::Audio))), tca(i2c),
 									   connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
 									   connectionQueue(10){
 	Modules::sleepyLoop();
@@ -166,8 +166,8 @@ void Modules::loopCheck(ModuleBus bus){
 		const auto removed = context.current;
 		context.current = ModuleType::Unknown;
 
-		if(AudioFilesMap.contains(removed)){
-			audio.play(AudioFilesMap.at(removed).removedPath); //TODO - maybe set priority=true
+		if(AudioFilesMap.contains(removed) && audio){
+			audio->play(AudioFilesMap.at(removed).removedPath); //TODO - maybe set priority=true
 		}
 
 		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
@@ -186,8 +186,8 @@ void Modules::loopCheck(ModuleBus bus){
 		context.current = addr;
 		context.inserted = true;
 
-		if(AudioFilesMap.contains(context.current)){
-			audio.play(AudioFilesMap.at(context.current).insertedPath); //TODO - maybe set priority=true
+		if(AudioFilesMap.contains(context.current) && audio){
+			audio->play(AudioFilesMap.at(context.current).insertedPath); //TODO - maybe set priority=true
 		}
 
 		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
@@ -203,9 +203,7 @@ void Modules::loopCheck(ModuleBus bus){
 
 void Modules::connectionLoop(){
 	::Event e{};
-	while(!connectionQueue.get(e, portMAX_DELAY));
-
-	if(!running()) return;
+	if(!connectionQueue.get(e, portMAX_DELAY)) return;
 
 	if(e.facility == Facility::TCP){
 		const auto& data = *((TCPServer::Event*) e.data);

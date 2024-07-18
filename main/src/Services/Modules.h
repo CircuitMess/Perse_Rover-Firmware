@@ -32,7 +32,7 @@ private:
 	I2C& i2c;
 	Comm& comm;
 	ADC& adc;
-	Audio& audio;
+	Audio* audio = nullptr;
 
 	TCA9555 tca;
 	ThreadedClosure connectionThread;
@@ -75,8 +75,6 @@ private:
 		const char* removedPath;
 	};
 	static const std::unordered_map<ModuleType, ModuleAudio> AudioFilesMap;
-
-//	static constexpr uint8_t TesterBobAddr = Module::Bob | 0b00100000;
 
 };
 
