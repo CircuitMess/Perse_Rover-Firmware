@@ -14,8 +14,8 @@ public:
 private:
 	I2C& i2c;
 	ModuleBus bus;
-	Comm& comm;
-	Audio& audio;
+	Comm* comm = nullptr;
+	Audio* audio = nullptr;
 
 	glm::vec3 value;
 	float emaA = 0.75f;

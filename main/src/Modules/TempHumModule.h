@@ -14,7 +14,7 @@ public:
 private:
 	I2C& i2c;
 	ModuleBus bus;
-	Comm& comm;
+	Comm* comm = nullptr;
 
 	static constexpr uint8_t Addr = 0x38;
 

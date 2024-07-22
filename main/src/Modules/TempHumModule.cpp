@@ -4,7 +4,7 @@
 #include "Util/Services.h"
 
 TempHumModule::TempHumModule(I2C& i2c, ModuleBus bus) : SleepyThreaded(Modules::ModuleSendInterval, "TempHum", 2 * 1024),
-														i2c(i2c), bus(bus), comm(*((Comm*) Services.get(Service::Comm))){
+														i2c(i2c), bus(bus), comm(((Comm*) Services.get(Service::Comm))){
 	ESP_ERROR_CHECK(i2c.write(Addr, 0x00));
 
 	start();
@@ -22,8 +22,9 @@ void TempHumModule::sleepyLoop(){
 	const ModuleData md = {
 			ModuleType::TempHum, bus, { .tempHum = { temp, humidity } }
 	};
-
-	comm.sendModuleData(md);
+	if(comm){
+		comm->sendModuleData(md);
+	}
 }
 
 float TempHumModule::getHumidity(const std::array<uint8_t, 6>& data){

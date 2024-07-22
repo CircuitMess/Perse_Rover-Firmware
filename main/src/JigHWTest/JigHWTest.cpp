@@ -12,6 +12,7 @@
 #include "Devices/Input.h"
 #include "Util/Events.h"
 #include "Util/HWVersion.h"
+#include "Services/Modules.h"
 
 
 JigHWTest* JigHWTest::test = nullptr;
@@ -40,6 +41,7 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
 	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
+	tests.push_back({JigHWTest::ModulesCheck, "Modules", [](){}});
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){ esp_efuse_batch_write_cancel(); }});
 	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
 	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); } });
@@ -138,6 +140,141 @@ void JigHWTest::log(const char* property, int32_t value){
 
 void JigHWTest::log(const char* property, const std::string& value){
 	printf("%s:%s:%s\n", currentTest, property, value.c_str());
+}
+
+bool JigHWTest::ModulesCheck(){
+	ADC adc(ADC_UNIT_1);
+	Modules modules(*i2c, adc);
+
+	aw9523->pinMode(EXP_LED_MOTOR_L, AW9523::LED);
+	aw9523->pinMode(EXP_LED_MOTOR_R, AW9523::LED);
+	aw9523->dim(EXP_LED_MOTOR_L, 0);
+	aw9523->dim(EXP_LED_MOTOR_R, 0);
+
+
+	if(modules.getInserted(ModuleBus::Right) != ModuleType::TempHum){
+		test->log("right module", "not temperature/humidity");
+		return false;
+	}
+
+	if(modules.getInserted(ModuleBus::Left) != ModuleType::Gyro){
+		test->log("left module", "not gyro");
+		return false;
+	}
+
+	aw9523->dim(EXP_LED_MOTOR_L, 100);
+	aw9523->dim(EXP_LED_MOTOR_R, 100);
+
+
+	EventQueue evts(12);
+	Events::listen(Facility::Modules, &evts);
+
+	const auto out = [&evts](){
+		Events::unlisten(&evts);
+		aw9523->dim(EXP_LED_MOTOR_L, 0);
+		aw9523->dim(EXP_LED_MOTOR_R, 0);
+		vTaskDelay(500);
+	};
+
+	auto waitEvt = [&evts](){
+		Modules::Event mEvt{};
+		for(;;){
+			Event evt{};
+			if(!evts.get(evt, portMAX_DELAY)) continue;
+			mEvt = *((Modules::Event*) evt.data);
+			free(evt.data);
+			break;
+		}
+		return mEvt;
+	};
+
+	enum ModuleTestState {
+		Start, Removed, Reinserted
+	};
+	ModuleTestState left = Start, right = Start;
+
+	while(left != Reinserted || right != Reinserted){
+		auto evt = waitEvt();
+
+		if(evt.bus == ModuleBus::Left){
+			if(evt.module != ModuleType::Gyro){
+				test->log("left module", "not gyro");
+				out();
+				return false;
+			}
+
+			if(evt.action == Modules::Event::Remove){
+				switch(left){
+					case Start:
+						left = Removed;
+						aw9523->dim(EXP_LED_MOTOR_R, 0);
+						break;
+					case Removed:
+						test->log("left module", "double removal!");
+						out();
+						break;
+					case Reinserted:
+						continue;
+						break;
+				}
+			}else if(evt.action == Modules::Event::Insert){
+				switch(left){
+					case Start:
+						test->log("left module", "double insert!");
+						out();
+						break;
+					case Removed:
+						left = Reinserted;
+						aw9523->dim(EXP_LED_MOTOR_R, 100);
+						break;
+					case Reinserted:
+						continue;
+						break;
+				}
+			}
+		}else if(evt.bus == ModuleBus::Right){
+			if(evt.module != ModuleType::TempHum){
+				test->log("right module", "not temperature/humidity");
+				out();
+				return false;
+			}
+
+			if(evt.action == Modules::Event::Remove){
+				switch(right){
+					case Start:
+						right = Removed;
+						aw9523->dim(EXP_LED_MOTOR_L, 0);
+						break;
+					case Removed:
+						test->log("right module", "double removal!");
+						out();
+						break;
+					case Reinserted:
+						continue;
+						break;
+				}
+			}else if(evt.action == Modules::Event::Insert){
+				switch(right){
+					case Start:
+						test->log("right module", "double insert!");
+						out();
+						break;
+					case Removed:
+						right = Reinserted;
+						aw9523->dim(EXP_LED_MOTOR_L, 100);
+						break;
+					case Reinserted:
+						continue;
+						break;
+				}
+			}
+		}
+	}
+
+	Events::unlisten(&evts);
+	aw9523->dim(EXP_LED_MOTOR_L, 0);
+	aw9523->dim(EXP_LED_MOTOR_R, 0);
+	return true;
 }
 
 bool JigHWTest::BatteryCalib(){

@@ -39,6 +39,7 @@ private:
 	void log(const char* property, int32_t value);
 	void log(const char* property, const std::string& value);
 
+	static bool ModulesCheck();
 	static bool BatteryCalib();
 	static bool BatteryCheck();
 	static bool AW9523Check();
