@@ -50,7 +50,8 @@ private:
 
 	static void AudioVisualTest();
 
-	static constexpr int16_t ReferenceVoltage = 4810;
+	static const int16_t ReferenceVoltage = 3650; //USB power is 4V, after schottky diode: 3650mv
+
 	static int16_t voltOffset;
 
 	static constexpr uint32_t CheckTimeout = 500;
