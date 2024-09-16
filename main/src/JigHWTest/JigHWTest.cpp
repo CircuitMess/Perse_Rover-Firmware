@@ -554,9 +554,15 @@ bool JigHWTest::HWVersion(){
 	}
 
 	if(version != 0){
-		test->log("Existing HW version", (uint32_t)version);
-		return false;
+		test->log("Existing HW version", (uint32_t) version);
+		if(version == HWVersion::getHardcodedVersion()){
+			test->log("Already fused.", (uint32_t) version);
+			return true;
+		}else{
+			test->log("Wrong binary already fused!", (uint32_t) version);
+			return false;
+		}
 	}
 
-	return  HWVersion::write();
+	return HWVersion::write();
 }
