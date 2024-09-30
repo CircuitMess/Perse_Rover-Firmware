@@ -12,7 +12,7 @@ Timer::Timer(const char* name, uint32_t period, std::function<void()> ISR) : per
 	esp_timer_create_args_t args = {
 			.callback = interrupt,
 			.arg = this,
-			.dispatch_method = ESP_TIMER_ISR,
+			.dispatch_method = ESP_TIMER_TASK,
 			.name = timerName,
 			.skip_unhandled_events = true
 	};
