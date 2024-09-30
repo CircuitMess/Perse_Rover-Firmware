@@ -42,11 +42,11 @@ void MotorControl::end(){
 }
 
 void MotorControl::setRight(int8_t value){
-	sendMotorPWM(Right, -value);
+	sendMotorPWM(Right, value);
 }
 
 void MotorControl::setLeft(int8_t value){
-	sendMotorPWM(Left, value);
+	sendMotorPWM(Left, -value);
 }
 
 void MotorControl::setAll(int8_t value){
