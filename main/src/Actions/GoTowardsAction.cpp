@@ -29,6 +29,6 @@ void GoTowardsAction::loop(){
 		return;
 	}
 
-	const MotorDriveState motorDriveState{.DriveDirection = {0, 1.0f}};
+	const MotorDriveState motorDriveState{.DriveDirection = {0, 0.6f}};
 	controller->setLocally(motorDriveState);
 }

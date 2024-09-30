@@ -18,8 +18,8 @@ protected:
 	virtual bool readyToTransition() const override;
 
 private:
-	constexpr static uint64_t DurationAtFull = 3150;
-	constexpr static uint64_t DurationAtEmpty = 4500;
+	constexpr static uint64_t DurationAtFull = 2200;
+	constexpr static uint64_t DurationAtEmpty = 3000;
 	uint64_t startTime = 0;
 	uint8_t randomDirection;
 	class MotorDriveController* controller = nullptr;

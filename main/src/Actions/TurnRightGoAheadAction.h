@@ -18,9 +18,9 @@ protected:
 	virtual bool readyToTransition() const override;
 
 private:
-	constexpr static uint64_t TurnDurationAtFull = 1575;
-	constexpr static uint64_t TurnDurationAtEmpty = 2250;
-	static constexpr uint64_t ForwardDuration = 3500;
+	constexpr static uint64_t TurnDurationAtFull = 1100;
+	constexpr static uint64_t TurnDurationAtEmpty = 1500;
+	static constexpr uint64_t ForwardDuration = 1750;
 	class MotorDriveController* controller = nullptr;
 	uint64_t startTime = 0;
 };

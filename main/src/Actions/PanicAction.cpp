@@ -110,7 +110,7 @@ void PanicAction::loop(){
 	}else if(iteration == 3){
 		cameraController->setLocally({.Rotation = 50});
 	}else if(iteration >= 4 && iteration <= 6){
-		motorDriveController->setLocally({.DriveDirection = {.dir = 4, .speed = 1.0f}});
+		motorDriveController->setLocally({.DriveDirection = {.dir = 4, .speed = 0.4f}});
 	}else if(iteration == 7){
 		motorDriveController->setLocally({.DriveDirection = {.dir = 0, .speed = 0.0f}});
 

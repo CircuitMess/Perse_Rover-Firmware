@@ -9,7 +9,7 @@
 
 static const char* const TAG = "HeadlightsController";
 
-ArmController::ArmController() : DeviceController("ArmController"), posEase("ArmPos", 1, 10, [this](int32_t val){ positionServo->setValue(val); }), pinchEase("ArmPinch", 1, 10, [this](int32_t val){ pinchServo->setValue(val); }){
+ArmController::ArmController() : DeviceController("ArmController"), posEase("ArmPos", 1, 10, [this](int32_t val){ positionServo->setValue((uint8_t)(100 - (int)val)); }), pinchEase("ArmPinch", 1, 10, [this](int32_t val){ pinchServo->setValue(val); }){
 	positionServo = new Servo((gpio_num_t)SERVO_1_PWM, 0);
 	pinchServo = new Servo((gpio_num_t)SERVO_2_PWM, 0);
 
