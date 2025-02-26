@@ -29,6 +29,8 @@ public:
 
 	void disableScanning();
 
+	void flipCam(bool flip);
+
 protected:
 	virtual void sleepyLoop() override;
 
@@ -47,13 +49,15 @@ private:
 		enum Type {
 			None,
 			ScanningEnableChange,
-			FeedQualityChange
+			FeedQualityChange,
+			CamFlip
 		};
 
 		Type type = None;
 		union {
 			bool isScanningEnabled = false;
 			uint8_t feedQuality;
+			bool flip;
 		};
 	};
 	Queue<EventData> communicationQueue;
