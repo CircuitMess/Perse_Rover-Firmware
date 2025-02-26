@@ -21,6 +21,8 @@ private:
 	};
 	int readSensor(Sensor sensor);
 
+	void sendReadSignal() const;
+
 	static constexpr uint8_t Addr = 0x76;
 };
 
