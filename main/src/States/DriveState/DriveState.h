@@ -30,7 +30,7 @@ private:
 
 	Audio& audio;
 	static constexpr uint32_t CamFlipPause = 1000; //[ms] - pause from start of DriveState, to prevent camera flip from accidental button presses
-	uint32_t startMillis = 0;
+	uint32_t lastSetMillis = 0;
 	bool camFlip = false;
 };
 

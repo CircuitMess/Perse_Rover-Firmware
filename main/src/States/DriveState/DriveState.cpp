@@ -74,7 +74,7 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Au
 		led->breathe(LED::Rear);
 	}
 
-	startMillis = millis();
+	lastSetMillis = millis();
 	if(Settings* settings = (Settings*)Services.get(Service::Settings)){
 		camFlip = settings->get().cameraHorizontalFlip;
 	}
@@ -145,8 +145,9 @@ void DriveState::loop(){
 			}
 		}else if (event.facility == Facility::Input) {
 			const Input::Data* data = (Input::Data*)event.data;
-			if(data != nullptr && data->action == Input::Data::Press && millis() - startMillis >= CamFlipPause){
+			if(data != nullptr && data->action == Input::Data::Press && millis() - lastSetMillis >= CamFlipPause){
 				camFlip = !camFlip;
+				lastSetMillis = millis();
 
 				if(audio.getCurrentPlayingFile() != "/spiffs/General/CamFlip.aac"){
 					audio.play("/spiffs/General/CamFlip.aac");
