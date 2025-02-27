@@ -5,6 +5,7 @@
 #include "Services/LEDService.h"
 #include "Util/Services.h"
 #include "Audio.h"
+#include "Settings.h"
 
 const char* tag = "Feed";
 
@@ -49,6 +50,13 @@ void Feed::disableScanning(){
 	EventData data;
 	data.type = EventData::ScanningEnableChange;
 	data.isScanningEnabled = false;
+	communicationQueue.post(data, portMAX_DELAY);
+}
+
+void Feed::flipCam(bool flip){
+	EventData data;
+	data.type = EventData::CamFlip;
+	data.flip = flip;
 	communicationQueue.post(data, portMAX_DELAY);
 }
 
@@ -112,6 +120,9 @@ void IRAM_ATTR Feed::sendFrame(){
 					led->blink(LED::Camera, 0);
 				}
 			}
+		}else if(data.type == EventData::CamFlip){
+			camera->deinit();
+			camera->init(data.flip);
 		}
 	}
 
@@ -151,7 +162,13 @@ void IRAM_ATTR Feed::sendFrame(){
 
 		const bool wasCamOff = !camera->isInited();
 
-		const esp_err_t err = camera->init();
+		bool flip = false;
+		if(Settings* settings = (Settings*) Services.get(Service::Settings)){
+			flip = settings->get().cameraHorizontalFlip;
+		}
+
+
+		const esp_err_t err = camera->init(flip);
 		if(err != ESP_OK){
 			if(Comm* comm = (Comm*) Services.get(Service::Comm)){
 				comm->sendNoFeed(true);

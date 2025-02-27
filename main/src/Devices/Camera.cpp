@@ -15,7 +15,7 @@ Camera::~Camera(){
 	deinit();
 }
 
-esp_err_t Camera::init(){
+esp_err_t Camera::init(bool horizontalFlip){
 	if(resWait == res && formatWait == format && inited) return ESP_OK;
 
 	if(inited){
@@ -77,8 +77,8 @@ esp_err_t Camera::init(){
 		return ESP_ERR_CAMERA_NOT_DETECTED;
 	}
 
-	sensor->set_hmirror(sensor, 0);
-	sensor->set_vflip(sensor, 0);
+	sensor->set_hmirror(sensor, horizontalFlip);
+	sensor->set_vflip(sensor, horizontalFlip);
 
 	// sensor->set_saturation(sensor, 2);
 	// sensor->set_awb_gain(sensor, 1);

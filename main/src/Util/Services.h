@@ -18,7 +18,8 @@ enum class Service {
 	ArmController,
 	CameraController,
 	MotorDriveController,
-	LowBattery
+	LowBattery,
+	Settings
 };
 
 class ServiceLocator {

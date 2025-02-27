@@ -22,6 +22,9 @@
 #include "Services/Audio.h"
 #include "States/PairState.h"
 #include "Devices/Battery.h"
+#include "Devices/Input.h"
+#include "Util/stdafx.h"
+#include "Settings.h"
 
 const std::map<MarkerAction, std::function<std::unique_ptr<Action>(void)>> DriveState::actionMappings = {
 		{ MarkerAction::None,                 []() -> std::unique_ptr<Action>{ return std::make_unique<Action>(); }},
@@ -64,10 +67,16 @@ DriveState::DriveState() : State(), queue(10), activeAction(nullptr), audio(*(Au
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Feed, &queue);
 	Events::listen(Facility::Comm, &queue);
+	Events::listen(Facility::Input, &queue);
 
 	if (LEDService* led = (LEDService*)Services.get(Service::LED)) {
 		led->breathe(LED::StatusGreen);
 		led->breathe(LED::Rear);
+	}
+
+	lastSetMillis = millis();
+	if(Settings* settings = (Settings*)Services.get(Service::Settings)){
+		camFlip = settings->get().cameraHorizontalFlip;
 	}
 }
 
@@ -132,6 +141,27 @@ void DriveState::loop(){
 					}else if(!commEvent->armEnabled && audio.getCurrentPlayingFile() != "/spiffs/Systems/ArmOff.aac"){
 						audio.play("/spiffs/Systems/ArmOff.aac");
 					}
+				}
+			}
+		}else if (event.facility == Facility::Input) {
+			const Input::Data* data = (Input::Data*)event.data;
+			if(data != nullptr && data->action == Input::Data::Press && millis() - lastSetMillis >= CamFlipPause){
+				camFlip = !camFlip;
+				lastSetMillis = millis();
+
+				if(audio.getCurrentPlayingFile() != "/spiffs/General/CamFlip.aac"){
+					audio.play("/spiffs/General/CamFlip.aac");
+				}
+
+				if(auto feed = (Feed*)Services.get(Service::Feed)){
+					feed->flipCam(camFlip);
+				}
+
+				if(Settings* settings = (Settings*)Services.get(Service::Settings)){
+					auto setts = settings->get();
+					setts.cameraHorizontalFlip = camFlip;
+					settings->set(setts);
+					settings->store();
 				}
 			}
 		}

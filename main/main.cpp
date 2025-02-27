@@ -32,6 +32,7 @@
 #include "JigHWTest/JigHWTest.h"
 #include "Services/InactivityService.h"
 #include "Util/HWVersion.h"
+#include "Settings.h"
 
 [[noreturn]] void shutdown(){
 	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
@@ -56,6 +57,10 @@ void init(){
 			HWVersion::log();
 		}
 	}
+
+
+	auto settings = new Settings();
+	Services.set(Service::Settings, settings);
 
 	auto adc1 = new ADC(ADC_UNIT_1);
 
