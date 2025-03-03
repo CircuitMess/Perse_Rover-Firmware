@@ -103,15 +103,15 @@ esp_err_t WS2812B::rmt_new_led_strip_encoder(uint32_t resolution, rmt_encoder_ha
 	uint32_t reset_ticks = resolution / 1000000 * 50 / 2; // reset code duration defaults to 50us
 	rmt_bytes_encoder_config_t bytes_encoder_config = {
 			.bit0 = {
-					.duration0 = (uint16_t) (0.4 * resolution / 1000000), // T0H=0.4us
+					.duration0 = (uint16_t) (T0H * resolution / 1000000),
 					.level0 = 1,
-					.duration1 = (uint16_t) (0.85 * resolution / 1000000), // T0L=0.85us
+					.duration1 = (uint16_t) (T0L * resolution / 1000000),
 					.level1 = 0
 			},
 			.bit1 = {
-					.duration0 = (uint16_t) (0.8 * resolution / 1000000), // T1H=0.8us
+					.duration0 = (uint16_t) (T1H * resolution / 1000000),
 					.level0 = 1,
-					.duration1 = (uint16_t) (0.45 * resolution / 1000000), // T1L=0.45us
+					.duration1 = (uint16_t) (T1L * resolution / 1000000),
 					.level1 = 0
 			},
 			.flags = { .msb_first = 1 } // WS2812 transfer bit order: G7...G0R7...R0B7...B0

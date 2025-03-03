@@ -48,6 +48,11 @@ private:
 	rmt_encode_led_strip(rmt_encoder_t* encoder, rmt_channel_handle_t channel, const void* primary_data, size_t data_size, rmt_encode_state_t* ret_state);
 	static esp_err_t rmt_del_led_strip_encoder(rmt_encoder_t* encoder);
 	static esp_err_t rmt_led_strip_encoder_reset(rmt_encoder_t* encoder);
+
+	static constexpr float T0H = 0.3; //[us], 400 ± 150
+	static constexpr float T0L = 0.75; //[us], 850 ± 150
+	static constexpr float T1H = 0.7; //[us], 800 ± 150
+	static constexpr float T1L = 0.35; //[us], 450 ± 150
 };
 
 
