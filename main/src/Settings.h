@@ -4,7 +4,7 @@
 #include <nvs.h>
 
 struct SettingsStruct {
-	bool cameraHorizontalFlip = false;
+	bool cameraHorizontalFlip = true;
 };
 
 class Settings {
