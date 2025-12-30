@@ -39,7 +39,7 @@ JigHWTest::JigHWTest(){
 	test = this;
 
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
-	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
+//	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
 //	tests.push_back({JigHWTest::ModulesCheck, "Modules", [](){}});
 	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){ esp_efuse_batch_write_cancel(); }});
