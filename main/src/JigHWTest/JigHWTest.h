@@ -51,6 +51,7 @@ private:
 	static void AudioVisualTest();
 
 	static const int16_t ReferenceVoltage = 3650; //USB power is 4V, after schottky diode: 3650mv
+	static constexpr int32_t RefVoltageTolerance = 500; // allowed +/- deviation from ReferenceVoltage
 
 	static int16_t voltOffset;
 

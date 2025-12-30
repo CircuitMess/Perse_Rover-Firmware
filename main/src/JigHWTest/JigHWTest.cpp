@@ -322,7 +322,7 @@ bool JigHWTest::BatteryCalib(){
 	test->log("mapped", mapped);
 	test->log("offset", (int32_t) offset);
 
-	if(abs(offset) >= 1000){
+	if(abs(offset) >= RefVoltageTolerance){
 		test->log("offset too big, read voltage: ", (uint32_t) mapped);
 		return false;
 	}
