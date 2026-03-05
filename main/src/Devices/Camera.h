@@ -28,12 +28,17 @@ private:
 	pixformat_t formatWait = PIXFORMAT_JPEG;
 
 	camera_fb_t* frame = nullptr;
+	uint8_t* buffJPG = nullptr;
+	size_t sizeJPG = 0;
+	camera_fb_t frameJPG = {};
 
 	framesize_t res = FRAMESIZE_INVALID;
 	pixformat_t format = PIXFORMAT_RGB444;
 
 	static constexpr int MaxFailedFrames = 100;
 	int failedFrames = 0;
+
+	bool ManualJPGEncoding = false;
 
 	I2C& i2c;
 };

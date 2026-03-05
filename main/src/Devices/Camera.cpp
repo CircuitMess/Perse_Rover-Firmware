@@ -77,6 +77,26 @@ esp_err_t Camera::init(bool horizontalFlip){
 		return ESP_ERR_CAMERA_NOT_DETECTED;
 	}
 
+	if(sensor->id.PID == OV3660_PID){
+		esp_camera_deinit();
+
+		if(format == PIXFORMAT_JPEG){
+			config.pixel_format = PIXFORMAT_RGB565;
+			ManualJPGEncoding = true;
+		}
+
+		err = esp_camera_init(&config);
+		if(err == ESP_ERR_NOT_FOUND){
+			return err;
+		} else if(err != ESP_OK){
+			printf("Camera init failed with error 0x%x: %s\n", err, esp_err_to_name(err));
+			return err;
+		}
+
+		sensor = esp_camera_sensor_get();
+	}
+
+
 	sensor->set_hmirror(sensor, horizontalFlip);
 	sensor->set_vflip(sensor, horizontalFlip);
 
@@ -142,6 +162,17 @@ camera_fb_t* Camera::getFrame(){
 		failedFrames = 0;
 	}
 
+	if(format == PIXFORMAT_JPEG && ManualJPGEncoding){
+		frame2jpg(frame, 12, &buffJPG, &sizeJPG);
+		frameJPG.height = frame->height;
+		frameJPG.width = frame->width;
+		frameJPG.buf = buffJPG;
+		frameJPG.format = PIXFORMAT_JPEG;
+		frameJPG.len = sizeJPG;
+
+		return frame;
+	}
+
 	return frame;
 }
 
@@ -151,6 +182,13 @@ void Camera::releaseFrame(){
 
 	esp_camera_fb_return(frame);
 	frame = nullptr;
+
+	if(format == PIXFORMAT_JPEG && ManualJPGEncoding){
+		free(buffJPG);
+		buffJPG = nullptr;
+		sizeJPG = 0;
+		frameJPG = {};
+	}
 }
 
 bool Camera::isInited(){
