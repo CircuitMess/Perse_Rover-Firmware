@@ -68,7 +68,11 @@ bool EventQueue::post(Facility facility, void* data){
 			.killPill = false
 	};
 
-	return xQueueSend(queue, &event, 0) == pdTRUE;
+	if(xQueueSend(queue, &event, 0) != pdTRUE){
+		free(data);
+		return false;
+	}
+	return true;
 }
 
 void EventQueue::reset(){

@@ -11,8 +11,7 @@ const char* tag = "Feed";
 
 Feed::Feed(I2C& i2c) : SleepyThreaded(50, "Feed", 4 * 1024), queue(10),
 					   frameSendingThread(50, [this](){ this->sendFrame(); }, "FrameSending", 12 * 1024),
-					   communicationQueue(10), txBuf(static_cast<uint8_t*>(malloc(TxBufSize))){
-	memset(txBuf, 0, TxBufSize);
+					   communicationQueue(10), txBuf(TxBufSize, 0){
 
 	Events::listen(Facility::TCP, &queue);
 	Events::listen(Facility::Comm, &queue);
@@ -42,8 +41,6 @@ Feed::~Feed(){
 	}
 
 	Events::unlisten(&queue);
-
-	free(txBuf);
 }
 
 void Feed::disableScanning(){
@@ -243,7 +240,7 @@ void IRAM_ATTR Feed::sendFrame(){
 
 	size_t cursor = 0;
 	auto addData = [&cursor, this](const void* data, size_t size){
-		memcpy(txBuf + cursor, data, size);
+		memcpy(txBuf.data() + cursor, data, size);
 		cursor += size;
 	};
 
@@ -254,14 +251,14 @@ void IRAM_ATTR Feed::sendFrame(){
 	addData(FrameHeader, sizeof(FrameHeader));
 	addData(&frameSize, sizeof(size_t));
 	addData(shiftedFrame, sizeof(size_t));
-	driveInfo.toData(txBuf + cursor);
+	driveInfo.toData(txBuf.data() + cursor);
 	cursor += frameSize;
 	addData(FrameTrailer, sizeof(FrameTrailer));
 
 	size_t sent = 0;
 	while(sent < sendSize){
 		const size_t sending = std::min((size_t) CONFIG_TCP_MSS, sendSize - sent);
-		udp.write(txBuf + sent, sending);
+		udp.write(txBuf.data() + sent, sending);
 		sent += sending;
 	}
 

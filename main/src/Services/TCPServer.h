@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <mutex>
 
 class TCPServer {
 public:
@@ -27,6 +28,7 @@ private:
 	int sock = -1;
 
 	int client = -1;
+	std::mutex fdMut;
 
 };
 
