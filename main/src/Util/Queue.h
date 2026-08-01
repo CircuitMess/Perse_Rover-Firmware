@@ -61,6 +61,10 @@ public:
 	}
 
 	void reset(){
+		T* ptr;
+		while(xQueueReceive(queue, &ptr, 0) == pdTRUE){
+			delete ptr;
+		}
 		xQueueReset(queue);
 	}
 

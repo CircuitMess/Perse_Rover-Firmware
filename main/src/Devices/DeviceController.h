@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 #include <atomic>
+#include <mutex>
 #include "Util/Events.h"
 #include "Util/Threaded.h"
 #include "Services/TCPServer.h"
@@ -33,6 +34,7 @@ public:
 		if(control == Local && value == Remote){
 			T state = getDefaultState();
 
+			std::lock_guard lock(queuedMut);
 			if(queuedState.has_value()){
 				state = queuedState.value();
 				queuedState.reset();
@@ -76,6 +78,7 @@ protected:
 
 	inline void setRemotely(const T& state){
 		if(control == Local){
+			std::lock_guard lock(queuedMut);
 			queuedState = state;
 			return;
 		}
@@ -90,6 +93,7 @@ private:
 	std::atomic<DeviceControlType> control;
 	std::atomic<T> currentState = {};
 	std::optional<T> queuedState;
+	std::mutex queuedMut;
 	EventQueue eventQueue;
 	ThreadedClosure dcListenThread;
 

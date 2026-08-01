@@ -4,6 +4,7 @@
 #include <DriveInfo.h>
 #include <atomic>
 #include <memory>
+#include <vector>
 #include <glm.hpp>
 #include "Util/Threaded.h"
 #include "UDPEmitter.h"
@@ -64,7 +65,7 @@ private:
 
 	static constexpr glm::vec<2, uint8_t> QualityLimits = { 0, 30};
 	static constexpr size_t TxBufSize = 10000;
-	uint8_t* txBuf;
+	std::vector<uint8_t> txBuf;
 
 	uint8_t frameFilterCounter = 0;
 	static constexpr uint8_t FrameFilterCount = 4; //scanned marker always persists for at least 4 frames, to smoothen recognition

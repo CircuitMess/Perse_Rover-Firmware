@@ -2,6 +2,7 @@
 #include "Util/Events.h"
 #include <lwip/sockets.h>
 #include <esp_log.h>
+#include <mutex>
 
 static const char* TAG = "TCPServer";
 
@@ -36,6 +37,8 @@ bool TCPServer::isConnected() const{
 }
 
 bool TCPServer::accept(){
+	std::lock_guard lock(fdMut);
+
 	if(sock == -1){
 		ESP_LOGE(TAG, "Accept, but sock isn't set up");
 		return false;
@@ -74,11 +77,14 @@ bool TCPServer::accept(){
 }
 
 void TCPServer::disconnect(){
+	std::lock_guard lock(fdMut);
+
 	if(client == -1){
 		ESP_LOGW(TAG, "Disconnect, but client isn't connected");
 		return;
 	}
 
+	shutdown(client, SHUT_RDWR);
 	close(client);
 	client = -1;
 
@@ -87,11 +93,14 @@ void TCPServer::disconnect(){
 }
 
 bool TCPServer::read(uint8_t* buf, size_t count){
+	std::lock_guard lock(fdMut);
+
 	if(client == -1){
 		ESP_LOGW(TAG, "Read, but client isn't connected");
 		return false;
 	}
 
+	if(buf == nullptr) return false;
 	if(count == 0) return true;
 
 	size_t total = 0;
@@ -99,14 +108,22 @@ bool TCPServer::read(uint8_t* buf, size_t count){
 		int now = ::read(client, buf + total, count - total);
 
 		if(now == 0){
-			disconnect();
+			shutdown(client, SHUT_RDWR);
+			close(client);
+			client = -1;
+			Event event{ Event::Status::Disconnected };
+			Events::post(Facility::TCP, event);
 			return false;
 		}else if(now < 0){
 			if(errno == EAGAIN || errno == EWOULDBLOCK){
 				vTaskDelay(1);
 				continue;
 			}else{
-				disconnect();
+				shutdown(client, SHUT_RDWR);
+				close(client);
+				client = -1;
+				Event event{ Event::Status::Disconnected };
+				Events::post(Facility::TCP, event);
 				return false;
 			}
 		}
@@ -118,11 +135,14 @@ bool TCPServer::read(uint8_t* buf, size_t count){
 }
 
 bool TCPServer::write(uint8_t* data, size_t count){
+	std::lock_guard lock(fdMut);
+
 	if(client == -1){
 		ESP_LOGW(TAG, "Write, but client isn't connected");
 		return false;
 	}
 
+	if(data == nullptr) return false;
 	if(count == 0) return true;
 
 	size_t total = 0;
@@ -130,14 +150,22 @@ bool TCPServer::write(uint8_t* data, size_t count){
 		int now = ::write(client, data + total, count - total);
 
 		if(now == 0){
-			disconnect();
+			shutdown(client, SHUT_RDWR);
+			close(client);
+			client = -1;
+			Event event{ Event::Status::Disconnected };
+			Events::post(Facility::TCP, event);
 			return false;
 		}else if(now < 0){
 			if(errno == EAGAIN || errno == EWOULDBLOCK){
 				vTaskDelay(1);
 				continue;
 			}else{
-				disconnect();
+				shutdown(client, SHUT_RDWR);
+				close(client);
+				client = -1;
+				Event event{ Event::Status::Disconnected };
+				Events::post(Facility::TCP, event);
 				return false;
 			}
 		}

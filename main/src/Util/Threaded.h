@@ -2,6 +2,7 @@
 #define BIT_FIRMWARE_THREADED_H
 
 #include <cstddef>
+#include <atomic>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/semphr.h>
@@ -74,7 +75,7 @@ private:
 	TickType_t lastLoop = 0;
 
 	SemaphoreHandle_t pauseSem;
-	bool paused = false;
+	std::atomic<bool> paused{false};
 
 	void loop() final;
 

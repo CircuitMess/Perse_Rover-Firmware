@@ -92,15 +92,15 @@ SleepyThreaded::~SleepyThreaded(){
 }
 
 void SleepyThreaded::pause(){
-	if(paused) return;
+	if(paused.load(std::memory_order_acquire)) return;
 	xSemaphoreGive(pauseSem);
-	while(!paused){
+	while(!paused.load(std::memory_order_acquire)){
 		vTaskDelay(1);
 	}
 }
 
 void SleepyThreaded::resume(){
-	paused = false;
+	paused.store(false, std::memory_order_release);
 	start();
 }
 
@@ -112,7 +112,7 @@ void SleepyThreaded::loop(){
 	if(millis() - lastLoop < SleepTime){
 		if(xSemaphoreTake(pauseSem, millis() - lastLoop + 1) == pdTRUE){
 			stop(0);
-			paused = true;
+			paused.store(true, std::memory_order_release);
 			return;
 		}
 		return;
