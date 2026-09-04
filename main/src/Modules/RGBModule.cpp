@@ -1,7 +1,7 @@
 #include "RGBModule.h"
 #include "Util/stdafx.h"
 
-RGBModule::RGBModule(ModuleBus bus) : SleepyThreaded(500, "RGBModule", 2 * 1024), rgb(3, bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1){
+RGBModule::RGBModule(ModuleBus bus) : SleepyThreaded(500, "RGBModule", 2 * 1024), rgb(3, (gpio_num_t) MODULE_CTRL_1){
 	start();
 	srand(millis());
 }

@@ -25,7 +25,6 @@ private:
 	Audio* audio;
 
 	void startPair();
-	void stopPair();
 
 	void unblock() override;
 

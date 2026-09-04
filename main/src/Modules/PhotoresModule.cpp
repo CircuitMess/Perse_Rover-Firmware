@@ -2,7 +2,7 @@
 #include "Util/Services.h"
 
 PhotoresModule::PhotoresModule(ModuleBus bus, ADC& adc) : SleepyThreaded(Modules::ModuleSendInterval, "Photores", 2 * 1024),
-														  gpio(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1),
+														  gpio((gpio_num_t) MODULE_CTRL_1),
 														  comm(*((Comm*) Services.get(Service::Comm))),
 														  bus(bus), adc(adc, gpio){
 	adc_unit_t unit;

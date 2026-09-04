@@ -22,6 +22,9 @@ enum class LED : uint8_t {
 	StatusGreen,
 	StatusYellow,
 	StatusRed,
+	Deco1,
+	Deco2,
+	Deco3,
 	COUNT
 };
 

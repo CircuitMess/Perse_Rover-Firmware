@@ -4,24 +4,36 @@
 #include <Pins.hpp>
 #include <driver/gpio.h>
 
-// button index -> AW9523 IO port
+// button index -> GPIO
 const std::unordered_map<Input::Button, uint8_t> Input::PinMap{
-		{ Pair, EXP_BTN_PAIR }
+		{ Power, PIN_BTN }
 };
 
 const std::unordered_map<Input::Button, const char*> Input::PinLabels{
-		{ Pair, "Pair" }
+		{ Power, "Power" }
 };
 
-Input::Input(AW9523& aw9523) : Threaded("Input", 2048, 6), aw9523(aw9523){
+Input::Input() : Threaded("Input", 2048, 6){
 	for(const auto& pair : PinMap){
 		const auto port = pair.first;
 		const auto pin = pair.second;
 
-		btnState[port] = false;
-		dbTime[port] = 0;
+		const gpio_config_t cfg = {
+				.pin_bit_mask = 1ULL << pin,
+				.mode = GPIO_MODE_INPUT,
+				.pull_up_en = GPIO_PULLUP_DISABLE,
+				.pull_down_en = GPIO_PULLDOWN_DISABLE, // R64 pulls the divider down on the board
+				.intr_type = GPIO_INTR_DISABLE
+		};
+		gpio_config(&cfg);
 
-		aw9523.pinMode(pin, AW9523::IN);
+		/* The rover is turned on by holding the power button, so it is usually still down when we get
+		 * here. Adopt that as the starting state and mark the hold as already handled, otherwise the
+		 * press that powered the rover on would immediately be read as a request to power it off. */
+		btnState[port] = gpio_get_level((gpio_num_t) pin);
+		dbTime[port] = 0;
+		pressTime[port] = millis();
+		holdSent[port] = btnState[port];
 	}
 
 	start();
@@ -46,13 +58,26 @@ void Input::scan(){
 		const auto port = pair.first;
 		const auto pin = pair.second;
 
-		bool state = aw9523.read(pin);
+		// The divider pulls PIN_BTN high while the button is pressed.
+		const bool state = gpio_get_level((gpio_num_t) pin);
 
 		if(state){
-			released(port);
-		}else{
 			pressed(port);
+		}else{
+			released(port);
 		}
+
+		if(!btnState[port] || holdSent[port]) continue;
+
+		if(millis() - pressTime[port] < HoldTime) continue;
+
+		holdSent[port] = true;
+
+		Data data = {
+				.btn = port,
+				.action = Data::Hold
+		};
+		Events::post(Facility::Input, data);
 	}
 }
 
@@ -73,6 +98,8 @@ void Input::pressed(Input::Button btn){
 
 	btnState[btn] = true;
 	dbTime[btn] = 0;
+	pressTime[btn] = t;
+	holdSent[btn] = false;
 
 	Data data = {
 			.btn = btn,
@@ -98,6 +125,7 @@ void Input::released(Input::Button btn){
 
 	btnState[btn] = false;
 	dbTime[btn] = 0;
+	holdSent[btn] = false;
 
 	Data data = {
 			.btn = btn,

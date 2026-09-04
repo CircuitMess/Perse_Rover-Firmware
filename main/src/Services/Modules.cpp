@@ -57,9 +57,9 @@ const std::unordered_map<ModuleType, Modules::ModuleAudio> Modules::AudioFilesMa
 		{ ModuleType::CO2,      { "/spiffs/Modules/AirOn.aac",       "/spiffs/Modules/AirOff.aac" }}
 };
 
-Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1),
-									   i2c(i2c), comm(*((Comm*) Services.get(Service::Comm))), adc(adc),
-									   audio(((Audio*) Services.get(Service::Audio))), tca(i2c),
+Modules::Modules(TCA9555& tca, I2C& i2cUmax, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 4 * 1024, 5, 1),
+									   i2cUmax(i2cUmax), comm(*((Comm*) Services.get(Service::Comm))), adc(adc),
+									   audio(((Audio*) Services.get(Service::Audio))), tca(tca),
 									   connectionThread([this](){ connectionLoop(); }, "ModulesConnection", 3 * 1024, 5, 1),
 									   connectionQueue(10){
 	Modules::sleepyLoop();
@@ -73,14 +73,9 @@ Modules::Modules(I2C& i2c, ADC& adc) : SleepyThreaded(CheckInterval, "Modules", 
 Modules::~Modules(){
 	stop();
 
-	if(ModuleConstrDestr.contains(leftContext.current)){
-		ModuleConstrDestr.at(leftContext.current).second(leftContext.moduleInstance);
-		leftContext.moduleInstance = nullptr;
-	}
-
-	if(ModuleConstrDestr.contains(rightContext.current)){
-		ModuleConstrDestr.at(rightContext.current).second(rightContext.moduleInstance);
-		rightContext.moduleInstance = nullptr;
+	if(ModuleConstrDestr.contains(context.current)){
+		ModuleConstrDestr.at(context.current).second(context.moduleInstance);
+		context.moduleInstance = nullptr;
 	}
 
 	connectionThread.stop(0);
@@ -94,7 +89,9 @@ Modules::~Modules(){
 }
 
 ModuleType Modules::getInserted(ModuleBus bus){
-	const auto& context = getContext(bus);
+	if(bus != Bus){
+		return ModuleType::Unknown;
+	}
 
 	if(!context.inserted){
 		return ModuleType::Unknown;
@@ -104,21 +101,18 @@ ModuleType Modules::getInserted(ModuleBus bus){
 }
 
 void Modules::sleepyLoop(){
-	loopCheck(ModuleBus::Left);
-	loopCheck(ModuleBus::Right);
+	loopCheck();
 }
 
-bool Modules::checkInserted(ModuleBus bus){
+bool Modules::checkInserted(){
 	const auto scan = tca.readAll();
 
-	const auto& context = getContext(bus);
 	const bool det1 = scan & (1 << context.DetPins[0]);
 	const bool det2 = scan & (1 << context.DetPins[1]);
 	return det1 == 0 && det2 == 1;
 }
 
-ModuleType Modules::checkAddr(ModuleBus bus){
-	const auto& context = getContext(bus);
+ModuleType Modules::checkAddr(){
 	const auto scan = tca.readAll();
 
 	uint8_t addr = 0;
@@ -129,8 +123,6 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 		}
 	}
 
-	const auto& oppositeContext = getContext(bus == ModuleBus::Left ? ModuleBus::Right : ModuleBus::Left);
-
 	if(addr != I2CModuleAddress){
 		if(!AddressMap.contains(addr)){
 			return ModuleType::Unknown;
@@ -139,9 +131,7 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 	}
 
 	for(auto& pair: I2CAddressMap){
-		if(oppositeContext.current == pair.second) continue;
-
-		if(i2c.probe(pair.first) == ESP_OK){
+		if(i2cUmax.probe(pair.first) == ESP_OK){
 			return pair.second;
 		}
 	}
@@ -149,17 +139,8 @@ ModuleType Modules::checkAddr(ModuleBus bus){
 	return ModuleType::Unknown;
 }
 
-Modules::BusContext& Modules::getContext(ModuleBus bus){
-	if(bus == ModuleBus::Left){
-		return leftContext;
-	}else{
-		return rightContext;
-	}
-}
-
-void Modules::loopCheck(ModuleBus bus){
-	const bool nowInserted = checkInserted(bus);
-	auto& context = getContext(bus);
+void Modules::loopCheck(){
+	const bool nowInserted = checkInserted();
 
 	if(context.inserted && !nowInserted){
 		context.inserted = false;
@@ -170,9 +151,9 @@ void Modules::loopCheck(ModuleBus bus){
 			audio->play(AudioFilesMap.at(removed).removedPath); //TODO - maybe set priority=true
 		}
 
-		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = bus, .module = removed });
+		Events::post(Facility::Modules, Event{ .action = Event::Remove, .bus = Bus, .module = removed });
 		if(modulesEnabled){
-			comm.sendModulePlug(removed, bus, context.inserted);
+			comm.sendModulePlug(removed, Bus, context.inserted);
 		}
 
 		if(ModuleConstrDestr.contains(removed)){
@@ -181,7 +162,7 @@ void Modules::loopCheck(ModuleBus bus){
 		context.moduleInstance = nullptr;
 
 	}else if(!context.inserted && nowInserted){
-		const ModuleType addr = checkAddr(bus);
+		const ModuleType addr = checkAddr();
 
 		context.current = addr;
 		context.inserted = true;
@@ -190,13 +171,13 @@ void Modules::loopCheck(ModuleBus bus){
 			audio->play(AudioFilesMap.at(context.current).insertedPath); //TODO - maybe set priority=true
 		}
 
-		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = bus, .module = context.current });
+		Events::post(Facility::Modules, Event{ .action = Event::Insert, .bus = Bus, .module = context.current });
 		if(modulesEnabled){
-			comm.sendModulePlug(context.current, bus, context.inserted);
+			comm.sendModulePlug(context.current, Bus, context.inserted);
 		}
 
 		if(ModuleConstrDestr.contains(context.current)){
-			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2c, bus, adc);
+			context.moduleInstance = ModuleConstrDestr.at(context.current).first(i2cUmax, Bus, adc);
 		}
 	}
 }
@@ -219,14 +200,9 @@ void Modules::connectionLoop(){
 
 		if(!modulesEnabled) return;
 
-		if(!leftContext.inserted && !rightContext.inserted) return;
+		if(!context.inserted) return;
 
-		if(leftContext.inserted){
-			comm.sendModulePlug(leftContext.current, ModuleBus::Left, leftContext.inserted);
-		}
-		if(rightContext.inserted){
-			comm.sendModulePlug(rightContext.current, ModuleBus::Right, rightContext.inserted);
-		}
+		comm.sendModulePlug(context.current, Bus, context.inserted);
 	}
 
 	free(e.data);

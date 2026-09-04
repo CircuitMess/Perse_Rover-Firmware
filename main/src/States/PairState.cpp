@@ -13,18 +13,15 @@ PairState::PairState() : State(), queue(10), audio((Audio*) Services.get(Service
 		led->on(LED::StatusYellow);
 	}
 
-	if(auto input = (Input*) Services.get(Service::Input)){
-		if(input->getState(Input::Pair)){
-			startPair();
-		}
-	}
-
 	if(WiFiAP* wifi = (WiFiAP*) Services.get(Service::WiFi)){
 		wifi->setHidden(true);
 		wifi->generateNewSSID();
 	}
 	auto* audio = (Audio*) Services.get(Service::Audio);
 	audio->setEnabled(true);
+
+	// This board has no pairing button, so pairing runs for as long as we're in this state.
+	startPair();
 }
 
 PairState::~PairState() {
@@ -46,15 +43,7 @@ void PairState::loop() {
 		return;
 	}
 
-	if (event.facility == Facility::Input) {
-		const Input::Data* data = (Input::Data*)event.data;
-		if(data != nullptr && data->action == Input::Data::Press){
-			startPair();
-		}else{
-			stopPair();
-		}
-	}
-	else if (event.facility == Facility::Pair) {
+	if (event.facility == Facility::Pair) {
 		const PairService::Event* pairEvent = (PairService::Event*)event.data;
 		if (pairEvent != nullptr && pairEvent->success) {
 			audio->play("/spiffs/General/PairSuccess.aac", true);
@@ -80,23 +69,10 @@ void PairState::startPair(){
 		led->blink(LED::StatusYellow, 0);
 	}
 
+	/* Queued rather than played with priority: pairing now starts on its own, so this would
+	 * otherwise cut off the power-on sound on every boot (and the signal-lost sound on a drop). */
 	if(audio->getCurrentPlayingFile() != "/spiffs/General/PairStart.aac"){
-		audio->play("/spiffs/General/PairStart.aac", true);
-	}
-}
-
-void PairState::stopPair(){
-	if(!pairService) return;
-
-	pairService.reset();
-
-	if(WiFiAP* wifi = (WiFiAP*) Services.get(Service::WiFi)){
-		wifi->setHidden(true);
-		wifi->generateNewSSID();
-	}
-
-	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-		led->on(LED::StatusYellow);
+		audio->play("/spiffs/General/PairStart.aac", false);
 	}
 }
 

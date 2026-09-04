@@ -8,6 +8,7 @@
 #include <esp_spiffs.h>
 #include "Periph/I2C.h"
 #include "Devices/AW9523.h"
+#include "Devices/TCA9555.h"
 #include "Services/Audio.h"
 #include <Pins.hpp>
 
@@ -25,6 +26,7 @@ public:
 
 private:
 	static I2C* i2c;
+	static I2C* i2cUmax;
 	static AW9523* aw9523;
 	static Audio* audio;
 	static JigHWTest* test;
@@ -40,9 +42,8 @@ private:
 	void log(const char* property, const std::string& value);
 
 	static bool ModulesCheck();
-	static bool BatteryCalib();
-	static bool BatteryCheck();
 	static bool AW9523Check();
+	static bool TCA9555Check();
 	static bool SPIFFSTest();
 	static bool CameraCheck();
 	static bool HWVersion();
@@ -50,17 +51,10 @@ private:
 
 	static void AudioVisualTest();
 
-	static const int16_t ReferenceVoltage = 3650; //USB power is 4V, after schottky diode: 3650mv
-	static constexpr int32_t RefVoltageTolerance = 500; // allowed +/- deviation from ReferenceVoltage
-
-	static int16_t voltOffset;
-
 	static constexpr uint32_t CheckTimeout = 500;
 
-	static constexpr esp_efuse_desc_t adc1_low = { EFUSE_BLK3, 0, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_low[] = { &adc1_low, nullptr };
-	static constexpr esp_efuse_desc_t adc1_high = { EFUSE_BLK3, 8, 8 };
-	static constexpr const esp_efuse_desc_t* efuse_adc1_high[] = { &adc1_high, nullptr };
+	static constexpr uint8_t AW9523Addr = 0x5b;
+	static constexpr uint8_t TCA9555Addr = 0x20;
 
 	static constexpr esp_vfs_spiffs_conf_t spiffsConfig = {
 			.base_path = "/spiffs",
@@ -68,8 +62,6 @@ private:
 			.max_files = 8,
 			.format_if_mount_failed = false
 	};
-
-	static adc_oneshot_unit_handle_t hndl;
 };
 
 #endif //CLOCKSTAR_FIRMWARE_JIGHWTEST_H

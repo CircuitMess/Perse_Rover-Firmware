@@ -37,7 +37,10 @@ protected:
 private:
 	UDPEmitter udp;
 	EventQueue queue;
-	std::atomic<uint8_t> feedQuality = 0; // [0 - 10], if 0, camera feed doesn't get sent
+	// TEMP frame-time test: non-zero starts the camera at boot without a controller connected.
+	// Set back to 0 (or remove the define) before shipping.
+#define FEED_FRAMETIME_TEST_QUALITY 10
+	std::atomic<uint8_t> feedQuality = FEED_FRAMETIME_TEST_QUALITY; // [0 - 10], if 0, camera feed doesn't get sent
 	std::atomic<bool> isScanningEnabled = false;
 	SleepyThreadedClosure frameSendingThread;
 	std::unique_ptr<Camera> camera;

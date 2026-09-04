@@ -2,7 +2,7 @@
 #include "Util/Services.h"
 
 CO2Sensor::CO2Sensor(ModuleBus bus, ADC& adc) : SleepyThreaded(Modules::ModuleSendInterval, "CO2", 2 * 1024),
-												gpio(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1),
+												gpio((gpio_num_t) MODULE_CTRL_1),
 												adc(adc, gpio), bus(bus), comm(*((Comm*) Services.get(Service::Comm))),
 												audio(*((Audio*) Services.get(Service::Audio))){
 	adc_unit_t unit;

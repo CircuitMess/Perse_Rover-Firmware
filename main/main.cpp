@@ -3,7 +3,6 @@
 #include <nvs_flash.h>
 #include <driver/gpio.h>
 #include <esp_log.h>
-#include <esp_sleep.h>
 #include "Util/Services.h"
 #include "Util/stdafx.h"
 #include "Pins.hpp"
@@ -18,6 +17,7 @@
 #include "Devices/ArmController.h"
 #include "Devices/CameraController.h"
 #include "Devices/Battery.h"
+#include "Devices/Power.h"
 #include "Devices/TCA9555.h"
 #include "Services/TCPServer.h"
 #include "Services/Comm.h"
@@ -29,21 +29,72 @@
 #include "Services/Modules.h"
 #include "States/DemoState.h"
 #include "Services/BatteryLowService.h"
+#include "Services/PowerButtonService.h"
 #include "JigHWTest/JigHWTest.h"
 #include "Services/InactivityService.h"
 #include "Util/HWVersion.h"
 #include "Settings.h"
 
 [[noreturn]] void shutdown(){
-	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_AUTO));
-	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_RC_FAST, ESP_PD_OPTION_AUTO));
-	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_CPU, ESP_PD_OPTION_AUTO));
-	ESP_ERROR_CHECK(esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL, ESP_PD_OPTION_AUTO));
-	ESP_ERROR_CHECK(esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL));
-	esp_deep_sleep_start();
+	Power::off();
+}
+
+/**
+ * Brings the rover down in an orderly fashion: stop driving, kill the link, turn the lights off,
+ * then release the power latch. Shared by the low battery watchdog, the inactivity timeout and the
+ * power button.
+ */
+[[noreturn]] void gracefulShutdown(const char* audioFile){
+	if(TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
+		tcp->disconnect();
+	}
+
+	if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
+		Services.set(Service::StateMachine, nullptr);
+		delete stateMachine;
+	}
+
+	if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
+		motors->setControl(Local);
+		motors->setLocally({});
+	}
+
+	if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
+		Services.set(Service::LowBattery, nullptr);
+		delete lowBatteryService;
+	}
+
+	if(LEDService* led = (LEDService*) Services.get(Service::LED)){
+		for(int i = 0; i < (uint8_t) LED::COUNT; i++){
+			led->off((LED) i);
+		}
+	}
+
+	if(Audio* audio = (Audio*) Services.get(Service::Audio)){
+		Services.set(Service::Audio, nullptr);
+		if(audioFile != nullptr){
+			audio->play(audioFile, true);
+			delayMillis(3000);
+		}
+		delete audio;
+	}
+
+	shutdown();
 }
 
 void init(){
+
+	esp_log_level_set("*", ESP_LOG_WARN);
+	esp_log_level_set("camera", ESP_LOG_INFO);
+	esp_log_level_set("gc2145", ESP_LOG_INFO);
+	esp_log_level_set("Camera", ESP_LOG_INFO);
+
+
+
+	/* The board only stays powered while the latch is driven, so this has to happen before anything
+	 * that can take time. The bootloader hook already asserted it - this claims the pin properly. */
+	Power::hold();
+
 	if(JigHWTest::checkJig()){
 		printf("Jig\n");
 		auto test = new JigHWTest();
@@ -65,21 +116,22 @@ void init(){
 	auto adc1 = new ADC(ADC_UNIT_1);
 
 	auto i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
+	auto i2cUmax = new I2C(I2C_NUM_1, (gpio_num_t) I2C_UMAX_SDA, (gpio_num_t) I2C_UMAX_SCL);
 	auto aw9523 = new AW9523(*i2c, 0x5b);
+	auto tca = new TCA9555(*i2c);
 
-	auto battery = new Battery(*adc1);
-	if(battery->isShutdown()){
-		aw9523->resetDimOutputs();
-		shutdown();
-		return;
-	}
-
+	auto battery = new Battery(*tca);
 	Services.set(Service::Battery, battery);
 
 	auto led = new LEDService(*aw9523);
 	Services.set(Service::LED, led);
 
 	led->on(LED::Arm);
+
+	// Purely decorative, on for as long as the rover is.
+	led->on(LED::Deco1);
+	led->on(LED::Deco2);
+	led->on(LED::Deco3);
 
 	gpio_install_isr_service(ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_IRAM);
 
@@ -105,7 +157,7 @@ void init(){
 
 	led->breathe(LED::Rear);
 
-	auto input = new Input(*aw9523);
+	auto input = new Input();
 	Services.set(Service::Input, input);
 
 	auto comm = new Comm();
@@ -123,7 +175,7 @@ void init(){
 	auto cameraController = new CameraController();
 	Services.set(Service::CameraController, cameraController);
 
-	auto modules = new Modules(*i2c, *adc1);
+	auto modules = new Modules(*tca, *i2cUmax, *adc1);
 	Services.set(Service::Modules, modules);
 
 	auto stateMachine = new StateMachine();
@@ -134,45 +186,15 @@ void init(){
 
 	auto inactivityService = new InactivityService();
 
+	auto powerButtonService = new PowerButtonService();
+
 	audio->play("/spiffs/General/PowerOn.aac", true);
 
 	stateMachine->transition<PairState>();
 	stateMachine->begin();
 
 	battery->setShutdownCallback([](){
-		if(TCPServer* tcp = (TCPServer*) Services.get(Service::TCP)){
-			tcp->disconnect();
-		}
-
-		if(StateMachine* stateMachine = (StateMachine*) Services.get(Service::StateMachine)){
-			Services.set(Service::StateMachine, nullptr);
-			delete stateMachine;
-		}
-
-		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
-			motors->setControl(Local);
-			motors->setLocally({});
-		}
-
-		if(BatteryLowService* lowBatteryService = (BatteryLowService*) Services.get(Service::LowBattery)){
-			Services.set(Service::LowBattery, nullptr);
-			delete lowBatteryService;
-		}
-
-		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
-				led->off((LED) i);
-			}
-		}
-
-		if(Audio* audio = (Audio*) Services.get(Service::Audio)){
-			Services.set(Service::Audio, nullptr);
-			audio->play("/spiffs/General/BattEmptyRover.aac", true);
-			delayMillis(3000);
-			delete audio;
-		}
-
-		shutdown();
+		gracefulShutdown("/spiffs/General/BattEmptyRover.aac");
 	});
 
 	battery->begin();

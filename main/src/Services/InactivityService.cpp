@@ -30,25 +30,8 @@ void InactivityService::loop(){
 		Events::unlisten(&queue);
 		ESP_LOGI(TAG, "Inactivity shutdown!");
 
-		Audio* audio = (Audio*) Services.get(Service::Audio);
-		delete audio;
-
-		extern void shutdown();
-
-		if(MotorDriveController* motors = (MotorDriveController*) Services.get(Service::MotorDriveController)){
-			motors->setControl(Local);
-			motors->setLocally({});
-		}
-
-		if(LEDService* led = (LEDService*) Services.get(Service::LED)){
-			for(int i = 0; i < (uint8_t) LED::COUNT; i++){
-				led->off((LED) i);
-			}
-		}
-
-		delayMillis(1000);
-
-		shutdown();
+		extern void gracefulShutdown(const char* audioFile);
+		gracefulShutdown(nullptr);
 	}
 }
 

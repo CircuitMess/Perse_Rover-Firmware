@@ -22,6 +22,9 @@ const std::map<LED, LEDService::ExpanderMappingInfo> LEDService::ExpanderMapping
 		{ LED::StatusGreen,     { EXP_LED_STATUS_GREEN,  0x10 }},
 		{ LED::StatusYellow,    { EXP_LED_STATUS_YELLOW, 0xFF }},
 		{ LED::StatusRed,       { EXP_LED_STATUS_RED,    0xFF }},
+		{ LED::Deco1,           { EXP_LED_DECO_1,        0x20 }},
+		{ LED::Deco2,           { EXP_LED_DECO_2,        0x20 }},
+		{ LED::Deco3,           { EXP_LED_DECO_3,        0x20 }},
 };
 
 LEDService::LEDService(AW9523& aw9523) : Threaded("LEDService"), instructionQueue(25){

@@ -41,6 +41,19 @@ private:
 	bool ManualJPGEncoding = false;
 
 	I2C& i2c;
+
+	// Frame-time instrumentation
+	static constexpr int64_t StatsPeriodUs = 2000000;
+	int64_t statsStart = 0;
+	int64_t lastFrameTs = 0;
+	uint32_t statsFrames = 0;
+	uint32_t statsFailed = 0;
+	int64_t statsDtSum = 0;
+	int64_t statsDtMin = 0;
+	int64_t statsDtMax = 0;
+	void resetStats();
+	void accountFrame(const camera_fb_t* fb);
+	static void logSensorTiming(sensor_t* sensor, uint32_t xclk);
 };
 
 

@@ -13,19 +13,23 @@
 #include "Util/Events.h"
 #include "Util/HWVersion.h"
 #include "Services/Modules.h"
+#include "Devices/Power.h"
 
 
 JigHWTest* JigHWTest::test = nullptr;
 I2C* JigHWTest::i2c = nullptr;
+I2C* JigHWTest::i2cUmax = nullptr;
 AW9523* JigHWTest::aw9523 = nullptr;
 Audio* JigHWTest::audio = nullptr;
-adc_oneshot_unit_handle_t JigHWTest::hndl = nullptr;
-int16_t JigHWTest::voltOffset = 0;
 
 
 JigHWTest::JigHWTest(){
+	// The board cuts its own power as soon as the button is released unless the latch is held.
+	Power::hold();
+
 	i2c = new I2C(I2C_NUM_0, (gpio_num_t) I2C_SDA, (gpio_num_t) I2C_SCL);
-	aw9523 = new AW9523(*i2c, 0x5b);
+	i2cUmax = new I2C(I2C_NUM_1, (gpio_num_t) I2C_UMAX_SDA, (gpio_num_t) I2C_UMAX_SCL);
+	aw9523 = new AW9523(*i2c, AW9523Addr);
 	audio = new Audio(*aw9523);
 
 	const gpio_config_t cfg = {
@@ -41,9 +45,10 @@ JigHWTest::JigHWTest(){
 	tests.push_back({ JigHWTest::SPIFFSTest, "SPIFFS", [](){} });
 //	tests.push_back({ JigHWTest::CameraCheck, "Camera", [](){} });
 	tests.push_back({ JigHWTest::AW9523Check, "AW9523", [](){} });
+	tests.push_back({ JigHWTest::TCA9555Check, "XL9555", [](){} });
 //	tests.push_back({JigHWTest::ModulesCheck, "Modules", [](){}});
-	tests.push_back({ JigHWTest::BatteryCalib, "Battery calibration", [](){ esp_efuse_batch_write_cancel(); }});
-	tests.push_back({ JigHWTest::BatteryCheck, "Battery check", [](){} });
+	/* There is no battery calibration or check on this board: the battery divider ends on a digital
+	 * expander pin instead of an ADC, so there is nothing to calibrate. See Devices/Battery.h. */
 	tests.push_back({ JigHWTest::HWVersion, "Hardware version", [](){ esp_efuse_batch_write_cancel(); } });
 }
 
@@ -144,27 +149,18 @@ void JigHWTest::log(const char* property, const std::string& value){
 
 bool JigHWTest::ModulesCheck(){
 	ADC adc(ADC_UNIT_1);
-	Modules modules(*i2c, adc);
+	TCA9555 tca(*i2c, TCA9555Addr);
+	Modules modules(tca, *i2cUmax, adc);
 
 	aw9523->pinMode(EXP_LED_MOTOR_L, AW9523::LED);
-	aw9523->pinMode(EXP_LED_MOTOR_R, AW9523::LED);
 	aw9523->dim(EXP_LED_MOTOR_L, 0);
-	aw9523->dim(EXP_LED_MOTOR_R, 0);
 
-
-	if(modules.getInserted(ModuleBus::Right) != ModuleType::TempHum){
-		test->log("right module", "not temperature/humidity");
-		return false;
-	}
-
-	if(modules.getInserted(ModuleBus::Left) != ModuleType::Gyro){
-		test->log("left module", "not gyro");
+	if(modules.getInserted(Modules::Bus) != ModuleType::TempHum){
+		test->log("module", "not temperature/humidity");
 		return false;
 	}
 
 	aw9523->dim(EXP_LED_MOTOR_L, 100);
-	aw9523->dim(EXP_LED_MOTOR_R, 100);
-
 
 	EventQueue evts(12);
 	Events::listen(Facility::Modules, &evts);
@@ -172,7 +168,6 @@ bool JigHWTest::ModulesCheck(){
 	const auto out = [&evts](){
 		Events::unlisten(&evts);
 		aw9523->dim(EXP_LED_MOTOR_L, 0);
-		aw9523->dim(EXP_LED_MOTOR_R, 0);
 		vTaskDelay(500);
 	};
 
@@ -191,203 +186,53 @@ bool JigHWTest::ModulesCheck(){
 	enum ModuleTestState {
 		Start, Removed, Reinserted
 	};
-	ModuleTestState left = Start, right = Start;
+	ModuleTestState state = Start;
 
-	while(left != Reinserted || right != Reinserted){
+	while(state != Reinserted){
 		auto evt = waitEvt();
 
-		if(evt.bus == ModuleBus::Left){
-			if(evt.module != ModuleType::Gyro){
-				test->log("left module", "not gyro");
+		if(evt.module != ModuleType::TempHum){
+			test->log("module", "not temperature/humidity");
+			out();
+			return false;
+		}
+
+		if(evt.action == Modules::Event::Remove){
+			if(state != Start){
+				test->log("module", "double removal!");
 				out();
 				return false;
 			}
 
-			if(evt.action == Modules::Event::Remove){
-				switch(left){
-					case Start:
-						left = Removed;
-						aw9523->dim(EXP_LED_MOTOR_R, 0);
-						break;
-					case Removed:
-						test->log("left module", "double removal!");
-						out();
-						break;
-					case Reinserted:
-						continue;
-						break;
-				}
-			}else if(evt.action == Modules::Event::Insert){
-				switch(left){
-					case Start:
-						test->log("left module", "double insert!");
-						out();
-						break;
-					case Removed:
-						left = Reinserted;
-						aw9523->dim(EXP_LED_MOTOR_R, 100);
-						break;
-					case Reinserted:
-						continue;
-						break;
-				}
-			}
-		}else if(evt.bus == ModuleBus::Right){
-			if(evt.module != ModuleType::TempHum){
-				test->log("right module", "not temperature/humidity");
+			state = Removed;
+			aw9523->dim(EXP_LED_MOTOR_L, 0);
+		}else if(evt.action == Modules::Event::Insert){
+			if(state != Removed){
+				test->log("module", "double insert!");
 				out();
 				return false;
 			}
 
-			if(evt.action == Modules::Event::Remove){
-				switch(right){
-					case Start:
-						right = Removed;
-						aw9523->dim(EXP_LED_MOTOR_L, 0);
-						break;
-					case Removed:
-						test->log("right module", "double removal!");
-						out();
-						break;
-					case Reinserted:
-						continue;
-						break;
-				}
-			}else if(evt.action == Modules::Event::Insert){
-				switch(right){
-					case Start:
-						test->log("right module", "double insert!");
-						out();
-						break;
-					case Removed:
-						right = Reinserted;
-						aw9523->dim(EXP_LED_MOTOR_L, 100);
-						break;
-					case Reinserted:
-						continue;
-						break;
-				}
-			}
+			state = Reinserted;
+			aw9523->dim(EXP_LED_MOTOR_L, 100);
 		}
 	}
 
 	Events::unlisten(&evts);
 	aw9523->dim(EXP_LED_MOTOR_L, 0);
-	aw9523->dim(EXP_LED_MOTOR_R, 0);
-	return true;
-}
-
-bool JigHWTest::BatteryCalib(){
-	if(Battery::getVoltOffset() != 0){
-		test->log("calibrated", (int32_t) Battery::getVoltOffset());
-		voltOffset = Battery::getVoltOffset();
-		return true;
-	}
-
-	constexpr uint16_t numReadings = 50;
-	constexpr uint16_t readDelay = 50;
-	uint32_t reading = 0;
-
-	const adc_oneshot_unit_init_cfg_t config = {
-			.unit_id = ADC_UNIT_1,
-			.ulp_mode = ADC_ULP_MODE_DISABLE
-	};
-
-	adc_oneshot_new_unit(&config, &hndl);
-
-	adc_unit_t unit;
-	adc_channel_t chan;
-	adc_oneshot_io_to_channel((gpio_num_t)BATTERY_ADC, &unit, &chan);
-
-	adc_oneshot_chan_cfg_t cfg = {
-			.atten = ADC_ATTEN_DB_11,
-			.bitwidth = ADC_BITWIDTH_12
-	};
-
-	adc_oneshot_config_channel(hndl, chan, &cfg);
-
-	for(int i = 0; i < numReadings; i++){
-		int val;
-		adc_oneshot_read(hndl, chan, &val);
-		reading += val;
-		vTaskDelay(readDelay / portTICK_PERIOD_MS);
-	}
-	reading /= numReadings;
-
-	uint32_t mapped = Battery::mapRawReading(reading);
-
-	int16_t offset = ReferenceVoltage - mapped;
-
-	test->log("reading", reading);
-	test->log("mapped", mapped);
-	test->log("offset", (int32_t) offset);
-
-	if(abs(offset) >= RefVoltageTolerance){
-		test->log("offset too big, read voltage: ", (uint32_t) mapped);
-		return false;
-	}
-
-	uint8_t offsetLow = offset & 0xff;
-	uint8_t offsetHigh = (offset >> 8) & 0xff;
-
-	esp_efuse_batch_write_begin();
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_low, &offsetLow, 8);
-	esp_efuse_write_field_blob((const esp_efuse_desc_t**) efuse_adc1_high, &offsetHigh, 8);
-	esp_efuse_batch_write_commit();
-
-	voltOffset = offset;
-
-	return true;
-}
-
-
-bool JigHWTest::BatteryCheck(){
-	if(hndl == nullptr){
-		const adc_oneshot_unit_init_cfg_t config = {
-				.unit_id = ADC_UNIT_1,
-				.ulp_mode = ADC_ULP_MODE_DISABLE
-		};
-
-		adc_oneshot_new_unit(&config, &hndl);
-	}
-
-	adc_unit_t unit;
-	adc_channel_t chan;
-	adc_oneshot_io_to_channel((gpio_num_t)BATTERY_ADC, &unit, &chan);
-
-	adc_oneshot_chan_cfg_t cfg = {
-			.atten = ADC_ATTEN_DB_11,
-			.bitwidth = ADC_BITWIDTH_12
-	};
-
-	adc_oneshot_config_channel(hndl, chan, &cfg);
-
-	constexpr uint16_t numReadings = 50;
-	constexpr uint16_t readDelay = 10;
-	uint32_t reading = 0;
-
-	for(int i = 0; i < numReadings; i++){
-		int val;
-		adc_oneshot_read(hndl, chan, &val);
-		reading += val;
-		vTaskDelay(readDelay / portTICK_PERIOD_MS);
-	}
-	reading /= numReadings;
-
-	uint32_t voltage = Battery::mapRawReading(reading) + voltOffset;
-	if(voltage < ReferenceVoltage - 100 || voltage > ReferenceVoltage + 100){
-		test->log("raw", reading);
-		test->log("mapped", (int32_t) Battery::mapRawReading(reading));
-		test->log("offset", (int32_t) voltOffset);
-		test->log("mapped+offset", voltage);
-		return false;
-	}
-
 	return true;
 }
 
 bool JigHWTest::AW9523Check(){
-	if(i2c->probe(0x5b, 200) == ESP_OK){
+	if(i2c->probe(AW9523Addr, 200) == ESP_OK){
+		return true;
+	}
+
+	return false;
+}
+
+bool JigHWTest::TCA9555Check(){
+	if(i2c->probe(TCA9555Addr, 200) == ESP_OK){
 		return true;
 	}
 
@@ -503,7 +348,7 @@ void JigHWTest::AudioVisualTest(){
 		return;
 	}
 
-	new Input(*aw9523);
+	new Input();
 	EventQueue queue(1);
 	Events::listen(Facility::Input, &queue);
 	bool mute = false;
@@ -516,7 +361,7 @@ void JigHWTest::AudioVisualTest(){
 		Event evt;
 		if(queue.get(evt, 0)){
 			auto data = (Input::Data*) evt.data;
-			if(data->action == Input::Data::Press && data->btn == Input::Button::Pair){
+			if(data->action == Input::Data::Press && data->btn == Input::Button::Power){
 				mute = true;
 			}
 			free(evt.data);

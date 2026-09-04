@@ -1,8 +1,14 @@
 #include "HWVersion.h"
+#include <esp_log.h>
 
 bool HWVersion::check(){
 	readVersion(CachedVersion);
 	if(CachedVersion == Version){
+		return true;
+	}
+
+	if(CachedVersion == 0 && AllowUnfused){
+		ESP_LOGW("Hardware check", "Hardware version not fused yet, assuming software version (0x%04x).", Version);
 		return true;
 	}
 

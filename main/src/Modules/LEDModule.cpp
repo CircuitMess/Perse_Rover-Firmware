@@ -3,7 +3,7 @@
 #include "Util/Services.h"
 #include "Devices/HeadlightsController.h"
 
-LEDModule::LEDModule(ModuleBus bus) : SleepyThreaded(10, "LEDModule", 2 * 1024), pinout(bus == ModuleBus::Left ? A_CTRL_1 : B_CTRL_1, true), queue(10), bus(bus){
+LEDModule::LEDModule(ModuleBus bus) : SleepyThreaded(10, "LEDModule", 2 * 1024), pinout(MODULE_CTRL_1, true), queue(10), bus(bus){
 	Events::listen(Facility::Comm, &queue);
 	Events::listen(Facility::TCP, &queue);
 	start();

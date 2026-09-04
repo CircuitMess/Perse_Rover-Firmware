@@ -4,7 +4,7 @@
 #include "Util/Services.h"
 
 MotionSensor::MotionSensor(ModuleBus bus) : Threaded("MotionSens", 2 * 1024),
-											pin(bus == ModuleBus::Left ? (gpio_num_t) A_CTRL_1 : (gpio_num_t) B_CTRL_1), bus(bus),
+											pin((gpio_num_t) MODULE_CTRL_1), bus(bus),
 											comm(*((Comm*) Services.get(Service::Comm))),
 											audio(*((Audio*) Services.get(Service::Audio))){
 	sem = xSemaphoreCreateBinary();

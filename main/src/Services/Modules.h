@@ -10,10 +10,15 @@
 #include "Periph/ADC.h"
 #include "Audio.h"
 
-
+/**
+ * The Curiosity board has a single module (UMAX) port, on the left side of the rover, so only
+ * ModuleBus::Left is ever reported. Unlike Perseverance, the port has its own I2C bus - i2cUmax -
+ * while the detect/address pins still hang off the XL9555 on the main bus. The XL9555 is shared with
+ * Battery, so it is passed in rather than constructed here.
+ */
 class Modules : private SleepyThreaded {
 public:
-	Modules(I2C& i2c, ADC& adc);
+	Modules(TCA9555& tca, I2C& i2cUmax, ADC& adc);
 	~Modules() override;
 
 	struct Event {
@@ -28,13 +33,16 @@ public:
 
 	static constexpr TickType_t ModuleSendInterval = 200;
 
+	/** The only module port this board has. */
+	static constexpr ModuleBus Bus = ModuleBus::Left;
+
 private:
-	I2C& i2c;
+	I2C& i2cUmax;
 	Comm& comm;
 	ADC& adc;
 	Audio* audio = nullptr;
 
-	TCA9555 tca;
+	TCA9555& tca;
 	ThreadedClosure connectionThread;
 	EventQueue connectionQueue;
 	bool modulesEnabled = false;
@@ -51,21 +59,16 @@ private:
 		void* moduleInstance;
 	};
 
-	BusContext leftContext = { { TCA_A_ADDR_1, TCA_A_ADDR_2, TCA_A_ADDR_3, TCA_A_ADDR_4, TCA_A_ADDR_5, TCA_A_ADDR_6 },
-							   { TCA_A_DET_1, TCA_A_DET_2 },
-							   false, ModuleType::Unknown, nullptr };
-	BusContext rightContext = { { TCA_B_ADDR_1, TCA_B_ADDR_2, TCA_B_ADDR_3, TCA_B_ADDR_4, TCA_B_ADDR_5, TCA_B_ADDR_6 },
-								{ TCA_B_DET_1, TCA_B_DET_2 },
-								false, ModuleType::Unknown, nullptr };
+	BusContext context = { { TCA_ADDR_1, TCA_ADDR_2, TCA_ADDR_3, TCA_ADDR_4, TCA_ADDR_5, TCA_ADDR_6 },
+						   { TCA_DET_1, TCA_DET_2 },
+						   false, ModuleType::Unknown, nullptr };
 
 	void sleepyLoop() override;
 
-	bool checkInserted(ModuleBus bus);
-	ModuleType checkAddr(ModuleBus bus);
+	bool checkInserted();
+	ModuleType checkAddr();
 
-	BusContext& getContext(ModuleBus bus);
-
-	void loopCheck(ModuleBus bus);
+	void loopCheck();
 
 	static const std::unordered_map<uint8_t, ModuleType> AddressMap;
 	static const std::unordered_map<uint8_t, ModuleType> I2CAddressMap;

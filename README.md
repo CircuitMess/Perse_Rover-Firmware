@@ -1,4 +1,8 @@
-# Perseverance Space Rover Firmware
+# Curiosity Space Rover Firmware
+
+Port of the Perseverance Space Rover firmware to the **NASA Curiosity main board v0.4**.
+See [docs/CuriosityPort.md](docs/CuriosityPort.md) for the pin mapping, the behavioural
+differences against Perseverance, and what still needs attention on hardware.
 
 # Building
 
