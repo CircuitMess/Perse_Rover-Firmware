@@ -12,7 +12,11 @@ public:
 	Audio(AW9523& aw9523);
 	virtual ~Audio();
 
-	void play(const std::string& file, bool priority = false);
+	/**
+	 * Queues a file. priority interrupts whatever is playing; bare plays the file on its own, without the
+	 * random Beep prefix and suffix every other file gets.
+	 */
+	void play(const std::string& file, bool priority = false, bool bare = false);
 	void stop();
 
 	bool isEnabled() const;
@@ -26,7 +30,8 @@ private:
 
 	struct AudioFile {
 		std::string file;
-		bool priority;
+		bool priority = false;
+		bool bare = false;
 		enum class State : uint8_t {
 			Prefix, Main, Suffix
 		} state = State::Prefix;

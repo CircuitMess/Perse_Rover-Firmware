@@ -46,10 +46,10 @@ Audio::~Audio(){
 	aw9523.write(EXP_SPKR_EN, false);
 }
 
-void Audio::play(const std::string& file, bool priority){
+void Audio::play(const std::string& file, bool priority, bool bare){
 	if(!enabled) return;
 
-	auto str = std::make_unique<AudioFile>(file, priority);
+	auto str = std::make_unique<AudioFile>(file, priority, bare);
 	playQueue.post(std::move(str));
 }
 
@@ -108,9 +108,10 @@ void Audio::loop(){
 		}else if(currentFile.state == AudioFile::State::Main){
 			aac.reset();
 
-			//to avoid 2 back-to-back beeps when file is queued
-			if(!queuedFile.file.empty()){
+			//to avoid 2 back-to-back beeps when file is queued; a bare file ends without a suffix beep
+			if(!queuedFile.file.empty() || currentFile.bare){
 				closeFile();
+				if(queuedFile.file.empty()) return;
 				openFile(queuedFile);
 				queuedFile = {};
 			}else{
@@ -146,7 +147,7 @@ void Audio::openFile(const AudioFile& audioFile){
 	if(currentFile.file == Beeps[0] || currentFile.file == Beeps[1] || currentFile.file == Beeps[2]){
 		path = currentFile.file;
 		currentFile.state = AudioFile::State::Suffix;
-	}else if(beepInterrupted){
+	}else if(currentFile.bare || beepInterrupted){
 		path = currentFile.file;
 		currentFile.state = AudioFile::State::Main;
 	}else{
