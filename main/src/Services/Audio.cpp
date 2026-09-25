@@ -69,6 +69,14 @@ void Audio::setEnabled(bool enabled){
 	stop();
 }
 
+void Audio::setVolume(uint8_t volume){
+	this->volume = volume;
+}
+
+uint8_t Audio::getVolume() const{
+	return this->volume;
+}
+
 const std::string& Audio::getCurrentPlayingFile() const{
 	return currentFile.file;
 }
@@ -127,6 +135,14 @@ void Audio::loop(){
 			queuedFile = {};
 		}
 		return;
+	}
+
+	// Scale the buffer with volume if not max
+	if (volume != 255){
+		const size_t samples = bytesToTransfer / sizeof(int16_t);
+		for(size_t i = 0; i < samples; i++){
+			dataBuf[i] = (int16_t) (((int32_t) dataBuf[i] * volume) >> 8);
+		}
 	}
 
 	size_t written;

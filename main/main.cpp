@@ -68,6 +68,7 @@ void init(){
 	new SPIFFS();
 
 	auto audio = new Audio(*aw9523);
+	audio->setVolume(190);
 	Services.set(Service::Audio, audio);
 
 	auto input = new Input();

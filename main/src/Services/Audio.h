@@ -22,11 +22,16 @@ public:
 	bool isEnabled() const;
 	void setEnabled(bool enabled);
 
+	/* Scale: [0-255] */
+	void setVolume(uint8_t volume);
+	uint8_t getVolume() const;
+
 	const std::string& getCurrentPlayingFile() const;
 
 private:
 	static constexpr i2s_port_t Port = I2S_NUM_0;
 	static constexpr size_t BufSize = 1024;
+	static constexpr uint8_t DefaultVolume = 128; // Scale: [0-255]
 
 	struct AudioFile {
 		std::string file;
@@ -38,6 +43,8 @@ private:
 	};
 
 	bool enabled = true;
+
+	uint8_t volume = DefaultVolume;
 
 	std::vector<int16_t> dataBuf;
 

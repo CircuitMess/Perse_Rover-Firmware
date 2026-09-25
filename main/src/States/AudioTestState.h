@@ -20,11 +20,12 @@ public:
 
 private:
 	static constexpr const char* Samples[] = {
-			"/spiffs/Test/set2C/Intro.aac", "/spiffs/Test/set2C/PowerOn.aac", "/spiffs/Test/set2C/PairSuccess.aac",
-			"/spiffs/Test/set3B/Intro.aac", "/spiffs/Test/set3B/PowerOn.aac", "/spiffs/Test/set3B/PairSuccess.aac",
-			"/spiffs/Test/set4C/Intro.aac", "/spiffs/Test/set4C/PowerOn.aac", "/spiffs/Test/set4C/PairSuccess.aac",
-			"/spiffs/Test/set4lib/Intro.aac", "/spiffs/Test/set4lib/PowerOn.aac", "/spiffs/Test/set4lib/PairSuccess.aac",
-			"/spiffs/Test/set5B/Intro.aac", "/spiffs/Test/set5B/PowerOn.aac", "/spiffs/Test/set5B/PairSuccess.aac"
+			"/spiffs/Test/set2C/Intro.aac", "/spiffs/Test/set2C/PowerOn.aac",
+			"/spiffs/Test/set3B/Intro.aac", "/spiffs/Test/set3B/PowerOn.aac",
+			"/spiffs/Test/set4C/Intro.aac", "/spiffs/Test/set4C/PowerOn.aac",
+			"/spiffs/Test/set4lib/Intro.aac", "/spiffs/Test/set4lib/PowerOn.aac",
+			"/spiffs/Test/set5B/Intro.aac", "/spiffs/Test/set5B/PowerOn.aac",
+			"/spiffs/Test/set7A/Intro.aac", "/spiffs/Test/set7A/PowerOn.aac"
 	};
 	static constexpr size_t SampleCount = sizeof(Samples) / sizeof(Samples[0]);
 
